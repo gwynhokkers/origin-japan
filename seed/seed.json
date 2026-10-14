@@ -102,6 +102,12 @@
           "label": "VIN",
           "type": "string",
           "translatable": false
+        },
+        {
+          "slug": "order",
+          "label": "Order",
+          "type": "integer",
+          "translatable": false
         }
       ]
     }

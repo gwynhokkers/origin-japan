@@ -18,6 +18,10 @@ export type Vehicle = {
   availability?: Availability;
   /** Unfinished. Not on the site, and it has no availability. */
   draft?: boolean;
+  /** When the vehicle was published. Newest published is the stock fallback, not the model year. */
+  publishedAt?: string;
+  /** Adam's order inside the priced group, or inside in-prep and on-water. Lower comes first. */
+  order?: number;
 };
 
 export type Lead = {

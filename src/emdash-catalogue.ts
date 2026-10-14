@@ -36,6 +36,8 @@ function vehicleFromEntry(entry: { id: string; status?: string; data: object }):
     vin: stringValue(data.vin),
     availability: availabilityValue(data.availability),
     draft: entry.status !== undefined && entry.status !== "published",
+    publishedAt: dateValue(data.publishedAt),
+    order: integerValue(data.order),
   };
 }
 
@@ -71,5 +73,13 @@ function stringValue(value: unknown): string | undefined {
 function integerValue(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isInteger(value)) return value;
   if (typeof value === "string" && /^-?\d+$/.test(value)) return Number(value);
+  return undefined;
+}
+
+function dateValue(value: unknown): string | undefined {
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value.toISOString();
+  if (typeof value === "string" && value.trim() && !Number.isNaN(Date.parse(value))) {
+    return new Date(value).toISOString();
+  }
   return undefined;
 }

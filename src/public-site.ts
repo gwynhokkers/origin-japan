@@ -170,6 +170,23 @@ h1 {
 .specs dt,
 .specs dd { margin: 0; }
 .empty { margin: 1.5rem 0 0; max-width: 65ch; }
+.stock-sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin: 1rem 0 0;
+  font-size: 0.875rem;
+}
+.stock-sort a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  text-decoration: none;
+}
+.stock-sort a[aria-current="true"] {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
 .vehicle-page { display: flex; flex-direction: column; gap: 0.75rem; }
 .vehicle-facts { display: contents; }
 .vehicle-title { order: 1; }
@@ -278,7 +295,8 @@ h1 {
 `;
 
 export async function requestPublicPage(request: Request, catalogue: Catalogue): Promise<Response> {
-  const { pathname } = new URL(request.url);
+  const url = new URL(request.url);
+  const { pathname } = url;
 
   if (pathname === "/") {
     await catalogue.vehicles();
@@ -288,7 +306,7 @@ export async function requestPublicPage(request: Request, catalogue: Catalogue):
 
   if (pathname === "/stock") {
     const vehicles = await catalogue.vehicles();
-    return html(stockPage(vehicles.filter(isOnStock)));
+    return html(stockPage(vehicles.filter(isOnStock), readStockSort(url)));
   }
 
   if (pathname === "/sold") {
@@ -388,10 +406,11 @@ function homePage(): string {
   });
 }
 
-function stockPage(vehicles: readonly Vehicle[]): string {
-  const cards = vehicles.filter((vehicle) => vehicle.slug).map(stockCard).join("");
+function stockPage(vehicles: readonly Vehicle[], sort?: StockSort): string {
+  const cards = listStock(vehicles, sort).filter((vehicle) => vehicle.slug).map(stockCard).join("");
   const main = `
     <h1>Current Stock</h1>
+    ${sortNav(sort)}
     ${cards ? `<ul class="stock">${cards}</ul>` : `<p class="empty">No vehicles in stock.</p>`}
   `;
   return document({
@@ -399,6 +418,79 @@ function stockPage(vehicles: readonly Vehicle[]): string {
     current: "stock",
     main,
   });
+}
+
+type StockSort = "price" | "model-year" | "mileage" | "newest";
+
+const stockSorts = ["price", "model-year", "mileage", "newest"] as const satisfies readonly StockSort[];
+
+const stockSortLabels: Record<StockSort, string> = {
+  price: "Price",
+  "model-year": "Model year",
+  mileage: "Mileage",
+  newest: "Newest",
+};
+
+function readStockSort(url: URL): StockSort | undefined {
+  const value = url.searchParams.get("sort");
+  return stockSorts.find((sort) => sort === value);
+}
+
+function sortNav(current: StockSort | undefined): string {
+  const links = stockSorts
+    .map((sort) => {
+      const currentAttr = sort === current ? ` aria-current="true"` : "";
+      return `<a href="/stock?sort=${sort}"${currentAttr}>${stockSortLabels[sort]}</a>`;
+    })
+    .join("");
+  return `<nav class="stock-sort" aria-label="Sort">${links}</nav>`;
+}
+
+/** Priced for-sale vehicles, then in-prep and on-water. A buyer sort stays inside each group. */
+function listStock(vehicles: readonly Vehicle[], sort?: StockSort): Vehicle[] {
+  return [
+    ...orderGroup(vehicles.filter(isForSale), sort),
+    ...orderGroup(vehicles.filter((vehicle) => !isForSale(vehicle)), sort),
+  ];
+}
+
+function orderGroup(vehicles: readonly Vehicle[], sort?: StockSort): Vehicle[] {
+  const adamSetAnOrder = vehicles.some((vehicle) => vehicle.order !== undefined);
+  const ordered = [...vehicles].sort((a, b) => compareDefault(a, b, adamSetAnOrder));
+  if (!sort) return ordered;
+  return ordered.sort((a, b) => compareBuyerSort(a, b, sort));
+}
+
+function compareDefault(a: Vehicle, b: Vehicle, adamSetAnOrder: boolean): number {
+  if (adamSetAnOrder) {
+    const aHasOrder = a.order !== undefined;
+    const bHasOrder = b.order !== undefined;
+    if (aHasOrder && bHasOrder && a.order !== b.order) return (a.order ?? 0) - (b.order ?? 0);
+    if (aHasOrder !== bHasOrder) return aHasOrder ? -1 : 1;
+  }
+  return publishedTime(b) - publishedTime(a) || (a.slug ?? "").localeCompare(b.slug ?? "");
+}
+
+function compareBuyerSort(a: Vehicle, b: Vehicle, sort: StockSort): number {
+  if (sort === "price") return compareNumber(a.pricePounds, b.pricePounds, "low");
+  if (sort === "model-year") return compareNumber(a.year, b.year, "high");
+  if (sort === "mileage") return compareNumber(a.mileageMiles, b.mileageMiles, "low");
+  return publishedTime(b) - publishedTime(a);
+}
+
+function compareNumber(a: number | undefined, b: number | undefined, direction: "low" | "high"): number {
+  const aOk = typeof a === "number";
+  const bOk = typeof b === "number";
+  if (!aOk && !bOk) return 0;
+  if (!aOk) return 1;
+  if (!bOk) return -1;
+  return direction === "low" ? a - b : b - a;
+}
+
+function publishedTime(vehicle: Vehicle): number {
+  if (!vehicle.publishedAt) return Number.NEGATIVE_INFINITY;
+  const time = Date.parse(vehicle.publishedAt);
+  return Number.isNaN(time) ? Number.NEGATIVE_INFINITY : time;
 }
 
 function soldPage(vehicles: readonly Vehicle[]): string {

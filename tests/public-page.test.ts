@@ -194,6 +194,281 @@ test("a draft is absent from stock, sold stock, and its page", async () => {
   expect(page.status).toBe(404);
 });
 
+test("priced for-sale vehicles appear before in-prep and on-water vehicles", async () => {
+  const catalogue = inMemoryCatalogue({
+    vehicles: [
+      {
+        ...forSaleVehicle(),
+        id: "mx5-on-water",
+        slug: "mazda-mx-5-on-water",
+        title: "Mazda MX-5 2019",
+        make: "Mazda",
+        model: "MX-5",
+        year: 2019,
+        pricePounds: undefined,
+        photos: ["https://photos.example/mx5.jpg"],
+        availability: "on water",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "s2000-in-prep",
+        slug: "honda-s2000-in-prep",
+        title: "Honda S2000 2004",
+        make: "Honda",
+        model: "S2000",
+        year: 2004,
+        pricePounds: undefined,
+        photos: ["https://photos.example/s2000.jpg"],
+        availability: "in prep",
+      },
+      forSaleVehicle(),
+    ],
+  });
+
+  const response = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+  const slugs = stockSlugs(await response.text());
+
+  expect(response.status).toBe(200);
+  expect(slugs.indexOf("subaru-levorg-2-0-gt-s")).toBeLessThan(slugs.indexOf("mazda-mx-5-on-water"));
+  expect(slugs.indexOf("subaru-levorg-2-0-gt-s")).toBeLessThan(slugs.indexOf("honda-s2000-in-prep"));
+});
+
+test("a group with no order from Adam is newest published first, not newest model year", async () => {
+  const catalogue = inMemoryCatalogue({
+    vehicles: [
+      {
+        ...forSaleVehicle(),
+        id: "yaris",
+        slug: "toyota-gr-yaris",
+        title: "Toyota GR Yaris 2024",
+        make: "Toyota",
+        model: "GR Yaris",
+        year: 2024,
+        pricePounds: 36995,
+        photos: ["https://photos.example/yaris.jpg"],
+        publishedAt: "2024-01-01T00:00:00.000Z",
+      },
+      {
+        ...forSaleVehicle(),
+        publishedAt: "2026-06-01T00:00:00.000Z",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "s2000-in-prep",
+        slug: "honda-s2000-in-prep",
+        title: "Honda S2000 2004",
+        make: "Honda",
+        model: "S2000",
+        year: 2004,
+        pricePounds: undefined,
+        photos: ["https://photos.example/s2000.jpg"],
+        availability: "in prep",
+        publishedAt: "2025-01-01T00:00:00.000Z",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "mx5-on-water",
+        slug: "mazda-mx-5-on-water",
+        title: "Mazda MX-5 2019",
+        make: "Mazda",
+        model: "MX-5",
+        year: 2019,
+        pricePounds: undefined,
+        photos: ["https://photos.example/mx5.jpg"],
+        availability: "on water",
+        publishedAt: "2026-08-01T00:00:00.000Z",
+      },
+    ],
+  });
+
+  const response = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+
+  expect(response.status).toBe(200);
+  expect(stockSlugs(await response.text())).toEqual([
+    "subaru-levorg-2-0-gt-s",
+    "toyota-gr-yaris",
+    "mazda-mx-5-on-water",
+    "honda-s2000-in-prep",
+  ]);
+});
+
+test("Adam's order is kept inside the priced group and inside in-prep and on-water", async () => {
+  const catalogue = inMemoryCatalogue({
+    vehicles: [
+      {
+        ...forSaleVehicle(),
+        order: 2,
+        publishedAt: "2026-06-01T00:00:00.000Z",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "yaris",
+        slug: "toyota-gr-yaris",
+        title: "Toyota GR Yaris 2024",
+        make: "Toyota",
+        model: "GR Yaris",
+        year: 2024,
+        pricePounds: 36995,
+        photos: ["https://photos.example/yaris.jpg"],
+        order: 1,
+        publishedAt: "2024-01-01T00:00:00.000Z",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "mx5-on-water",
+        slug: "mazda-mx-5-on-water",
+        title: "Mazda MX-5 2019",
+        make: "Mazda",
+        model: "MX-5",
+        year: 2019,
+        pricePounds: undefined,
+        photos: ["https://photos.example/mx5.jpg"],
+        availability: "on water",
+        order: 2,
+        publishedAt: "2026-08-01T00:00:00.000Z",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "s2000-in-prep",
+        slug: "honda-s2000-in-prep",
+        title: "Honda S2000 2004",
+        make: "Honda",
+        model: "S2000",
+        year: 2004,
+        pricePounds: undefined,
+        photos: ["https://photos.example/s2000.jpg"],
+        availability: "in prep",
+        order: 1,
+        publishedAt: "2025-01-01T00:00:00.000Z",
+      },
+    ],
+  });
+
+  const response = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+
+  expect(response.status).toBe(200);
+  expect(stockSlugs(await response.text())).toEqual([
+    "toyota-gr-yaris",
+    "subaru-levorg-2-0-gt-s",
+    "honda-s2000-in-prep",
+    "mazda-mx-5-on-water",
+  ]);
+});
+
+test("a buyer sort reorders inside each stock group and stays in the page address", async () => {
+  const catalogue = inMemoryCatalogue({
+    vehicles: [
+      {
+        ...forSaleVehicle(),
+        year: 2012,
+        mileageMiles: 10000,
+        pricePounds: 20000,
+        order: 1,
+        publishedAt: "2025-01-01T00:00:00.000Z",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "yaris",
+        slug: "toyota-gr-yaris",
+        title: "Toyota GR Yaris 2018",
+        make: "Toyota",
+        model: "GR Yaris",
+        year: 2018,
+        mileageMiles: 90000,
+        pricePounds: 10000,
+        photos: ["https://photos.example/yaris.jpg"],
+        order: 2,
+        publishedAt: "2026-08-01T00:00:00.000Z",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "v40",
+        slug: "volvo-v40",
+        title: "Volvo V40 2022",
+        make: "Volvo",
+        model: "V40",
+        year: 2022,
+        mileageMiles: 40000,
+        pricePounds: 30000,
+        photos: ["https://photos.example/v40.jpg"],
+        order: 3,
+        publishedAt: "2026-04-01T00:00:00.000Z",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "s2000-in-prep",
+        slug: "honda-s2000-in-prep",
+        title: "Honda S2000 2004",
+        make: "Honda",
+        model: "S2000",
+        year: 2004,
+        mileageMiles: 70000,
+        pricePounds: undefined,
+        photos: ["https://photos.example/s2000.jpg"],
+        availability: "in prep",
+        order: 1,
+        publishedAt: "2026-09-01T00:00:00.000Z",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "mx5-on-water",
+        slug: "mazda-mx-5-on-water",
+        title: "Mazda MX-5 2019",
+        make: "Mazda",
+        model: "MX-5",
+        year: 2019,
+        mileageMiles: 20000,
+        pricePounds: undefined,
+        photos: ["https://photos.example/mx5.jpg"],
+        availability: "on water",
+        order: 2,
+        publishedAt: "2024-01-01T00:00:00.000Z",
+      },
+    ],
+  });
+
+  const orders = {
+    "/stock?sort=price": [
+      "toyota-gr-yaris",
+      "subaru-levorg-2-0-gt-s",
+      "volvo-v40",
+      "honda-s2000-in-prep",
+      "mazda-mx-5-on-water",
+    ],
+    "/stock?sort=model-year": [
+      "volvo-v40",
+      "toyota-gr-yaris",
+      "subaru-levorg-2-0-gt-s",
+      "mazda-mx-5-on-water",
+      "honda-s2000-in-prep",
+    ],
+    "/stock?sort=mileage": [
+      "subaru-levorg-2-0-gt-s",
+      "volvo-v40",
+      "toyota-gr-yaris",
+      "mazda-mx-5-on-water",
+      "honda-s2000-in-prep",
+    ],
+    "/stock?sort=newest": [
+      "toyota-gr-yaris",
+      "volvo-v40",
+      "subaru-levorg-2-0-gt-s",
+      "honda-s2000-in-prep",
+      "mazda-mx-5-on-water",
+    ],
+  } as const;
+
+  for (const [path, slugs] of Object.entries(orders)) {
+    const response = await requestPublicPage(new Request(`http://originjapan.test${path}`), catalogue);
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(stockSlugs(html)).toEqual(slugs);
+    expect(html).toContain(`href="${path}"`);
+    expect(html).toContain(`href="${path}" aria-current="true"`);
+  }
+});
+
 test("a public price on an in-prep or on-water vehicle makes it for sale", async () => {
   const catalogue = inMemoryCatalogue({
     vehicles: [
@@ -362,6 +637,10 @@ test("a vehicle missing a required field is absent, and the VIN stays off the pa
     expect(hiddenPage.status).toBe(404);
   }
 });
+
+function stockSlugs(html: string): string[] {
+  return [...html.matchAll(/href="\/listings\/([^"]+)"/g)].map((match) => match[1]);
+}
 
 function forSaleVehicle(): Vehicle {
   return {
