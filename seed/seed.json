@@ -1,0 +1,100 @@
+{
+  "$schema": "https://emdashcms.com/seed.schema.json",
+  "version": "1",
+  "collections": [
+    {
+      "slug": "vehicles",
+      "label": "Vehicles",
+      "labelSingular": "Vehicle",
+      "icon": "car",
+      "routable": true,
+      "urlPattern": "/listings/{slug}",
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "searchable": true,
+          "translatable": false
+        },
+        {
+          "slug": "make",
+          "label": "Make",
+          "type": "string",
+          "searchable": true,
+          "translatable": false
+        },
+        {
+          "slug": "model",
+          "label": "Model",
+          "type": "string",
+          "searchable": true,
+          "translatable": false
+        },
+        {
+          "slug": "body",
+          "label": "Body",
+          "type": "select",
+          "translatable": false,
+          "validation": {
+            "options": ["Convertible", "Pickup", "Coupe", "MPV", "Hatchback", "Estate"]
+          }
+        },
+        {
+          "slug": "year",
+          "label": "Year",
+          "type": "integer",
+          "translatable": false,
+          "validation": { "min": 1900, "max": 2100 }
+        },
+        {
+          "slug": "transmission",
+          "label": "Transmission",
+          "type": "select",
+          "translatable": false,
+          "validation": {
+            "options": ["Manual", "Automatic", "DSG"]
+          }
+        },
+        {
+          "slug": "mileage",
+          "label": "Mileage",
+          "type": "integer",
+          "translatable": false,
+          "validation": { "min": 0 }
+        },
+        {
+          "slug": "price",
+          "label": "Price",
+          "type": "integer",
+          "translatable": false,
+          "validation": { "min": 1 }
+        },
+        {
+          "slug": "photos",
+          "label": "Photos",
+          "type": "repeater",
+          "translatable": false,
+          "validation": {
+            "subFields": [
+              { "slug": "photo", "label": "Photo", "type": "image", "required": true }
+            ]
+          }
+        },
+        {
+          "slug": "sellers_notes",
+          "label": "Seller's notes",
+          "type": "text",
+          "searchable": true,
+          "translatable": false
+        },
+        {
+          "slug": "vin",
+          "label": "VIN",
+          "type": "string",
+          "translatable": false
+        }
+      ]
+    }
+  ]
+}

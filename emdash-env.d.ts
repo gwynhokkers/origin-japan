@@ -35,9 +35,33 @@ export interface Post {
   terms?: Record<string, TaxonomyTerm[]>;
 }
 
+export interface Vehicle {
+  id: string;
+  slug: string | null;
+  status: string;
+  title?: string;
+  make?: string;
+  model?: string;
+  body?: "Convertible" | "Pickup" | "Coupe" | "MPV" | "Hatchback" | "Estate";
+  year?: number;
+  transmission?: "Manual" | "Automatic" | "DSG";
+  mileage?: number;
+  price?: number;
+  photos?: { "photo": { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } } }[];
+  sellers_notes?: string;
+  vin?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  byline?: BylineSummary | null;
+  bylines?: ContentBylineCredit[];
+  terms?: Record<string, TaxonomyTerm[]>;
+}
+
 declare module "emdash" {
   interface EmDashCollections {
     pages: Page;
     posts: Post;
+    vehicles: Vehicle;
   }
 }
