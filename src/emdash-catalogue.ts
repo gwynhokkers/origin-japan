@@ -8,14 +8,7 @@ export const emdashCatalogue: Catalogue = {
 
 async function list(collection: string): Promise<readonly Vehicle[] | readonly Lead[]> {
   const { entries, error } = await getEmDashCollection(collection);
-  if (error) {
-    if (isMissingCollection(error)) return [];
-    throw error;
-  }
+  if (error) throw error;
 
   return entries.map((entry) => ({ id: entry.id }));
-}
-
-function isMissingCollection(error: Error): boolean {
-  return /does not exist|not found|unknown collection/i.test(error.message);
 }
