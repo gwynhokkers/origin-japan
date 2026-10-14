@@ -73,7 +73,7 @@ a:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  height: 4.5rem;
+  min-height: 4.5rem;
   padding: 0 1.25rem;
   border-bottom: 1px solid var(--line);
 }
@@ -87,7 +87,18 @@ a:focus-visible {
   white-space: nowrap;
 }
 .wordmark { font-size: 0.8rem; }
-.site-nav a { font-size: 0.68rem; }
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem 1.25rem;
+}
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-size: 0.68rem;
+}
 .site-nav a[aria-current="page"] { text-decoration: underline; text-underline-offset: 0.3em; }
 .wrap {
   width: min(100% - 2rem, 80rem);
@@ -139,6 +150,16 @@ h1 {
   font-weight: 600;
   line-height: 1.2;
 }
+.badge {
+  margin: 0;
+  justify-self: start;
+  font-family: var(--display);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
 .specs {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -152,6 +173,7 @@ h1 {
 .vehicle-page { display: flex; flex-direction: column; gap: 0.75rem; }
 .vehicle-facts { display: contents; }
 .vehicle-title { order: 1; }
+.vehicle-page .badge { order: 2; }
 .vehicle-page .price { order: 2; }
 .vehicle-page .gallery { order: 3; }
 .vehicle-specs { order: 4; }
@@ -200,7 +222,12 @@ h1 {
   .stock { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 767px) {
-  .site-header { padding-inline: 1rem; }
+  .site-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+  }
+  .site-nav { width: 100%; justify-content: flex-start; }
   .wrap { width: 100%; padding: 1.5rem 1rem 3rem; }
   .stock { grid-template-columns: 1fr; }
   .gallery { grid-template-columns: 1fr; }
@@ -233,6 +260,7 @@ h1 {
     grid-row: 1;
   }
   .vehicle-title,
+  .vehicle-page .badge,
   .vehicle-page .price,
   .vehicle-specs,
   .notes { order: 0; }
@@ -260,13 +288,18 @@ export async function requestPublicPage(request: Request, catalogue: Catalogue):
 
   if (pathname === "/stock") {
     const vehicles = await catalogue.vehicles();
-    return html(stockPage(vehicles.filter(isForSale)));
+    return html(stockPage(vehicles.filter(isOnStock)));
+  }
+
+  if (pathname === "/sold") {
+    const vehicles = await catalogue.vehicles();
+    return html(soldPage(vehicles.filter(isSold)));
   }
 
   const slug = listingSlug(pathname);
   if (slug !== undefined) {
     const vehicles = await catalogue.vehicles();
-    const vehicle = vehicles.find((item) => item.slug === slug && isForSale(item));
+    const vehicle = vehicles.find((item) => item.slug === slug && isPublic(item));
     if (!vehicle) return text("Not found", 404);
     return html(vehiclePage(vehicle));
   }
@@ -281,11 +314,38 @@ function photosOf(vehicle: Vehicle): string[] {
   return (vehicle.photos ?? []).map((photo) => photo.trim()).filter(Boolean);
 }
 
+function isOnStock(vehicle: Vehicle): boolean {
+  return isForSale(vehicle) || unpricedBadge(vehicle) !== undefined;
+}
+
+function isPublic(vehicle: Vehicle): boolean {
+  return isOnStock(vehicle) || isSold(vehicle);
+}
+
 function isForSale(vehicle: Vehicle): boolean {
+  return !vehicle.draft && isPresentable(vehicle) && hasPublicPrice(vehicle) && vehicle.availability !== "sold";
+}
+
+function isSold(vehicle: Vehicle): boolean {
+  return !vehicle.draft && vehicle.availability === "sold" && isPresentable(vehicle);
+}
+
+function unpricedBadge(vehicle: Vehicle): "In prep" | "On water" | undefined {
+  if (vehicle.draft || !isPresentable(vehicle) || hasPublicPrice(vehicle)) return undefined;
+  if (vehicle.availability === "in prep") return "In prep";
+  if (vehicle.availability === "on water") return "On water";
+  return undefined;
+}
+
+function hasPublicPrice(vehicle: Vehicle): boolean {
+  const price = vehicle.pricePounds;
+  return typeof price === "number" && Number.isInteger(price) && price > 0;
+}
+
+function isPresentable(vehicle: Vehicle): boolean {
   const photos = photosOf(vehicle);
   const year = vehicle.year;
   const mileage = vehicle.mileageMiles;
-  const price = vehicle.pricePounds;
   return Boolean(
     present(vehicle.slug) &&
       present(vehicle.title) &&
@@ -300,9 +360,6 @@ function isForSale(vehicle: Vehicle): boolean {
       typeof mileage === "number" &&
       Number.isInteger(mileage) &&
       mileage >= 0 &&
-      typeof price === "number" &&
-      Number.isInteger(price) &&
-      price > 0 &&
       photos.length > 0 &&
       present(vehicle.sellersNotes),
   );
@@ -335,7 +392,7 @@ function stockPage(vehicles: readonly Vehicle[]): string {
   const cards = vehicles.filter((vehicle) => vehicle.slug).map(stockCard).join("");
   const main = `
     <h1>Current Stock</h1>
-    ${cards ? `<ul class="stock">${cards}</ul>` : `<p class="empty">No vehicles for sale.</p>`}
+    ${cards ? `<ul class="stock">${cards}</ul>` : `<p class="empty">No vehicles in stock.</p>`}
   `;
   return document({
     title: "Current Stock",
@@ -344,11 +401,24 @@ function stockPage(vehicles: readonly Vehicle[]): string {
   });
 }
 
+function soldPage(vehicles: readonly Vehicle[]): string {
+  const cards = vehicles.filter((vehicle) => vehicle.slug).map(stockCard).join("");
+  const main = `
+    <h1>Sold Stock</h1>
+    ${cards ? `<ul class="stock">${cards}</ul>` : `<p class="empty">No sold vehicles.</p>`}
+  `;
+  return document({
+    title: "Sold Stock",
+    current: "sold",
+    main,
+  });
+}
+
 function stockCard(vehicle: Vehicle): string {
   const slug = vehicle.slug ?? "";
   const title = vehicle.title?.trim() ?? "";
   const photo = photosOf(vehicle)[0];
-  const price = formatPounds(vehicle.pricePounds);
+  const price = isForSale(vehicle) ? formatPounds(vehicle.pricePounds) : "";
   const mileage = formatMiles(vehicle.mileageMiles);
   const image = photo
     ? `<img src="${escapeHtml(photo)}" alt="${escapeHtml(title || "Vehicle photo")}" width="900" height="600">`
@@ -358,7 +428,7 @@ function stockCard(vehicle: Vehicle): string {
     <a class="vehicle" href="/listings/${escapeHtml(encodeURIComponent(slug))}">
       ${image}
       ${title ? `<h2>${escapeHtml(title)}</h2>` : ""}
-      ${price ? `<p class="price">${price}</p>` : ""}
+      ${price ? `<p class="price">${price}</p>` : availabilityBadge(vehicle)}
       <dl class="specs">
         ${spec("Make", vehicle.make)}
         ${spec("Model", vehicle.model)}
@@ -372,7 +442,7 @@ function stockCard(vehicle: Vehicle): string {
 
 function vehiclePage(vehicle: Vehicle): string {
   const title = vehicle.title?.trim() || "Vehicle";
-  const price = formatPounds(vehicle.pricePounds);
+  const price = isForSale(vehicle) ? formatPounds(vehicle.pricePounds) : "";
   const photos = photosOf(vehicle);
   const gallery = photos
     .map((photo, index) => {
@@ -389,6 +459,7 @@ function vehiclePage(vehicle: Vehicle): string {
       ${gallery ? `<ul class="gallery">${gallery}</ul>` : ""}
       <div class="vehicle-facts">
         <h1 class="vehicle-title">${escapeHtml(title)}</h1>
+        ${availabilityBadge(vehicle)}
         ${price ? `<p class="price">${price}</p>` : ""}
         <dl class="vehicle-specs">
           ${spec("Make", vehicle.make)}
@@ -410,8 +481,9 @@ function vehiclePage(vehicle: Vehicle): string {
   });
 }
 
-function document(page: { title: string; current: "stock" | undefined; main: string }): string {
+function document(page: { title: string; current: "stock" | "sold" | undefined; main: string }): string {
   const stockCurrent = page.current === "stock" ? ` aria-current="page"` : "";
+  const soldCurrent = page.current === "sold" ? ` aria-current="page"` : "";
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -425,6 +497,7 @@ function document(page: { title: string; current: "stock" | undefined; main: str
       <a class="wordmark" href="/">Origin Japan</a>
       <nav class="site-nav" aria-label="Pages">
         <a href="/stock"${stockCurrent}>Current Stock</a>
+        <a href="/sold"${soldCurrent}>Sold Stock</a>
       </nav>
     </header>
     <main class="wrap">
@@ -432,6 +505,12 @@ function document(page: { title: string; current: "stock" | undefined; main: str
     </main>
   </body>
 </html>`;
+}
+
+function availabilityBadge(vehicle: Vehicle): string {
+  const label = unpricedBadge(vehicle) ?? (isSold(vehicle) ? "Sold" : undefined);
+  if (!label) return "";
+  return `<p class="badge">${label}</p>`;
 }
 
 function spec(label: string, value: string | number | undefined): string {

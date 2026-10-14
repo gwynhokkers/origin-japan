@@ -11,6 +11,15 @@
       "urlPattern": "/listings/{slug}",
       "fields": [
         {
+          "slug": "availability",
+          "label": "Availability",
+          "type": "select",
+          "translatable": false,
+          "validation": {
+            "options": ["In prep", "On water", "Sold"]
+          }
+        },
+        {
           "slug": "title",
           "label": "Title",
           "type": "string",

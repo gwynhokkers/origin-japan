@@ -1,3 +1,6 @@
+/** Availability of a public vehicle. A draft has none. A public price means for sale. */
+export type Availability = "in prep" | "on water" | "sold";
+
 export type Vehicle = {
   id: string;
   slug?: string;
@@ -12,6 +15,9 @@ export type Vehicle = {
   photos?: readonly string[];
   sellersNotes?: string;
   vin?: string;
+  availability?: Availability;
+  /** Unfinished. Not on the site, and it has no availability. */
+  draft?: boolean;
 };
 
 export type Lead = {

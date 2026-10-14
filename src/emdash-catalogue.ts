@@ -18,7 +18,7 @@ async function listLeads(): Promise<readonly Lead[]> {
   return entries.map((entry) => ({ id: entry.id }));
 }
 
-function vehicleFromEntry(entry: { id: string; data: object }): Vehicle {
+function vehicleFromEntry(entry: { id: string; status?: string; data: object }): Vehicle {
   const data = entry.data as Record<string, unknown>;
   return {
     id: stringValue(data.id) ?? entry.id,
@@ -34,7 +34,16 @@ function vehicleFromEntry(entry: { id: string; data: object }): Vehicle {
     photos: photoSources(data.photos),
     sellersNotes: stringValue(data.sellers_notes),
     vin: stringValue(data.vin),
+    availability: availabilityValue(data.availability),
+    draft: entry.status !== undefined && entry.status !== "published",
   };
+}
+
+function availabilityValue(value: unknown): Vehicle["availability"] {
+  if (typeof value !== "string") return undefined;
+  const text = value.trim().toLowerCase();
+  if (text === "in prep" || text === "on water" || text === "sold") return text;
+  return undefined;
 }
 
 function photoSources(value: unknown): string[] {
