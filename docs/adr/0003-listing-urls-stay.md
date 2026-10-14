@@ -1,0 +1,3 @@
+# Listing URLs stay, grids get shorter paths
+
+Vehicle pages stay at `/listings/{slug}`, including every slug that already exists, so a link a buyer already has still opens that vehicle. Current stock moves to `/stock`. Sold stock moves to `/sold`. Personal import moves to `/personal-import`. Grade sheets move to `/grade-sheets`. Contact stays `/contact`. Privacy is `/privacy`. The old paths redirect, including the extra `/stock/` page and `/personal-import-gallery/`, which redirects to `/personal-import`. Nav labels stay as they are on the current site.
