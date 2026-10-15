@@ -15,6 +15,183 @@ test("a buyer receives a response from the public site", async () => {
   expect(await response.text()).toContain("Origin Japan");
 });
 
+test("old addresses open the current pages", async () => {
+  const cases = [
+    ["/stocklist/", "/stock"],
+    ["/stock/", "/stock"],
+    ["/stocklist/sold-stock/", "/sold"],
+    ["/personal-import-service/", "/personal-import"],
+    ["/personal-import-gallery/", "/personal-import"],
+    ["/gradesheets/", "/grade-sheets"],
+  ] as const;
+
+  for (const [from, to] of cases) {
+    const response = await requestPublicPage(new Request(`http://originjapan.test${from}`), inMemoryCatalogue());
+    expect(response.status, from).toBe(301);
+    expect(response.headers.get("location"), from).toBe(to);
+  }
+
+  const contact = await requestPublicPage(new Request("http://originjapan.test/contact/"), inMemoryCatalogue());
+  expect(contact.status).toBe(200);
+  expect(contact.headers.get("location")).toBeNull();
+  expect(await contact.text()).toContain("info@originjapan.co.uk");
+});
+
+test("on a small screen the sort sits in a panel the buyer opens", async () => {
+  const html = await pageText(inMemoryCatalogue({ vehicles: [forSaleVehicle()] }), "/stock");
+  const panel = html.slice(html.indexOf("<details"), html.indexOf("</details>"));
+
+  expect(panel).toContain("<summary>Sort</summary>");
+  expect(panel).toContain('href="/stock?sort=price"');
+  expect(panel).toContain('href="/stock?sort=model-year"');
+  expect(panel).toContain('href="/stock?sort=mileage"');
+  expect(panel).toContain('href="/stock?sort=newest"');
+  expect(html).toContain("prefers-reduced-motion: reduce");
+  expect(panel).not.toContain('tabindex="-1"');
+});
+
+test("personal import explains the service and shows photos Adam adds and removes", async () => {
+  const withPhotos = inMemoryCatalogue({
+    vehicles: [forSaleVehicle()],
+    site: {
+      importPhotos: [
+        { src: "https://photos.example/dock.jpg", alt: "A car at the Japanese agent" },
+        { src: "https://photos.example/yard.jpg", alt: "Prep in the Newport workshop" },
+      ],
+    },
+  });
+  const removed = inMemoryCatalogue({
+    vehicles: [forSaleVehicle()],
+    site: {
+      importPhotos: [{ src: "https://photos.example/dock.jpg", alt: "A car at the Japanese agent" }],
+    },
+  });
+
+  const explained = await pageText(inMemoryCatalogue(), "/personal-import");
+  const shown = await pageText(withPhotos, "/personal-import");
+  const afterRemoval = await pageText(removed, "/personal-import");
+
+  expect(explained).toContain("Sourcing");
+  expect(explained).toContain("Inspection");
+  expect(explained).toContain("before bidding");
+  expect(explained).not.toContain("<img");
+
+  expect(shown).toContain('src="https://photos.example/dock.jpg"');
+  expect(shown).toContain('src="https://photos.example/yard.jpg"');
+  expect(shown).toContain('alt="A car at the Japanese agent"');
+  expect(shown).not.toContain("levorg-front.jpg");
+  expect(shown).not.toContain("Subaru Levorg");
+
+  expect(afterRemoval).toContain('src="https://photos.example/dock.jpg"');
+  expect(afterRemoval).not.toContain("yard.jpg");
+});
+
+test("grade sheets explains how to read a grade sheet", async () => {
+  const html = await pageText(inMemoryCatalogue(), "/grade-sheets");
+
+  expect(html).toContain("auction grade sheet");
+  expect(html).toContain("top right");
+  expect(html).toContain("U1");
+  expect(html).toContain("A to E");
+  expect(html).not.toContain("/listings/");
+});
+
+test("contact shows the address, phone, and email", async () => {
+  const html = await pageText(inMemoryCatalogue(), "/contact");
+
+  expect(html).toContain("Unit D2, Langland Park West, Newport, NP19 4ED");
+  expect(html).toContain("07454621101");
+  expect(html).toContain("info@originjapan.co.uk");
+  expect(html).not.toContain("<form");
+});
+
+test("Adam's edited copy is what a buyer reads", async () => {
+  const catalogue = inMemoryCatalogue({
+    site: {
+      pages: [
+        { slug: "home", title: "Edited home headline", body: "Edited home: the parts offer is a short line." },
+        { slug: "personal-import", title: "Edited import", body: "Edited import: we source a car to order." },
+        { slug: "grade-sheets", title: "Edited grades", body: "Edited grades: the number in the corner is only a guide." },
+        { slug: "contact", title: "Edited contact", body: "Edited contact: ask us about a car in stock." },
+        { slug: "privacy", title: "Edited privacy", body: "Edited privacy: we keep your message so we can reply." },
+      ],
+      reviews: [{ name: "Pat Example", quote: "An edited review from the catalogue." }],
+      googleReviewsUrl: "https://share.google/edited-reviews",
+    },
+  });
+
+  const home = await pageText(catalogue, "/");
+  const personalImport = await pageText(catalogue, "/personal-import");
+  const gradeSheets = await pageText(catalogue, "/grade-sheets");
+  const contact = await pageText(catalogue, "/contact");
+  const privacy = await pageText(catalogue, "/privacy");
+
+  expect(home).toContain("Edited home headline");
+  expect(home).toContain("Edited home: the parts offer is a short line.");
+  expect(home).toContain("Pat Example");
+  expect(home).toContain("An edited review from the catalogue.");
+  expect(home).toContain('href="https://share.google/edited-reviews"');
+  expect(home).toContain('href="/stock"');
+  expect(home).not.toContain("Yahoo Japan");
+  expect(home).not.toContain("Badeshi");
+
+  expect(personalImport).toContain("Edited import: we source a car to order.");
+  expect(gradeSheets).toContain("Edited grades: the number in the corner is only a guide.");
+  expect(contact).toContain("Edited contact: ask us about a car in stock.");
+  expect(privacy).toContain("Edited privacy: we keep your message so we can reply.");
+});
+
+test("home offers current stock, parts, partners, and named reviews", async () => {
+  const response = await requestPublicPage(new Request("http://originjapan.test/"), inMemoryCatalogue());
+  const html = await response.text();
+
+  expect(response.status).toBe(200);
+  expect(html).toContain("So, you're looking for a car from Japan?");
+  expect(html).toContain('href="/stock"');
+  expect(html).toContain(">Current Stock<");
+  expect(html).toContain("Yahoo Japan");
+  expect(html).toContain("Up Garage");
+  expect(html).toContain("two trusted agents in Japan");
+  expect(html).toContain("Badeshi");
+  expect(html).toContain("Jacob Dean");
+  expect(html).toContain("Emily Renshaw");
+  expect(html).toContain('href="https://share.google/gV9fNc1szaKmE150R"');
+  expect(html).toContain("Google reviews");
+
+  const emptied = await pageText(inMemoryCatalogue({ site: { reviews: [] } }), "/");
+  expect(emptied).toContain("Badeshi");
+  expect(emptied).toContain("Jacob Dean");
+  expect(emptied).toContain("Emily Renshaw");
+});
+
+test("the nav uses the current labels and the header and footer show the Newport address and phone", async () => {
+  const response = await requestPublicPage(
+    new Request("http://originjapan.test/stock"),
+    inMemoryCatalogue(),
+  );
+  const html = await response.text();
+  const header = region(html, "header");
+  const footer = region(html, "footer");
+
+  expect(response.status).toBe(200);
+  expect(header).toContain(">Current Stock<");
+  expect(header).toContain('href="/personal-import"');
+  expect(header).toContain(">Personal Import Service<");
+  expect(header).toContain('href="/grade-sheets"');
+  expect(header).toContain(">Grade Sheets<");
+  expect(header).toContain('href="/contact"');
+  expect(header).toContain(">Contact<");
+  expect(header).toContain('href="/sold"');
+  expect(header).toContain(">Sold Stock<");
+  expect(header).toContain("Origin Japan Ltd");
+  expect(header).toContain("Unit D2, Langland Park West, Newport, NP19 4ED");
+  expect(header).toContain("07454621101");
+  expect(footer).toContain("Origin Japan Ltd");
+  expect(footer).toContain("Unit D2, Langland Park West, Newport, NP19 4ED");
+  expect(footer).toContain("07454621101");
+  expect(footer).toContain("info@originjapan.co.uk");
+});
+
 test("a buyer sees a for-sale vehicle on stock and can open its page", async () => {
   const catalogue = inMemoryCatalogue({
     vehicles: [
@@ -883,6 +1060,21 @@ async function vehicleHtml(vehicle: Vehicle): Promise<string> {
   );
   expect(response.status).toBe(200);
   return response.text();
+}
+
+async function pageText(
+  catalogue: ReturnType<typeof inMemoryCatalogue>,
+  path: string,
+): Promise<string> {
+  const response = await requestPublicPage(new Request(`http://originjapan.test${path}`), catalogue);
+  expect(response.status).toBe(200);
+  return response.text();
+}
+
+function region(html: string, tag: string): string {
+  const start = html.indexOf(`<${tag}`);
+  const end = html.indexOf(`</${tag}>`);
+  return start === -1 || end === -1 ? "" : html.slice(start, end);
 }
 
 function stockSlugs(html: string): string[] {

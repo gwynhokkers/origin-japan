@@ -1,4 +1,4 @@
-import type { Catalogue, Vehicle } from "./catalogue";
+import type { Catalogue, ImportPhoto, Review, SiteContent, Vehicle } from "./catalogue";
 
 export type EnquiryMail = {
   to: string;
@@ -95,13 +95,35 @@ a:focus-visible {
   outline-offset: 4px;
 }
 .site-header {
+  border-bottom: 1px solid var(--line);
+}
+.site-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1rem 1.5rem;
   min-height: 4.5rem;
   padding: 0 1.25rem;
-  border-bottom: 1px solid var(--line);
+}
+.site-address,
+.site-footer p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+.site-address {
+  padding: 0 1.25rem 0.85rem;
+}
+.site-footer {
+  width: min(100% - 2rem, 80rem);
+  margin: 0 auto;
+  padding: 1.25rem 0 2.5rem;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0.35rem;
+}
+.site-footer a {
+  text-decoration: none;
 }
 .wordmark,
 .site-nav a {
@@ -139,6 +161,103 @@ h1 {
   letter-spacing: 0.04em;
   line-height: 1.2;
   text-transform: uppercase;
+}
+.home-title {
+  max-width: 22em;
+  font-size: clamp(1.55rem, 2.6vw, 2.2rem);
+  line-height: 1.15;
+}
+.lede,
+.home-section p,
+.reviews p {
+  max-width: 65ch;
+}
+.lede { margin: 1rem 0 0; font-size: 1.125rem; }
+.home-cta { margin: 1.25rem 0 0; }
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid var(--text);
+  border-radius: var(--radius);
+  background: var(--text);
+  color: var(--bg);
+  font-family: var(--body);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+.home-section { margin-top: 2.5rem; }
+.home-section h2,
+.reviews h2,
+.copy h2 {
+  margin: 0 0 0.5rem;
+  font-family: var(--body);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.3;
+  text-transform: none;
+}
+.home-offer {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  max-width: 42rem;
+}
+.home-section p.partners {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.reviews { margin-top: 3rem; }
+.reviews ul {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+.reviews blockquote {
+  margin: 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+}
+.reviews blockquote p { margin: 0; }
+.reviews blockquote footer {
+  margin-top: 0.45rem;
+  font-weight: 600;
+}
+.copy { display: grid; gap: 0.25rem; max-width: 65ch; }
+.copy p { margin: 0.75rem 0 0; }
+.contact-details {
+  margin: 1.5rem 0 0;
+  font-style: normal;
+  line-height: 1.6;
+}
+.import-photos {
+  list-style: none;
+  margin: 2rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.import-photos img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--surface);
 }
 .stock {
   list-style: none;
@@ -212,6 +331,26 @@ h1 {
 .stock-sort a[aria-current="true"] {
   text-decoration: underline;
   text-underline-offset: 0.3em;
+}
+.stock-controls summary {
+  display: none;
+}
+.stock-controls summary:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+@media (min-width: 768px) {
+  .stock-controls:not([open]) > .stock-sort { display: flex; }
+}
+@media (max-width: 767px) {
+  .stock-controls summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .stock-controls:not([open]) > .stock-sort { display: none; }
 }
 .vehicle-page { display: flex; flex-direction: column; gap: 0.75rem; }
 .vehicle-facts { display: contents; }
@@ -314,17 +453,23 @@ h1 {
 @media (max-width: 1023px) {
   .stock { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+@media (min-width: 1024px) {
+  .site-nav { flex-wrap: nowrap; }
+}
 @media (max-width: 767px) {
-  .site-header {
+  .site-bar {
     align-items: flex-start;
     flex-wrap: wrap;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1rem 0;
   }
+  .site-address { padding: 0.35rem 1rem 0.85rem; }
   .site-nav { width: 100%; justify-content: flex-start; }
   .wrap { width: 100%; padding: 1.5rem 1rem 3rem; }
+  .site-footer { width: 100%; padding-inline: 1rem; }
   .stock { grid-template-columns: 1fr; }
   .gallery { grid-template-columns: 1fr; }
   .gallery li:first-child { grid-column: auto; }
+  .import-photos { grid-template-columns: 1fr; }
 }
 @media (min-width: 768px) {
   .vehicle-specs {
@@ -370,7 +515,18 @@ h1 {
   .vehicle:hover img,
   .vehicle:focus-visible img { transform: scale(1.03); }
   .vehicle:active,
-  .enquiry button:active { transform: scale(0.98); }
+  .enquiry button:active,
+  .button:active { transform: scale(0.98); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 `;
 
@@ -381,11 +537,16 @@ export async function requestPublicPage(
 ): Promise<Response> {
   const url = new URL(request.url);
   const { pathname } = url;
+  const redirectTo = legacyDestination(pathname);
+  if (redirectTo) return redirect(redirectTo);
 
-  if (pathname === "/") {
-    await catalogue.vehicles();
-    await catalogue.leads();
-    return html(homePage());
+  if (pathname === "/" || pathname === "/personal-import" || pathname === "/grade-sheets" || pathname === "/contact" || pathname === "/contact/" || pathname === "/privacy") {
+    const content = await catalogue.siteContent();
+    if (pathname === "/") return html(homePage(content));
+    if (pathname === "/personal-import") return html(personalImportPage(content));
+    if (pathname === "/grade-sheets") return html(gradeSheetsPage(content));
+    if (pathname === "/contact" || pathname === "/contact/") return html(contactPage(content));
+    return html(privacyPage(content));
   }
 
   if (pathname === "/stock") {
@@ -473,6 +634,31 @@ function present(value: string | undefined): string | undefined {
   return text ? text : undefined;
 }
 
+const legacyDestinations: Record<string, string> = {
+  "/stocklist": "/stock",
+  "/stocklist/": "/stock",
+  "/stock/": "/stock",
+  "/stocklist/sold-stock": "/sold",
+  "/stocklist/sold-stock/": "/sold",
+  "/personal-import-service": "/personal-import",
+  "/personal-import-service/": "/personal-import",
+  "/personal-import-gallery": "/personal-import",
+  "/personal-import-gallery/": "/personal-import",
+  "/gradesheets": "/grade-sheets",
+  "/gradesheets/": "/grade-sheets",
+};
+
+function legacyDestination(pathname: string): string | undefined {
+  return legacyDestinations[pathname];
+}
+
+function redirect(location: string): Response {
+  return new Response(null, {
+    status: 301,
+    headers: { location },
+  });
+}
+
 function listingSlug(pathname: string): string | undefined {
   const match = pathname.match(/^\/listings\/([^/]+)$/);
   if (!match) return undefined;
@@ -483,13 +669,235 @@ function listingSlug(pathname: string): string | undefined {
   }
 }
 
-function homePage(): string {
+const googleReviewsUrl = "https://share.google/gV9fNc1szaKmE150R";
+
+const defaultReviews: readonly { name: string; quote: string }[] = [
+  {
+    name: "Badeshi",
+    quote: "Bought a nice clean car. Easy purchase, low pressure sale. Recommended seller of JDM and imported cars.",
+  },
+  {
+    name: "Jacob Dean",
+    quote: "Adam was brilliant, transparent and very helpful. If I purchase another import it will definitely be through Origin Japan.",
+  },
+  {
+    name: "Emily Renshaw",
+    quote: "Adam has been excellent throughout the whole importing process, making it seamless and stress free for me.",
+  },
+];
+
+const defaultHomeBody = `Here at Origin, we have a large selection of imported vehicles in stock, already in the UK.
+
+Personal imports
+
+We provide a personal import service to help you find and secure a car from Japan. With access to many trade only auctions, we inspect these vehicles before purchase.
+
+New and used parts
+
+With access to Yahoo Japan and Up Garage, Origin can help you find the parts you are looking for, new or used.
+
+Trusted partners
+
+In the import trade, partners in Japan are essential. With two trusted agents in Japan, both English speaking, Origin has the people to provide an efficient service.`;
+
+function homePage(content: SiteContent): string {
+  const edited = pageCopy(content, "home");
+  const headline = edited?.title?.trim() || "So, you're looking for a car from Japan?";
+  const main = `
+    <h1 class="home-title">${escapeHtml(headline)}</h1>
+    ${homeStory(edited?.body?.trim() || defaultHomeBody)}
+    ${reviewsSection(content)}
+  `;
   return document({
     title: "Origin Japan",
     current: undefined,
-    main: `<h1>Origin Japan</h1>`,
+    main,
   });
 }
+
+function homeStory(body: string): string {
+  const blocks = body
+    .split(/\n\n+/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+  let html = "";
+  let heading = "";
+  let opened = false;
+  for (const block of blocks) {
+    if (isHeading(block)) {
+      heading = block;
+      continue;
+    }
+    if (!opened && !heading) {
+      html += `<p class="lede">${escapeHtml(block)}</p><p class="home-cta"><a class="button" href="/stock">Current Stock</a></p>`;
+      opened = true;
+      continue;
+    }
+    const offer = heading === "New and used parts" ? " home-offer" : "";
+    const textClass = heading === "Trusted partners" ? ` class="partners"` : "";
+    html += `<section class="home-section${offer}">${heading ? `<h2>${escapeHtml(heading)}</h2>` : ""}<p${textClass}>${escapeHtml(block)}</p></section>`;
+    heading = "";
+    opened = true;
+  }
+  if (!html.includes('href="/stock"')) {
+    html += `<p class="home-cta"><a class="button" href="/stock">Current Stock</a></p>`;
+  }
+  return html;
+}
+
+function isHeading(block: string): boolean {
+  return !block.includes("\n") && block.length <= 60 && !/[.!?]$/.test(block);
+}
+
+function personalImportPage(content: SiteContent): string {
+  const edited = pageCopy(content, "personal-import");
+  const title = edited?.title?.trim() || "Personal Import Service";
+  const body = edited?.body?.trim() || defaultPersonalImport;
+  return document({
+    title,
+    current: "personal-import",
+    main: `<h1>${escapeHtml(title)}</h1><div class="copy">${renderCopy(body)}</div>${importPhotoList(content.importPhotos ?? [])}`,
+  });
+}
+
+function gradeSheetsPage(content: SiteContent): string {
+  const edited = pageCopy(content, "grade-sheets");
+  const title = edited?.title?.trim() || "Grade Sheets";
+  const body = edited?.body?.trim() || defaultGradeSheets;
+  return document({
+    title,
+    current: "grade-sheets",
+    main: `<h1>${escapeHtml(title)}</h1><div class="copy">${renderCopy(body)}</div>`,
+  });
+}
+
+function contactPage(content: SiteContent): string {
+  const edited = pageCopy(content, "contact");
+  const title = edited?.title?.trim() || "Contact";
+  const body = edited?.body?.trim() || defaultContact;
+  return document({
+    title,
+    current: "contact",
+    main: `<h1>${escapeHtml(title)}</h1><div class="copy">${renderCopy(body)}</div>${contactDetails()}`,
+  });
+}
+
+function privacyPage(content: SiteContent): string {
+  const edited = pageCopy(content, "privacy");
+  const title = edited?.title?.trim() || "Privacy";
+  const body = edited?.body?.trim() || defaultPrivacy;
+  return document({
+    title,
+    current: undefined,
+    main: `<h1>${escapeHtml(title)}</h1><div class="copy">${renderCopy(body)}</div>`,
+  });
+}
+
+function pageCopy(content: SiteContent, slug: string): { title?: string; body?: string } | undefined {
+  return content.pages?.find((page) => page.slug === slug);
+}
+
+function reviewsSection(content: SiteContent): string {
+  const provided = content.reviews?.filter((review) => review.name.trim() && review.quote.trim());
+  const reviews = provided && provided.length > 0 ? provided : defaultReviews;
+  const google = content.googleReviewsUrl?.trim() || googleReviewsUrl;
+  const items = reviews
+    .map(
+      (review: Review) => `<li>
+        <blockquote>
+          <p>${escapeHtml(review.quote.trim())}</p>
+          <footer>${escapeHtml(review.name.trim())}</footer>
+        </blockquote>
+      </li>`,
+    )
+    .join("");
+  return `<section class="reviews" aria-label="Reviews">
+      <h2>Brilliant reviews</h2>
+      <ul>${items}</ul>
+      <p><a href="${escapeHtml(google)}">Google reviews</a></p>
+    </section>`;
+}
+
+function importPhotoList(photos: readonly ImportPhoto[]): string {
+  const items = photos
+    .filter((photo) => photo.src.trim())
+    .map((photo) => {
+      const alt = photo.alt?.trim() || "Personal import";
+      return `<li><img src="${escapeHtml(photo.src.trim())}" alt="${escapeHtml(alt)}" width="900" height="600"></li>`;
+    })
+    .join("");
+  if (!items) return "";
+  return `<ul class="import-photos">${items}</ul>`;
+}
+
+function contactDetails(): string {
+  return `<address class="contact-details">
+      Origin Japan Ltd<br>
+      ${postalAddress}<br>
+      <a href="tel:${phone}">${phone}</a><br>
+      <a href="mailto:${email}">${email}</a><br>
+      What3Words ///pens.search.goal
+    </address>`;
+}
+
+function renderCopy(body: string): string {
+  return body
+    .trim()
+    .split(/\n\n+/)
+    .map((block) => {
+      const text = block.trim();
+      if (!text) return "";
+      const heading = !text.includes("\n") && text.length <= 60 && !/[.!?]$/.test(text);
+      return heading ? `<h2>${escapeHtml(text)}</h2>` : `<p>${escapeHtml(text)}</p>`;
+    })
+    .join("");
+}
+
+const defaultPersonalImport = `At Origin, we can help import most cars from Japan to order, working with two agents in Japan. From kei cars to sports cars, trucks and MPVs, we source Japanese and European models from auctions, dealers, and online auctions across Japan.
+
+We understand that many people are nervous about importing a vehicle. It is a lot of money to spend on something you have never seen. We help you understand the process, and get your requirements, budget and expectations in place.
+
+Sourcing
+
+On your instruction, we search Japanese auctions, dealers and online auctions with dealer level software the public do not have. Once we find a car you want, we price it all in to the UK and give you a breakdown. Then we book an inspection.
+
+Inspection
+
+We inspect personal imports before bidding. You get the pictures before the bid, so you can decide before we place it.
+
+Shipping
+
+Once the car is secured, the Japan costs are due. Our agent collects the car, photographs it again, and organises insured shipping to the UK.
+
+Prep
+
+When the vehicle arrives, we collect it from the port and bring it to Newport. We MOT it, or IVA it if needed, register it, service it, detail it, and carry out any other work agreed. Then we can deliver it, or you can collect it.`;
+
+const defaultGradeSheets = `What the grade means
+
+An auction grade sheet is the inspector's note that comes with almost every car sold at a Japanese auction. Inspectors at each auction house look over the car before the sale and mark scratches, dents, and anything obvious. The overall grade is usually in a box at the top right of the sheet.
+
+Importers talk about a grade 4.5 car, or a grade 4 car. Treat that number as a guide. Different inspectors, and different auctions, are stricter or looser. A grade 3.5 at one auction may not match a grade 3.5 at another. The comments on the sheet are often more useful than the number. A grade sheet is not a full inspection. Origin can arrange a closer look before the auction, which matters more on an older car.
+
+Grades
+
+S or 6 means a car under 12 months old, in pristine condition inside and out. 5 is almost perfect, and hard to find. 4.5 is a strong grade, with only minor blemishes. 4 may have minor scratches or dents, and often has maintenance records.
+
+3.5 is the common grade, and it covers a wide range, so a pre-bid inspection is worth it. 3 needs bodywork or paint. RA has been repaired after minor accident damage. R has accident history, repaired or not. 2 has significant corrosion.
+
+A blank grade, 0, or a mark of three stars means the car was not inspected, has major damage, will not run, or is sold as it is.
+
+Interior
+
+Interior grades sit near the auction grade and run from A to E. A is the best.
+
+Marks on the plan
+
+The inspector also marks damage on a small plan of the car, bonnet at the top of the sheet. A mark on the top right of that plan is the front right wing. U is a dent: U1 the size of a thumb, U2 a palm, U3 larger. A is a scratch. Y is a tear, S is rust, C is corrosion, W is a repair, X means the panel needs replacing, and XX means it has been replaced.`;
+
+const defaultContact = "Please feel free to ask any questions about a stock car or importing a vehicle. We will get back to you as soon as possible.";
+
+const defaultPrivacy = "Origin Japan Ltd keeps the details you send when you ask about a vehicle or a personal import. We use your name, email, and message to reply to you. We do not sell those details. To ask for a copy, or to ask us to delete them, email info@originjapan.co.uk.";
 
 function stockPage(vehicles: readonly Vehicle[], sort?: StockSort): string {
   const cards = listStock(vehicles, sort).filter((vehicle) => vehicle.slug).map(stockCard).join("");
@@ -528,7 +936,7 @@ function sortNav(current: StockSort | undefined): string {
       return `<a href="/stock?sort=${sort}"${currentAttr}>${stockSortLabels[sort]}</a>`;
     })
     .join("");
-  return `<nav class="stock-sort" aria-label="Sort">${links}</nav>`;
+  return `<details class="stock-controls"><summary>Sort</summary><nav class="stock-sort" aria-label="Sort">${links}</nav></details>`;
 }
 
 /** Priced for-sale vehicles, then in-prep and on-water. A buyer sort stays inside each group. */
@@ -666,9 +1074,27 @@ function vehiclePage(vehicle: Vehicle, siteKey?: string, enquiry?: EnquiryView):
   });
 }
 
-function document(page: { title: string; current: "stock" | "sold" | undefined; main: string }): string {
-  const stockCurrent = page.current === "stock" ? ` aria-current="page"` : "";
-  const soldCurrent = page.current === "sold" ? ` aria-current="page"` : "";
+type NavPage = "stock" | "personal-import" | "grade-sheets" | "contact" | "sold";
+
+const navItems: readonly { href: string; label: string; page: NavPage }[] = [
+  { href: "/stock", label: "Current Stock", page: "stock" },
+  { href: "/personal-import", label: "Personal Import Service", page: "personal-import" },
+  { href: "/grade-sheets", label: "Grade Sheets", page: "grade-sheets" },
+  { href: "/contact", label: "Contact", page: "contact" },
+  { href: "/sold", label: "Sold Stock", page: "sold" },
+];
+
+const postalAddress = "Unit D2, Langland Park West, Newport, NP19 4ED";
+const phone = "07454621101";
+const email = "info@originjapan.co.uk";
+
+function document(page: { title: string; current: NavPage | undefined; main: string }): string {
+  const nav = navItems
+    .map((item) => {
+      const current = page.current === item.page ? ` aria-current="page"` : "";
+      return `<a href="${item.href}"${current}>${item.label}</a>`;
+    })
+    .join("\n        ");
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -679,15 +1105,24 @@ function document(page: { title: string; current: "stock" | "sold" | undefined; 
   </head>
   <body>
     <header class="site-header">
-      <a class="wordmark" href="/">Origin Japan</a>
-      <nav class="site-nav" aria-label="Pages">
-        <a href="/stock"${stockCurrent}>Current Stock</a>
-        <a href="/sold"${soldCurrent}>Sold Stock</a>
-      </nav>
+      <div class="site-bar">
+        <a class="wordmark" href="/">Origin Japan</a>
+        <nav class="site-nav" aria-label="Pages">
+        ${nav}
+        </nav>
+      </div>
+      <p class="site-address">Origin Japan Ltd, ${postalAddress}, <a href="tel:${phone}">${phone}</a>, <a href="mailto:${email}">${email}</a></p>
     </header>
     <main class="wrap">
       ${page.main}
     </main>
+    <footer class="site-footer">
+      <p>Origin Japan Ltd</p>
+      <p>${postalAddress}</p>
+      <p><a href="tel:${phone}">${phone}</a></p>
+      <p><a href="mailto:${email}">${email}</a></p>
+      <p><a href="/privacy">Privacy</a></p>
+    </footer>
   </body>
 </html>`;
 }

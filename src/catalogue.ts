@@ -24,6 +24,33 @@ export type Vehicle = {
   order?: number;
 };
 
+/** Copy Adam edits for one public page. */
+export type PageCopy = {
+  slug: string;
+  title?: string;
+  body?: string;
+};
+
+/** A short review with the reviewer's name. */
+export type Review = {
+  name: string;
+  quote: string;
+};
+
+/** A photo on the personal import page. It is not a vehicle. */
+export type ImportPhoto = {
+  src: string;
+  alt?: string;
+};
+
+/** Pages, reviews, and import photos. An omitted list keeps the public default. */
+export type SiteContent = {
+  pages?: readonly PageCopy[];
+  reviews?: readonly Review[];
+  googleReviewsUrl?: string;
+  importPhotos?: readonly ImportPhoto[];
+};
+
 /** A vehicle enquiry names one vehicle. Adam reads it in the admin. */
 export type Lead = {
   id: string;
@@ -45,4 +72,5 @@ export type Catalogue = {
   vehicles(): Promise<readonly Vehicle[]>;
   leads(): Promise<readonly Lead[]>;
   saveVehicleEnquiry(input: VehicleEnquiryInput): Promise<Lead>;
+  siteContent(): Promise<SiteContent>;
 };

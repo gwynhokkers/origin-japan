@@ -1,11 +1,12 @@
 import { ContentRepository, getEmDashCollection } from "emdash";
 import { getDb } from "emdash/runtime";
-import type { Catalogue, Lead, Vehicle, VehicleEnquiryInput } from "./catalogue";
+import type { Catalogue, ImportPhoto, Lead, PageCopy, Review, SiteContent, Vehicle, VehicleEnquiryInput } from "./catalogue";
 
 export const emdashCatalogue: Catalogue = {
   vehicles: listVehicles,
   leads: listLeads,
   saveVehicleEnquiry,
+  siteContent,
 };
 
 async function listVehicles(): Promise<readonly Vehicle[]> {
@@ -24,6 +25,94 @@ async function listLeads(): Promise<readonly Lead[]> {
     email: stringValue(entry.data.email),
     message: stringValue(entry.data.message),
   }));
+}
+
+async function siteContent(): Promise<SiteContent> {
+  const [pageEntries, reviewEntries, photoEntries] = await Promise.all([
+    publishedEntries("pages"),
+    publishedEntries("reviews"),
+    publishedEntries("import_photos"),
+  ]);
+  const content: SiteContent = {};
+  if (pageEntries) {
+    const ordered = [...pageEntries].sort(byOrder);
+    content.pages = ordered.flatMap(pageFromEntry);
+    const home = ordered.find((entry) => pageSlug(entry) === "home");
+    const google = stringValue(recordData(home).google_reviews_url)?.trim();
+    if (google) content.googleReviewsUrl = google;
+  }
+  if (reviewEntries) content.reviews = [...reviewEntries].sort(byOrder).flatMap(reviewFromEntry);
+  if (photoEntries) content.importPhotos = [...photoEntries].sort(byOrder).flatMap(importPhotoFromEntry);
+  return content;
+}
+
+type SiteEntry = { id: string; status?: string; data: object };
+
+async function publishedEntries(collection: string): Promise<readonly SiteEntry[] | undefined> {
+  try {
+    const { entries, error } = await getEmDashCollection(collection);
+    if (error || !entries) return undefined;
+    return (entries as unknown as readonly SiteEntry[]).filter(
+      (entry) => entry.status === undefined || entry.status === "published",
+    );
+  } catch {
+    return undefined;
+  }
+}
+
+function pageFromEntry(entry: SiteEntry): PageCopy[] {
+  const data = recordData(entry);
+  const slug = pageSlug(entry);
+  if (!slug) return [];
+  return [{ slug, title: stringValue(data.title), body: stringValue(data.body) }];
+}
+
+function pageSlug(entry: SiteEntry): string | undefined {
+  const data = recordData(entry);
+  return (
+    stringValue(data.key)?.trim() ||
+    stringValue(data.slug)?.trim() ||
+    stringValue(data.id)?.trim() ||
+    entry.id
+  );
+}
+
+function reviewFromEntry(entry: SiteEntry): Review[] {
+  const data = recordData(entry);
+  const name = stringValue(data.name)?.trim();
+  const quote = stringValue(data.quote)?.trim();
+  if (!name || !quote) return [];
+  return [{ name, quote }];
+}
+
+function importPhotoFromEntry(entry: SiteEntry): ImportPhoto[] {
+  const data = recordData(entry);
+  const src = imageSource(data.photo);
+  if (!src) return [];
+  const alt = stringValue(data.alt)?.trim();
+  return [alt ? { src, alt } : { src }];
+}
+
+function recordData(entry: SiteEntry | undefined): Record<string, unknown> {
+  return recordValue(entry?.data) ?? {};
+}
+
+function byOrder(a: SiteEntry, b: SiteEntry): number {
+  const aOrder = integerValue(recordData(a).order);
+  const bOrder = integerValue(recordData(b).order);
+  if (aOrder !== undefined && bOrder !== undefined && aOrder !== bOrder) return aOrder - bOrder;
+  if (aOrder !== undefined && bOrder === undefined) return -1;
+  if (aOrder === undefined && bOrder !== undefined) return 1;
+  return a.id.localeCompare(b.id);
+}
+
+function imageSource(value: unknown): string | undefined {
+  if (typeof value === "string" && value.trim()) return value.trim();
+  const media = recordValue(value);
+  const src = stringValue(media?.src);
+  if (src) return src;
+  const storageKey = stringValue(recordValue(media?.meta)?.storageKey);
+  return storageKey ? `/_emdash/api/media/file/${storageKey}` : undefined;
 }
 
 async function saveVehicleEnquiry(input: VehicleEnquiryInput): Promise<Lead> {
@@ -75,13 +164,8 @@ function availabilityValue(value: unknown): Vehicle["availability"] {
 function photoSources(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((row) => {
-    const photo = recordValue(row)?.photo;
-    if (typeof photo === "string" && photo.trim()) return [photo.trim()];
-    const media = recordValue(photo);
-    const src = stringValue(media?.src);
-    if (src) return [src];
-    const storageKey = stringValue(recordValue(media?.meta)?.storageKey);
-    return storageKey ? [`/_emdash/api/media/file/${storageKey}`] : [];
+    const src = imageSource(recordValue(row)?.photo);
+    return src ? [src] : [];
   });
 }
 
