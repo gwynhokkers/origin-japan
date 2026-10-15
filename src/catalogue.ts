@@ -71,6 +71,7 @@ export type VehicleEnquiryInput = {
 export type Catalogue = {
   vehicles(): Promise<readonly Vehicle[]>;
   leads(): Promise<readonly Lead[]>;
+  saveVehicle(vehicle: Vehicle): Promise<void>;
   saveVehicleEnquiry(input: VehicleEnquiryInput): Promise<Lead>;
   siteContent(): Promise<SiteContent>;
 };

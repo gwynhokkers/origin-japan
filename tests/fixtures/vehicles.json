@@ -1,0 +1,67 @@
+[
+  {
+    "title": "Subaru Levorg 2.0 GT-S 2016",
+    "make": "Subaru",
+    "model": "Levorg 2.0 GT-S",
+    "body": "Estate",
+    "year": 2016,
+    "transmission": "Automatic",
+    "mileage": 42000,
+    "sellersNotes": "One owner from Osaka, with a full service history.",
+    "photos": [
+      "https://photos.example/levorg-front.jpg",
+      "https://photos.example/levorg-rear.jpg"
+    ],
+    "slug": "subaru-levorg-2-0-gt-s",
+    "availability": "for sale",
+    "price": 11495
+  },
+  {
+    "title": "Honda Stepwgn Spada 2014",
+    "make": "Honda",
+    "model": "Stepwgn Spada",
+    "body": "MPV",
+    "year": 2014,
+    "transmission": "Automatic",
+    "mileage": 68000,
+    "sellersNotes": "In the workshop for a service before it goes on sale.",
+    "photos": [
+      "https://photos.example/stepwgn-front.jpg",
+      "https://photos.example/stepwgn-cabin.jpg"
+    ],
+    "slug": "honda-stepwgn-spada-2014",
+    "availability": "in prep"
+  },
+  {
+    "title": "Toyota Alphard 2018",
+    "make": "Toyota",
+    "model": "Alphard",
+    "body": "MPV",
+    "year": 2018,
+    "transmission": "Automatic",
+    "mileage": 51000,
+    "sellersNotes": "On the ship from Yokohama, due in Newport next month.",
+    "photos": [
+      "https://photos.example/alphard-front.jpg"
+    ],
+    "slug": "toyota-alphard-2018",
+    "availability": "on water"
+  },
+  {
+    "title": "Subaru Legacy 2011",
+    "make": "Subaru",
+    "model": "Legacy",
+    "body": "Estate",
+    "year": 2011,
+    "transmission": "Automatic",
+    "mileage": 57100,
+    "sellersNotes": "Sold last spring, kept here for the record.",
+    "photos": [
+      "https://photos.example/legacy-front.jpg",
+      "https://photos.example/legacy-rear.jpg"
+    ],
+    "slug": "subaru-legacy-2011",
+    "availability": "sold",
+    "price": 8250
+  }
+]

@@ -7,13 +7,21 @@ export function inMemoryCatalogue(
     site?: SiteContent;
   } = {},
 ): Catalogue {
-  const vehicles = records.vehicles ?? [];
+  const vehicles = [...(records.vehicles ?? [])];
   const leads = [...(records.leads ?? [])];
   const site = records.site ?? {};
 
   return {
     async vehicles() {
       return vehicles;
+    },
+    async saveVehicle(vehicle) {
+      const index = vehicles.findIndex((existing) => existing.slug === vehicle.slug);
+      if (index === -1) {
+        vehicles.push(vehicle);
+        return;
+      }
+      vehicles[index] = { ...vehicle, id: vehicles[index]?.id ?? vehicle.id };
     },
     async leads() {
       return leads;

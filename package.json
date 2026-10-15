@@ -7,7 +7,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "test": "vitest run",
-    "typecheck": "astro check && tsc --noEmit"
+    "typecheck": "astro check && tsc --noEmit",
+    "import-vehicles": "node --experimental-strip-types scripts/import-vehicles.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.4",
