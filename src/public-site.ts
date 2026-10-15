@@ -215,7 +215,7 @@ h3 { margin: 0; }
   white-space: nowrap;
   cursor: pointer;
 }
-.button:hover { background: color-mix(in srgb, var(--accent) 86%, var(--text)); }
+.button:hover { background: color-mix(in srgb, var(--accent) 86%, #000); }
 .badge {
   margin: 0;
   justify-self: start;
@@ -456,6 +456,7 @@ h3 { margin: 0; }
   height: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  /* The scan is a white paper sheet, so it stays on paper in dark mode. */
   background: #fbfbfc;
 }
 .reading figcaption {
@@ -794,6 +795,7 @@ h3 { margin: 0; }
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
@@ -1051,7 +1053,7 @@ type CopySection = { heading: string; paragraphs: string[] };
 function copySections(body: string): { intro: string[]; sections: CopySection[] } {
   const intro: string[] = [];
   const sections: CopySection[] = [];
-  for (const block of body.split(/\n\n+/).map((item) => item.trim()).filter(Boolean)) {
+  for (const block of copyBlocks(body)) {
     if (isHeading(block)) sections.push({ heading: block, paragraphs: [] });
     else if (sections.length === 0) intro.push(block);
     else sections[sections.length - 1].paragraphs.push(block);
@@ -1125,7 +1127,7 @@ function contactPage(content: SiteContent): string {
       <section class="contact inner" aria-labelledby="page-title">
         <div class="contact-copy">
           <h1 class="title rise" id="page-title">${escapeHtml(title)}</h1>
-          <div class="rise">${copyParagraphs(body)}</div>
+          <div class="rise">${renderCopy(body)}</div>
           ${contactDetails()}
         </div>
         ${pagePhoto("contact")}
@@ -1151,7 +1153,7 @@ function pageCopy(content: SiteContent, slug: string): { title?: string; body?: 
 
 type PagePhoto = "home" | "import" | "grades" | "contact";
 
-/** Banner photography from the current site. Decorative, so it is a background, not an image in the page content. */
+/** Decorative banners, so they are backgrounds rather than images in the page content. */
 const pagePhotos: Record<PagePhoto, { wide: string; narrow: string; position: string }> = {
   home: { wide: "/images/home-dusk-row-2000.jpg", narrow: "/images/home-dusk-row-1000.jpg", position: "60% 70%" },
   import: { wide: "/images/import-skylines-fuji-1300.jpg", narrow: "/images/import-skylines-fuji-1000.jpg", position: "50% 62%" },
@@ -1226,24 +1228,16 @@ function contactDetails(): string {
     </address>`;
 }
 
-function copyParagraphs(body: string): string {
+function copyBlocks(body: string): string[] {
   return body
     .split(/\n\n+/)
     .map((block) => block.trim())
-    .filter(Boolean)
-    .map(paragraph)
-    .join("");
+    .filter(Boolean);
 }
 
 function renderCopy(body: string): string {
-  return body
-    .trim()
-    .split(/\n\n+/)
-    .map((block) => {
-      const text = block.trim();
-      if (!text) return "";
-      return isHeading(text) ? `<h2 class="heading">${escapeHtml(text)}</h2>` : paragraph(text);
-    })
+  return copyBlocks(body)
+    .map((block) => (isHeading(block) ? `<h2 class="heading">${escapeHtml(block)}</h2>` : paragraph(block)))
     .join("");
 }
 

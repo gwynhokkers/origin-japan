@@ -105,6 +105,18 @@ test("contact shows the address, phone, and email", async () => {
   expect(html).not.toContain("<form");
 });
 
+test("a heading Adam adds to the contact copy reads as a heading", async () => {
+  const catalogue = inMemoryCatalogue({
+    site: {
+      pages: [{ slug: "contact", title: "Contact", body: "Ask us anything.\n\nOpening hours\n\nWe are at the unit most weekdays." }],
+    },
+  });
+
+  const html = await pageText(catalogue, "/contact");
+
+  expect(html).toMatch(/<h2[^>]*>Opening hours<\/h2>/);
+});
+
 test("Adam's edited copy is what a buyer reads", async () => {
   const catalogue = inMemoryCatalogue({
     site: {
@@ -164,7 +176,7 @@ test("home offers current stock, parts, partners, and named reviews", async () =
   expect(emptied).toContain("Emily Renshaw");
 });
 
-test("home shows the first cars in stock with their own photos, and no sold car or draft", async () => {
+test("home shows the first three vehicles in stock with their own photos, and no sold vehicle or draft", async () => {
   const catalogue = inMemoryCatalogue({
     vehicles: [
       {
