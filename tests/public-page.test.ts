@@ -164,6 +164,73 @@ test("home offers current stock, parts, partners, and named reviews", async () =
   expect(emptied).toContain("Emily Renshaw");
 });
 
+test("home shows the first cars in stock with their own photos, and no sold car or draft", async () => {
+  const catalogue = inMemoryCatalogue({
+    vehicles: [
+      {
+        ...forSaleVehicle(),
+        id: "s2000-in-prep",
+        slug: "honda-s2000-in-prep",
+        title: "Honda S2000 2004",
+        pricePounds: undefined,
+        photos: ["https://photos.example/s2000.jpg"],
+        availability: "in prep",
+      },
+      forSaleVehicle(),
+      {
+        ...forSaleVehicle(),
+        id: "yaris",
+        slug: "toyota-gr-yaris",
+        title: "Toyota GR Yaris 2024",
+        pricePounds: 36995,
+        photos: ["https://photos.example/yaris.jpg", "https://photos.example/yaris-rear.jpg"],
+        order: 1,
+      },
+      {
+        ...forSaleVehicle(),
+        id: "legacy-sold",
+        slug: "subaru-legacy-2011",
+        title: "Subaru Legacy 2011",
+        photos: ["https://photos.example/legacy-front.jpg"],
+        availability: "sold",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "draft-beat",
+        slug: "honda-beat-1993",
+        title: "Honda Beat 1993",
+        photos: ["https://photos.example/beat.jpg"],
+        draft: true,
+      },
+      {
+        ...forSaleVehicle(),
+        id: "mx5-on-water",
+        slug: "mazda-mx-5-on-water",
+        title: "Mazda MX-5 2019",
+        pricePounds: undefined,
+        photos: ["https://photos.example/mx5.jpg"],
+        availability: "on water",
+      },
+    ],
+  });
+
+  const html = await pageText(catalogue, "/");
+
+  expect(stockSlugs(html)).toEqual(["toyota-gr-yaris", "subaru-levorg-2-0-gt-s", "honda-s2000-in-prep"]);
+  expect(html).toContain('src="https://photos.example/yaris.jpg"');
+  expect(html).not.toContain("yaris-rear.jpg");
+  expect(html).toContain("£36,995");
+  expect(html).toContain("In prep");
+  expect(html).not.toContain("subaru-legacy-2011");
+  expect(html).not.toContain("honda-beat-1993");
+  expect(html).not.toContain("mazda-mx-5-on-water");
+  expect(html).toContain('href="/stock"');
+
+  const empty = await pageText(inMemoryCatalogue(), "/");
+  expect(empty).not.toContain("/listings/");
+  expect(empty).toContain('href="/stock"');
+});
+
 test("the nav uses the current labels and the header and footer show the Newport address and phone", async () => {
   const response = await requestPublicPage(
     new Request("http://originjapan.test/stock"),

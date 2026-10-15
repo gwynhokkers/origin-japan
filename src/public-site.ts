@@ -24,7 +24,7 @@ const closedEnquiry: EnquiryServices = {
   },
 };
 
-const siteCss = `
+const baseCss = `
 @font-face {
   font-family: Syncopate;
   src: url("/fonts/syncopate-400.woff2") format("woff2");
@@ -55,22 +55,31 @@ const siteCss = `
 }
 :root {
   color-scheme: light dark;
-  --bg: #f3f4f2;
-  --text: #1c2630;
-  --line: #d5d8dc;
-  --field-line: #5c6770;
-  --surface: #e7e9ea;
+  --bg: #f4f5f6;
+  --text: #15181c;
+  --muted: #565d66;
+  --line: #d9dde1;
+  --surface: #e8ebee;
+  --field: #fbfbfc;
+  --field-line: #69717b;
+  --accent: #f29559;
+  --on-accent: #15181c;
   --display: Syncopate, "Avenir Next", sans-serif;
   --body: Poppins, "Segoe UI", sans-serif;
   --radius: 4px;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --section: clamp(2.5rem, 6vw, 4.5rem);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #141a20;
-    --text: #e6eaee;
-    --line: #2c3844;
-    --field-line: #8b98a6;
-    --surface: #1c252e;
+    --bg: #121417;
+    --text: #eceef1;
+    --muted: #a4abb3;
+    --line: #2b3036;
+    --surface: #1c2025;
+    --field: #171a1e;
+    --field-line: #8c949e;
   }
 }
 *,
@@ -83,211 +92,145 @@ body {
   color: var(--text);
   font-family: var(--body);
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.6;
 }
-a { color: inherit; }
-a:focus-visible {
+img { display: block; max-width: 100%; }
+a {
+  color: inherit;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
+}
+a:hover { text-decoration-color: currentColor; }
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: 3px;
+  border-radius: 2px;
 }
-.vehicle:focus-visible {
-  outline: 2px solid var(--text);
-  outline-offset: 4px;
+.inner {
+  width: min(100% - 2 * var(--gutter), 80rem);
+  margin-inline: auto;
 }
-.site-header {
-  border-bottom: 1px solid var(--line);
+
+/* Header */
+.site-strip {
+  border-top: 4px solid var(--accent);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.4;
 }
+.site-strip .inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.2rem 1.5rem;
+  padding-block: 0.5rem;
+}
+.site-strip p { margin: 0; }
+.site-strip a { color: var(--text); text-decoration: none; }
+.site-strip a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+.site-strip .reach { display: flex; flex-wrap: wrap; gap: 0.2rem 1.25rem; }
 .site-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem 1.5rem;
+  gap: 0.5rem 2rem;
   min-height: 4.5rem;
-  padding: 0 1.25rem;
 }
-.site-address,
-.site-footer p {
-  margin: 0;
-  font-size: 0.8125rem;
-  line-height: 1.4;
-}
-.site-address {
-  padding: 0 1.25rem 0.85rem;
-}
-.site-footer {
-  width: min(100% - 2rem, 80rem);
-  margin: 0 auto;
-  padding: 1.25rem 0 2.5rem;
-  border-top: 1px solid var(--line);
-  display: grid;
-  gap: 0.35rem;
-}
-.site-footer a {
-  text-decoration: none;
-}
-.wordmark,
-.site-nav a {
+.site-header { border-bottom: 1px solid var(--line); }
+.wordmark {
   font-family: var(--display);
-  font-weight: 400;
-  letter-spacing: 0.06em;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
 }
-.wordmark { font-size: 0.8rem; }
 .site-nav {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.25rem 1.25rem;
+  gap: 0 1.5rem;
 }
 .site-nav a {
   display: inline-flex;
   align-items: center;
   min-height: 2.75rem;
-  font-size: 0.68rem;
-}
-.site-nav a[aria-current="page"] { text-decoration: underline; text-underline-offset: 0.3em; }
-.wrap {
-  width: min(100% - 2rem, 80rem);
-  margin-inline: auto;
-  padding-block: 2rem 4rem;
-}
-h1 {
-  margin: 0;
   font-family: var(--display);
-  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  font-size: 0.66rem;
   font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.6em;
+  white-space: nowrap;
+}
+.site-nav a:hover,
+.site-nav a[aria-current="page"] { text-decoration-color: var(--accent); }
+.site-nav a[aria-current="page"] { font-weight: 700; }
+
+/* Type */
+h1,
+h2,
+h3 { margin: 0; }
+.title {
+  font-family: var(--display);
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  font-weight: 700;
   letter-spacing: 0.04em;
-  line-height: 1.2;
+  line-height: 1.25;
   text-transform: uppercase;
 }
-.home-title {
-  max-width: 22em;
-  font-size: clamp(1.55rem, 2.6vw, 2.2rem);
-  line-height: 1.15;
+.heading {
+  font-family: var(--display);
+  font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  text-transform: uppercase;
 }
-.lede,
-.home-section p,
-.reviews p {
-  max-width: 65ch;
+.lede {
+  margin: 1.25rem 0 0;
+  max-width: 46ch;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
 }
-.lede { margin: 1rem 0 0; font-size: 1.125rem; }
-.home-cta { margin: 1.25rem 0 0; }
 .button {
   display: inline-flex;
   align-items: center;
   min-height: 2.75rem;
-  padding: 0.65rem 1.1rem;
-  border: 1px solid var(--text);
+  padding: 0.7rem 1.25rem;
+  border: 0;
   border-radius: var(--radius);
-  background: var(--text);
-  color: var(--bg);
+  background: var(--accent);
+  color: var(--on-accent);
   font-family: var(--body);
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.2;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
 }
-.button:focus-visible {
-  outline: 2px solid var(--text);
-  outline-offset: 3px;
-}
-.home-section { margin-top: 2.5rem; }
-.home-section h2,
-.reviews h2,
-.copy h2 {
-  margin: 0 0 0.5rem;
-  font-family: var(--body);
-  font-size: 1.15rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1.3;
-  text-transform: none;
-}
-.home-offer {
-  margin-top: 2rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--line);
-  max-width: 42rem;
-}
-.home-section p.partners {
+.button:hover { background: color-mix(in srgb, var(--accent) 86%, var(--text)); }
+.badge {
   margin: 0;
-  max-width: 28rem;
-  font-size: 1.35rem;
-  font-weight: 600;
-  line-height: 1.35;
-}
-.reviews { margin-top: 3rem; }
-.reviews ul {
-  list-style: none;
-  margin: 1.25rem 0 0;
-  padding: 0;
-  display: grid;
-  gap: 1.25rem;
-}
-.reviews blockquote {
-  margin: 0;
-  padding-top: 0.85rem;
-  border-top: 1px solid var(--line);
-}
-.reviews blockquote p { margin: 0; }
-.reviews blockquote footer {
-  margin-top: 0.45rem;
-  font-weight: 600;
-}
-.copy { display: grid; gap: 0.25rem; max-width: 65ch; }
-.copy p { margin: 0.75rem 0 0; }
-.contact-details {
-  margin: 1.5rem 0 0;
-  font-style: normal;
-  line-height: 1.6;
-}
-.import-photos {
-  list-style: none;
-  margin: 2rem 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-.import-photos img {
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
+  justify-self: start;
+  align-self: start;
+  display: inline-block;
+  padding: 0.35rem 0.55rem 0.3rem;
   border-radius: var(--radius);
-  background: var(--surface);
-}
-.stock {
-  list-style: none;
-  margin: 1.75rem 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 2rem 1.25rem;
-}
-.vehicle {
-  display: grid;
-  gap: 0.75rem;
-  align-content: start;
-  text-decoration: none;
-}
-.vehicle img {
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-  border-radius: var(--radius);
-  background: var(--surface);
-}
-.vehicle h2 {
-  margin: 0;
-  font-family: var(--body);
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1.3;
-  text-transform: none;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 .price {
   margin: 0;
@@ -295,64 +238,325 @@ h1 {
   font-weight: 600;
   line-height: 1.2;
 }
-.badge {
-  margin: 0;
-  justify-self: start;
-  font-family: var(--display);
-  font-size: 0.75rem;
-  font-weight: 400;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
-  text-transform: uppercase;
+.photo {
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
-.specs {
+
+/* Home */
+.hero {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.25rem 0.75rem;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+  align-items: center;
+  gap: 2rem clamp(1.5rem, 4vw, 3.5rem);
+  padding-block: clamp(1.5rem, 4vw, 3.5rem) var(--section);
+}
+.hero-title {
+  font-family: var(--body);
+  font-size: clamp(2rem, 3.1vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+}
+.hero-cta { margin: 2rem 0 0; }
+.hero .photo { aspect-ratio: 4 / 3; }
+.home-intro {
+  max-width: 65ch;
+  padding-bottom: var(--section);
+}
+.home-intro p { margin: 0 0 0.75rem; }
+.band {
+  padding-block: var(--section);
+  border-top: 1px solid var(--line);
+}
+.band-head { margin-bottom: 1.75rem; }
+.reviews-more { margin: 1.75rem 0 0; }
+.mosaic {
+  list-style: none;
   margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+}
+.mosaic[data-count="1"] { grid-template-columns: minmax(0, 1fr); }
+.mosaic[data-count="3"] > li:first-child { grid-row: span 2; }
+.car {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  height: 100%;
+  text-decoration: none;
+}
+.car-photo {
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.car-photo img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+.mosaic[data-count="3"] > li:first-child .car-photo img { aspect-ratio: auto; min-height: 20rem; }
+.car-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+}
+.car-facts h3 {
+  flex: 1 1 14rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.car-meta {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--muted);
   font-size: 0.875rem;
 }
-.specs dt,
-.specs dd { margin: 0; }
-.empty { margin: 1.5rem 0 0; max-width: 65ch; }
+.feature {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: center;
+  gap: 2rem clamp(1.5rem, 5vw, 4.5rem);
+}
+.feature img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.feature p { margin: 1rem 0 0; max-width: 46ch; }
+.feature .more { margin-top: 1.5rem; }
+.sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem clamp(1.5rem, 5vw, 4.5rem);
+}
+.sections > section::before {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 3px;
+  margin-bottom: 1.1rem;
+  background: var(--accent);
+}
+.sections > section:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.sections p { margin: 0.75rem 0 0; max-width: 60ch; }
+.feature + .sections { margin-top: var(--section); }
+.reviews-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem clamp(1.5rem, 5vw, 4.5rem);
+}
+.reviews-list > li:first-child,
+.reviews-list > li:last-child:nth-child(even) { grid-column: 1 / -1; }
+.reviews-list figure { margin: 0; }
+.reviews-list blockquote { margin: 0; }
+.reviews-list blockquote p {
+  margin: 0;
+  max-width: 48ch;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+.reviews-list > li:first-child blockquote p {
+  max-width: 34ch;
+  font-size: clamp(1.35rem, 2.3vw, 1.85rem);
+  font-weight: 600;
+  line-height: 1.35;
+}
+.reviews-list figcaption {
+  margin-top: 0.85rem;
+  font-weight: 600;
+}
+.reviews-list figcaption span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+/* Inner pages */
+.page-hero { padding-top: clamp(1rem, 3vw, 2rem); }
+.page-hero .photo { aspect-ratio: 5 / 2; }
+.page-hero-title {
+  position: relative;
+  display: inline-block;
+  max-width: calc(100% - var(--gutter));
+  margin-top: -3.25rem;
+  padding: 1.25rem 1.75rem 0 0;
+  border-top-right-radius: var(--radius);
+  background: var(--bg);
+}
+.intro {
+  max-width: 65ch;
+  padding-block: 1.25rem var(--section);
+}
+.intro p { margin: 0 0 1rem; font-size: 1.1rem; }
+.intro p:first-child { font-size: clamp(1.15rem, 1.6vw, 1.3rem); }
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  padding-block: clamp(1.5rem, 3.5vw, 2.75rem) 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+.page-head p { margin: 0.5rem 0 0; color: var(--muted); }
+.copy { max-width: 65ch; padding-block: 1.25rem var(--section); }
+.copy p { margin: 0 0 1rem; }
+.copy h2 { margin: 2rem 0 0.75rem; }
+.import-photos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: 1rem;
+}
+.import-photos li:first-child { grid-column: span 2; grid-row: span 2; }
+.import-photos li:only-child { grid-column: 1 / -1; }
+.import-photos img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.reading {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: start;
+  gap: 2.5rem clamp(1.5rem, 5vw, 4.5rem);
+  padding-block: 1.25rem var(--section);
+}
+.reading article > section + section { margin-top: 2.75rem; }
+.reading article p { margin: 0.75rem 0 0; max-width: 65ch; }
+.reading figure {
+  position: sticky;
+  top: 1.5rem;
+  margin: 0;
+}
+.reading figure img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fbfbfc;
+}
+.reading figcaption {
+  margin-top: 0.75rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.contact {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 2.5rem clamp(1.5rem, 5vw, 4.5rem);
+  align-items: start;
+  padding-block: clamp(1.5rem, 4vw, 3.5rem) var(--section);
+}
+.contact .photo { aspect-ratio: 4 / 5; }
+.contact-copy p { margin: 1rem 0 0; max-width: 48ch; color: var(--muted); font-size: 1.1rem; }
+.contact-details {
+  display: grid;
+  gap: 1.5rem;
+  margin: 2.25rem 0 0;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--line);
+  font-style: normal;
+}
+.contact-details p { margin: 0; color: var(--text); font-size: 1rem; }
+.contact-details .reach a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  font-weight: 600;
+}
+.contact-details .label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+/* Stock */
+.stock-controls summary { display: none; }
 .stock-sort {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem 1.25rem;
-  margin: 1rem 0 0;
+  gap: 0 1.25rem;
   font-size: 0.875rem;
 }
 .stock-sort a {
   display: inline-flex;
   align-items: center;
   min-height: 2.75rem;
+  text-decoration-color: transparent;
+}
+.stock-sort a:hover,
+.stock-sort a[aria-current="true"] { text-decoration-color: var(--accent); }
+.stock-sort a[aria-current="true"] { font-weight: 600; }
+.stock {
+  list-style: none;
+  margin: 0;
+  padding: 2rem 0 var(--section);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2.75rem clamp(1rem, 2vw, 1.75rem);
+}
+.vehicle {
+  display: grid;
+  gap: 0.7rem;
+  align-content: start;
   text-decoration: none;
 }
-.stock-sort a[aria-current="true"] {
-  text-decoration: underline;
-  text-underline-offset: 0.3em;
+.vehicle .car-photo img { aspect-ratio: 3 / 2; }
+.vehicle h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
 }
-.stock-controls summary {
-  display: none;
+.specs {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 1rem;
+  margin: 0.15rem 0 0;
+  font-size: 0.875rem;
 }
-.stock-controls summary:focus-visible {
-  outline: 2px solid var(--text);
-  outline-offset: 3px;
+.specs dt { color: var(--muted); }
+.specs dt,
+.specs dd { margin: 0; }
+.empty {
+  margin: 0;
+  padding-block: 2rem var(--section);
+  max-width: 65ch;
+  color: var(--muted);
 }
-@media (min-width: 768px) {
-  .stock-controls:not([open]) > .stock-sort { display: flex; }
+
+/* Vehicle */
+.back { margin: 0; padding-top: 1.25rem; font-size: 0.875rem; }
+.back a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+.vehicle-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-block: 0.75rem var(--section);
 }
-@media (max-width: 767px) {
-  .stock-controls summary {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .stock-controls:not([open]) > .stock-sort { display: none; }
-}
-.vehicle-page { display: flex; flex-direction: column; gap: 0.75rem; }
 .vehicle-facts { display: contents; }
 .vehicle-title { order: 1; }
 .vehicle-page .badge { order: 2; }
@@ -364,23 +568,25 @@ h1 {
 .enquiry-confirmation { order: 6; }
 .vehicle-title {
   font-family: var(--body);
-  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
   font-weight: 600;
-  letter-spacing: 0;
+  letter-spacing: -0.01em;
   line-height: 1.2;
-  text-transform: none;
 }
+.vehicle-page .price { font-size: clamp(1.5rem, 2.2vw, 1.85rem); }
 .gallery {
   list-style: none;
-  margin: 1.25rem 0 0;
+  margin: 0.5rem 0 0;
   padding: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
 }
-.gallery li:first-child { grid-column: 1 / -1; }
+.gallery li:first-child,
+.gallery li:last-child:nth-child(even) { grid-column: 1 / -1; }
 .gallery img {
   width: 100%;
+  height: auto;
   aspect-ratio: 3 / 2;
   object-fit: cover;
   border-radius: var(--radius);
@@ -389,44 +595,45 @@ h1 {
 .vehicle-specs {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0.4rem 1.25rem;
-  margin: 1.75rem 0 0;
+  gap: 0.45rem 1.5rem;
+  margin: 0.75rem 0 0;
+  padding-block: 1.25rem;
+  border-block: 1px solid var(--line);
 }
 .vehicle-specs dt,
 .vehicle-specs dd { margin: 0; }
-.vehicle-specs dt { font-size: 0.875rem; font-weight: 600; }
-.notes { margin-top: 2rem; max-width: 65ch; }
-.notes h2 {
-  margin: 0 0 0.5rem;
-  font-family: var(--body);
-  font-size: 1.05rem;
-  font-weight: 600;
-}
+.vehicle-specs dt { color: var(--muted); font-size: 0.875rem; }
+.vehicle-specs dd { font-weight: 600; }
+.notes { margin-top: 0.75rem; max-width: 65ch; }
+.notes p { margin: 0.6rem 0 0; }
 .enquiry {
   display: grid;
-  gap: 1rem;
-  margin-top: 0.5rem;
+  gap: 1.1rem;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
   max-width: 65ch;
 }
-.field { display: grid; gap: 0.35rem; }
+.field { display: grid; gap: 0.4rem; }
 .field label { font-size: 0.875rem; font-weight: 600; }
 .field input,
 .field textarea {
   width: 100%;
   margin: 0;
+  min-height: 2.75rem;
   padding: 0.65rem 0.75rem;
   border: 1px solid var(--field-line);
   border-radius: var(--radius);
-  background: var(--bg);
+  background: var(--field);
   color: var(--text);
   font: inherit;
 }
 .field textarea { min-height: 8rem; resize: vertical; }
 .field input:focus-visible,
-.field textarea:focus-visible,
-.enquiry button:focus-visible {
+.field textarea:focus-visible {
   outline: 2px solid var(--text);
-  outline-offset: 3px;
+  outline-offset: 2px;
+  border-color: var(--text);
 }
 .field-error {
   margin: 0;
@@ -434,54 +641,97 @@ h1 {
   font-size: 0.875rem;
   font-weight: 600;
 }
-.enquiry button {
-  justify-self: start;
-  min-height: 2.75rem;
-  padding: 0.65rem 1.1rem;
-  border: 1px solid var(--text);
-  border-radius: var(--radius);
-  background: var(--text);
-  color: var(--bg);
-  font-family: var(--body);
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.2;
-  white-space: nowrap;
-  cursor: pointer;
+.field-error::before {
+  content: "";
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-right: 0.45rem;
+  border-radius: 1px;
+  background: var(--accent);
 }
-.enquiry-confirmation { margin: 0.5rem 0 0; max-width: 65ch; font-weight: 600; }
+.enquiry button { justify-self: start; }
+.enquiry-confirmation {
+  margin: 1rem 0 0;
+  padding: 1rem 1.1rem;
+  max-width: 65ch;
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  font-weight: 600;
+}
+
+/* Footer */
+.site-footer {
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 0.875rem;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.5rem clamp(1.5rem, 4vw, 3rem);
+  padding-block: 2.5rem 3rem;
+}
+.site-footer p { margin: 0 0 0.35rem; }
+.site-footer .wordmark { display: inline-block; margin-bottom: 0.75rem; }
+.site-footer a { text-decoration: none; }
+.site-footer a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+
 @media (max-width: 1023px) {
   .stock { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .site-bar { flex-wrap: wrap; padding-block: 0.5rem; }
+  .site-nav { overflow-x: auto; scrollbar-width: thin; }
+}
+@media (min-width: 768px) {
+  .stock-controls::details-content { content-visibility: visible; display: contents; }
+  .stock-controls:not([open]) > .stock-sort { display: flex; }
+  .vehicle-specs { grid-template-columns: auto 1fr auto 1fr; column-gap: 2.5rem; }
+}
+@media (max-width: 767px) {
+  .site-strip .address { flex-basis: 100%; }
+  .site-bar { gap: 0; min-height: 0; padding-top: 0.75rem; }
+  .site-nav {
+    width: 100%;
+    gap: 0 1.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+  }
+  .site-nav a { scroll-snap-align: start; }
+  .hero,
+  .feature,
+  .reading,
+  .contact,
+  .mosaic,
+  .footer-grid { grid-template-columns: minmax(0, 1fr); }
+  .hero .photo { order: -1; aspect-ratio: 16 / 10; }
+  .mosaic[data-count="3"] > li:first-child { grid-row: auto; }
+  .mosaic[data-count="3"] > li:first-child .car-photo img { aspect-ratio: 16 / 10; min-height: 0; }
+  .page-hero .photo { aspect-ratio: 16 / 10; }
+  .page-hero-title { margin-top: -1.75rem; padding: 0.9rem 1rem 0 0; }
+  .contact .photo { order: -1; aspect-ratio: 16 / 10; }
+  .reading figure { position: static; }
+  .reviews-list,
+  .sections { grid-template-columns: minmax(0, 1fr); }
+  .import-photos li:first-child { grid-column: auto; grid-row: auto; }
+  .stock-controls summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .stock-controls:not([open]) > .stock-sort { display: none; }
+  .stock { grid-template-columns: minmax(0, 1fr); }
+  .gallery { grid-template-columns: minmax(0, 1fr); }
+  .gallery li:first-child,
+  .gallery li:last-child:nth-child(even) { grid-column: auto; }
 }
 @media (min-width: 1024px) {
   .site-nav { flex-wrap: nowrap; }
-}
-@media (max-width: 767px) {
-  .site-bar {
-    align-items: flex-start;
-    flex-wrap: wrap;
-    padding: 0.75rem 1rem 0;
-  }
-  .site-address { padding: 0.35rem 1rem 0.85rem; }
-  .site-nav { width: 100%; justify-content: flex-start; }
-  .wrap { width: 100%; padding: 1.5rem 1rem 3rem; }
-  .site-footer { width: 100%; padding-inline: 1rem; }
-  .stock { grid-template-columns: 1fr; }
-  .gallery { grid-template-columns: 1fr; }
-  .gallery li:first-child { grid-column: auto; }
-  .import-photos { grid-template-columns: 1fr; }
-}
-@media (min-width: 768px) {
-  .vehicle-specs {
-    grid-template-columns: auto 1fr auto 1fr;
-    column-gap: 2.5rem;
-  }
-}
-@media (min-width: 1024px) {
   .vehicle-page {
     display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
-    column-gap: 2.5rem;
+    grid-template-columns: minmax(0, 7fr) minmax(19rem, 5fr);
+    column-gap: clamp(2rem, 4vw, 3.5rem);
     align-items: start;
   }
   .vehicle-page .gallery {
@@ -493,7 +743,7 @@ h1 {
   .vehicle-facts {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.85rem;
     grid-column: 2;
     grid-row: 1;
   }
@@ -504,19 +754,40 @@ h1 {
   .notes,
   .enquiry,
   .enquiry-confirmation { order: 0; }
-  .vehicle-page .vehicle-specs { grid-template-columns: auto 1fr; margin-top: 0.5rem; }
-  .vehicle-page .notes { margin-top: 0.5rem; }
+  .vehicle-page .vehicle-specs { grid-template-columns: auto 1fr; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .vehicle img,
-  .enquiry button {
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  .car-photo img,
+  .button,
+  .site-nav a,
+  .stock-sort a,
+  a {
+    transition:
+      transform 0.45s var(--ease),
+      background-color 0.2s var(--ease),
+      text-decoration-color 0.2s var(--ease);
   }
-  .vehicle:hover img,
-  .vehicle:focus-visible img { transform: scale(1.03); }
-  .vehicle:active,
-  .enquiry button:active,
-  .button:active { transform: scale(0.98); }
+  .car:hover .car-photo img,
+  .car:focus-visible .car-photo img,
+  .vehicle:hover .car-photo img,
+  .vehicle:focus-visible .car-photo img { transform: scale(1.03); }
+  .button:active,
+  .car:active,
+  .vehicle:active { transform: scale(0.98); }
+  .rise {
+    animation: rise 0.7s var(--ease) both;
+  }
+  .rise:nth-child(2) { animation-delay: 70ms; }
+  .rise:nth-child(3) { animation-delay: 140ms; }
+  .photo.rise { animation-name: settle; animation-duration: 0.9s; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes settle {
+    from { opacity: 0; transform: scale(1.02); }
+    to { opacity: 1; transform: none; }
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -542,7 +813,7 @@ export async function requestPublicPage(
 
   if (pathname === "/" || pathname === "/personal-import" || pathname === "/grade-sheets" || pathname === "/contact" || pathname === "/contact/" || pathname === "/privacy") {
     const content = await catalogue.siteContent();
-    if (pathname === "/") return html(homePage(content));
+    if (pathname === "/") return html(homePage(content, (await catalogue.vehicles()).filter(isOnStock)));
     if (pathname === "/personal-import") return html(personalImportPage(content));
     if (pathname === "/grade-sheets") return html(gradeSheetsPage(content));
     if (pathname === "/contact" || pathname === "/contact/") return html(contactPage(content));
@@ -700,74 +971,145 @@ Trusted partners
 
 In the import trade, partners in Japan are essential. With two trusted agents in Japan, both English speaking, Origin has the people to provide an efficient service.`;
 
-function homePage(content: SiteContent): string {
+function homePage(content: SiteContent, stock: readonly Vehicle[]): string {
   const edited = pageCopy(content, "home");
   const headline = edited?.title?.trim() || "So, you're looking for a car from Japan?";
+  const { intro, sections } = copySections(edited?.body?.trim() || defaultHomeBody);
+  const [lede, ...moreIntro] = intro;
   const main = `
-    <h1 class="home-title">${escapeHtml(headline)}</h1>
-    ${homeStory(edited?.body?.trim() || defaultHomeBody)}
+    <section class="hero inner" aria-labelledby="home-title">
+      <div>
+        <h1 class="hero-title rise" id="home-title">${escapeHtml(headline)}</h1>
+        ${lede ? `<p class="lede rise">${escapeHtml(lede)}</p>` : ""}
+        <p class="hero-cta rise"><a class="button" href="/stock">Current Stock</a></p>
+      </div>
+      ${pagePhoto("home")}
+    </section>
+    ${moreIntro.length ? `<div class="inner"><div class="home-intro">${moreIntro.map(paragraph).join("")}</div></div>` : ""}
+    ${homeStock(stock)}
+    ${homeServices(sections)}
     ${reviewsSection(content)}
   `;
   return document({
     title: "Origin Japan",
     current: undefined,
     main,
+    preload: "home",
   });
 }
 
-function homeStory(body: string): string {
-  const blocks = body
-    .split(/\n\n+/)
-    .map((block) => block.trim())
-    .filter(Boolean);
-  let html = "";
-  let heading = "";
-  let opened = false;
-  for (const block of blocks) {
-    if (isHeading(block)) {
-      heading = block;
-      continue;
-    }
-    if (!opened && !heading) {
-      html += `<p class="lede">${escapeHtml(block)}</p><p class="home-cta"><a class="button" href="/stock">Current Stock</a></p>`;
-      opened = true;
-      continue;
-    }
-    const offer = heading === "New and used parts" ? " home-offer" : "";
-    const textClass = heading === "Trusted partners" ? ` class="partners"` : "";
-    html += `<section class="home-section${offer}">${heading ? `<h2>${escapeHtml(heading)}</h2>` : ""}<p${textClass}>${escapeHtml(block)}</p></section>`;
-    heading = "";
-    opened = true;
+function homeStock(stock: readonly Vehicle[]): string {
+  const cars = listStock(stock).filter((vehicle) => vehicle.slug).slice(0, 3);
+  if (cars.length === 0) return "";
+  return `<section class="band inner" aria-labelledby="home-stock">
+      <div class="band-head">
+        <h2 class="heading" id="home-stock">In stock</h2>
+      </div>
+      <ul class="mosaic" data-count="${cars.length}">${cars.map(homeCar).join("")}</ul>
+    </section>`;
+}
+
+function homeCar(vehicle: Vehicle): string {
+  const title = vehicle.title?.trim() ?? "";
+  const photo = photosOf(vehicle)[0];
+  const price = isForSale(vehicle) ? formatPounds(vehicle.pricePounds) : "";
+  const meta = [vehicle.year, formatMiles(vehicle.mileageMiles)].filter(Boolean).join(" · ");
+  return `<li>
+      <a class="car" href="/listings/${escapeHtml(encodeURIComponent(vehicle.slug ?? ""))}">
+        <div class="car-photo">${photo ? `<img src="${escapeHtml(photo)}" alt="${escapeHtml(title || "Vehicle photo")}" width="900" height="600" loading="lazy">` : ""}</div>
+        <div class="car-facts">
+          <h3>${escapeHtml(title)}</h3>
+          ${price ? `<p class="price">${price}</p>` : availabilityBadge(vehicle)}
+          ${meta ? `<p class="car-meta">${escapeHtml(meta)}</p>` : ""}
+        </div>
+      </a>
+    </li>`;
+}
+
+function homeServices(sections: readonly CopySection[]): string {
+  if (sections.length === 0) return "";
+  const [first, ...rest] = sections;
+  const importLink = /import/i.test(first.heading)
+    ? `<p class="more"><a href="/personal-import">Personal Import Service</a></p>`
+    : "";
+  return `<section class="band inner" aria-label="What Origin does">
+      <div class="feature">
+        <img src="/images/suzuki-carry-sunset-1400.jpg" alt="A white Suzuki Carry kei truck at sunset" width="1400" height="1092" loading="lazy">
+        <div>
+          <h2 class="heading">${escapeHtml(first.heading)}</h2>
+          ${first.paragraphs.map(paragraph).join("")}
+          ${importLink}
+        </div>
+      </div>
+      ${rest.length ? `<div class="sections">${rest.map(copySection).join("")}</div>` : ""}
+    </section>`;
+}
+
+type CopySection = { heading: string; paragraphs: string[] };
+
+/** Paragraphs before the first short heading line are the intro. Each heading owns the paragraphs after it. */
+function copySections(body: string): { intro: string[]; sections: CopySection[] } {
+  const intro: string[] = [];
+  const sections: CopySection[] = [];
+  for (const block of body.split(/\n\n+/).map((item) => item.trim()).filter(Boolean)) {
+    if (isHeading(block)) sections.push({ heading: block, paragraphs: [] });
+    else if (sections.length === 0) intro.push(block);
+    else sections[sections.length - 1].paragraphs.push(block);
   }
-  if (!html.includes('href="/stock"')) {
-    html += `<p class="home-cta"><a class="button" href="/stock">Current Stock</a></p>`;
-  }
-  return html;
+  return { intro, sections };
 }
 
 function isHeading(block: string): boolean {
   return !block.includes("\n") && block.length <= 60 && !/[.!?]$/.test(block);
 }
 
+function copySection(section: CopySection): string {
+  return `<section><h2 class="heading">${escapeHtml(section.heading)}</h2>${section.paragraphs.map(paragraph).join("")}</section>`;
+}
+
+function paragraph(text: string): string {
+  return `<p>${escapeHtml(text)}</p>`;
+}
+
 function personalImportPage(content: SiteContent): string {
   const edited = pageCopy(content, "personal-import");
   const title = edited?.title?.trim() || "Personal Import Service";
-  const body = edited?.body?.trim() || defaultPersonalImport;
+  const { intro, sections } = copySections(edited?.body?.trim() || defaultPersonalImport);
+  const photos = importPhotoList(content.importPhotos ?? []);
   return document({
     title,
     current: "personal-import",
-    main: `<h1>${escapeHtml(title)}</h1><div class="copy">${renderCopy(body)}</div>${importPhotoList(content.importPhotos ?? [])}`,
+    preload: "import",
+    main: `
+      ${pageHero(title, "import")}
+      ${intro.length ? `<div class="inner"><div class="intro">${intro.map(paragraph).join("")}</div></div>` : ""}
+      ${sections.length ? `<div class="band inner"><div class="sections">${sections.map(copySection).join("")}</div></div>` : ""}
+      ${photos ? `<section class="band inner" aria-labelledby="import-photos"><div class="band-head"><h2 class="heading" id="import-photos">Previous personal imports</h2></div>${photos}</section>` : ""}
+    `,
   });
 }
 
 function gradeSheetsPage(content: SiteContent): string {
   const edited = pageCopy(content, "grade-sheets");
   const title = edited?.title?.trim() || "Grade Sheets";
-  const body = edited?.body?.trim() || defaultGradeSheets;
+  const { intro, sections } = copySections(edited?.body?.trim() || defaultGradeSheets);
   return document({
     title,
     current: "grade-sheets",
-    main: `<h1>${escapeHtml(title)}</h1><div class="copy">${renderCopy(body)}</div>`,
+    preload: "grades",
+    main: `
+      ${pageHero(title, "grades")}
+      <div class="reading inner">
+        <article>
+          ${intro.length ? `<section>${intro.map(paragraph).join("")}</section>` : ""}
+          ${sections.map(copySection).join("")}
+        </article>
+        <figure>
+          <img src="/images/grade-sheet-v70-1400.jpg" alt="A Japanese auction exhibit sheet for a Volvo V70, overall grade 3.5, interior grade C, with damage marked on a plan of the car" width="1155" height="1400" loading="lazy">
+          <figcaption>An exhibit sheet for a Volvo V70. The grade, 3.5, is in the box at the top right, with the interior grade, C, below it.</figcaption>
+        </figure>
+      </div>
+    `,
   });
 }
 
@@ -778,7 +1120,17 @@ function contactPage(content: SiteContent): string {
   return document({
     title,
     current: "contact",
-    main: `<h1>${escapeHtml(title)}</h1><div class="copy">${renderCopy(body)}</div>${contactDetails()}`,
+    preload: "contact",
+    main: `
+      <section class="contact inner" aria-labelledby="page-title">
+        <div class="contact-copy">
+          <h1 class="title rise" id="page-title">${escapeHtml(title)}</h1>
+          <div class="rise">${copyParagraphs(body)}</div>
+          ${contactDetails()}
+        </div>
+        ${pagePhoto("contact")}
+      </section>
+    `,
   });
 }
 
@@ -789,12 +1141,46 @@ function privacyPage(content: SiteContent): string {
   return document({
     title,
     current: undefined,
-    main: `<h1>${escapeHtml(title)}</h1><div class="copy">${renderCopy(body)}</div>`,
+    main: `<div class="inner"><div class="page-head"><h1 class="title">${escapeHtml(title)}</h1></div><div class="copy">${renderCopy(body)}</div></div>`,
   });
 }
 
 function pageCopy(content: SiteContent, slug: string): { title?: string; body?: string } | undefined {
   return content.pages?.find((page) => page.slug === slug);
+}
+
+type PagePhoto = "home" | "import" | "grades" | "contact";
+
+/** Banner photography from the current site. Decorative, so it is a background, not an image in the page content. */
+const pagePhotos: Record<PagePhoto, { wide: string; narrow: string; position: string }> = {
+  home: { wide: "/images/home-dusk-row-2000.jpg", narrow: "/images/home-dusk-row-1000.jpg", position: "60% 70%" },
+  import: { wide: "/images/import-skylines-fuji-1300.jpg", narrow: "/images/import-skylines-fuji-1000.jpg", position: "50% 62%" },
+  grades: { wide: "/images/grade-trueno-2000.jpg", narrow: "/images/grade-trueno-1000.jpg", position: "50% 55%" },
+  contact: { wide: "/images/contact-supra-gtr-1600.jpg", narrow: "/images/contact-supra-gtr-900.jpg", position: "60% 60%" },
+};
+
+const photoCss = Object.entries(pagePhotos)
+  .map(
+    ([name, photo]) => `.photo-${name} { background-image: url("${photo.wide}"); background-position: ${photo.position}; }
+@media (max-width: 767px) { .photo-${name} { background-image: url("${photo.narrow}"); } }`,
+  )
+  .join("\n");
+
+function pagePhoto(name: PagePhoto): string {
+  return `<div class="photo photo-${name} rise" aria-hidden="true"></div>`;
+}
+
+function preloadPhoto(name: PagePhoto): string {
+  const photo = pagePhotos[name];
+  return `<link rel="preload" as="image" href="${photo.narrow}" media="(max-width: 767px)">
+    <link rel="preload" as="image" href="${photo.wide}" media="(min-width: 768px)">`;
+}
+
+function pageHero(title: string, photo: PagePhoto): string {
+  return `<section class="page-hero inner" aria-labelledby="page-title">
+      ${pagePhoto(photo)}
+      <h1 class="title page-hero-title" id="page-title">${escapeHtml(title)}</h1>
+    </section>`;
 }
 
 function reviewsSection(content: SiteContent): string {
@@ -804,17 +1190,19 @@ function reviewsSection(content: SiteContent): string {
   const items = reviews
     .map(
       (review: Review) => `<li>
-        <blockquote>
-          <p>${escapeHtml(review.quote.trim())}</p>
-          <footer>${escapeHtml(review.name.trim())}</footer>
-        </blockquote>
+        <figure>
+          <blockquote><p>“${escapeHtml(review.quote.trim())}”</p></blockquote>
+          <figcaption>${escapeHtml(review.name.trim())}<span>Google review</span></figcaption>
+        </figure>
       </li>`,
     )
     .join("");
-  return `<section class="reviews" aria-label="Reviews">
-      <h2>Brilliant reviews</h2>
-      <ul>${items}</ul>
-      <p><a href="${escapeHtml(google)}">Google reviews</a></p>
+  return `<section class="band inner" aria-labelledby="reviews">
+      <div class="band-head">
+        <h2 class="heading" id="reviews">Brilliant reviews</h2>
+      </div>
+      <ul class="reviews-list">${items}</ul>
+      <p class="reviews-more"><a href="${escapeHtml(google)}">Google reviews</a></p>
     </section>`;
 }
 
@@ -823,7 +1211,7 @@ function importPhotoList(photos: readonly ImportPhoto[]): string {
     .filter((photo) => photo.src.trim())
     .map((photo) => {
       const alt = photo.alt?.trim() || "Personal import";
-      return `<li><img src="${escapeHtml(photo.src.trim())}" alt="${escapeHtml(alt)}" width="900" height="600"></li>`;
+      return `<li><img src="${escapeHtml(photo.src.trim())}" alt="${escapeHtml(alt)}" width="900" height="600" loading="lazy"></li>`;
     })
     .join("");
   if (!items) return "";
@@ -832,12 +1220,19 @@ function importPhotoList(photos: readonly ImportPhoto[]): string {
 
 function contactDetails(): string {
   return `<address class="contact-details">
-      Origin Japan Ltd<br>
-      ${postalAddress}<br>
-      <a href="tel:${phone}">${phone}</a><br>
-      <a href="mailto:${email}">${email}</a><br>
-      What3Words ///pens.search.goal
+      <p><span class="label">Address</span>Origin Japan Ltd<br>${postalAddress}<br>What3Words ///pens.search.goal</p>
+      <p class="reach"><span class="label">Phone</span><a href="tel:${phone}">${phone}</a></p>
+      <p class="reach"><span class="label">Email</span><a href="mailto:${email}">${email}</a></p>
     </address>`;
+}
+
+function copyParagraphs(body: string): string {
+  return body
+    .split(/\n\n+/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map(paragraph)
+    .join("");
 }
 
 function renderCopy(body: string): string {
@@ -847,8 +1242,7 @@ function renderCopy(body: string): string {
     .map((block) => {
       const text = block.trim();
       if (!text) return "";
-      const heading = !text.includes("\n") && text.length <= 60 && !/[.!?]$/.test(text);
-      return heading ? `<h2>${escapeHtml(text)}</h2>` : `<p>${escapeHtml(text)}</p>`;
+      return isHeading(text) ? `<h2 class="heading">${escapeHtml(text)}</h2>` : paragraph(text);
     })
     .join("");
 }
@@ -902,9 +1296,13 @@ const defaultPrivacy = "Origin Japan Ltd keeps the details you send when you ask
 function stockPage(vehicles: readonly Vehicle[], sort?: StockSort): string {
   const cards = listStock(vehicles, sort).filter((vehicle) => vehicle.slug).map(stockCard).join("");
   const main = `
-    <h1>Current Stock</h1>
-    ${sortNav(sort)}
-    ${cards ? `<ul class="stock">${cards}</ul>` : `<p class="empty">No vehicles in stock.</p>`}
+    <div class="inner">
+      <div class="page-head">
+        <h1 class="title">Current Stock</h1>
+        ${sortNav(sort)}
+      </div>
+      ${cards ? `<ul class="stock">${cards}</ul>` : `<p class="empty">No vehicles in stock.</p>`}
+    </div>
   `;
   return document({
     title: "Current Stock",
@@ -989,8 +1387,12 @@ function publishedTime(vehicle: Vehicle): number {
 function soldPage(vehicles: readonly Vehicle[]): string {
   const cards = vehicles.filter((vehicle) => vehicle.slug).map(stockCard).join("");
   const main = `
-    <h1>Sold Stock</h1>
-    ${cards ? `<ul class="stock">${cards}</ul>` : `<p class="empty">No sold vehicles.</p>`}
+    <div class="inner">
+      <div class="page-head">
+        <h1 class="title">Sold Stock</h1>
+      </div>
+      ${cards ? `<ul class="stock">${cards}</ul>` : `<p class="empty">No sold vehicles.</p>`}
+    </div>
   `;
   return document({
     title: "Sold Stock",
@@ -999,19 +1401,19 @@ function soldPage(vehicles: readonly Vehicle[]): string {
   });
 }
 
-function stockCard(vehicle: Vehicle): string {
+function stockCard(vehicle: Vehicle, index: number): string {
   const slug = vehicle.slug ?? "";
   const title = vehicle.title?.trim() ?? "";
   const photo = photosOf(vehicle)[0];
   const price = isForSale(vehicle) ? formatPounds(vehicle.pricePounds) : "";
   const mileage = formatMiles(vehicle.mileageMiles);
   const image = photo
-    ? `<img src="${escapeHtml(photo)}" alt="${escapeHtml(title || "Vehicle photo")}" width="900" height="600">`
+    ? `<img src="${escapeHtml(photo)}" alt="${escapeHtml(title || "Vehicle photo")}" width="900" height="600"${index < 3 ? "" : ` loading="lazy"`}>`
     : "";
 
   return `<li>
     <a class="vehicle" href="/listings/${escapeHtml(encodeURIComponent(slug))}">
-      ${image}
+      <div class="car-photo">${image}</div>
       ${title ? `<h2>${escapeHtml(title)}</h2>` : ""}
       ${price ? `<p class="price">${price}</p>` : availabilityBadge(vehicle)}
       <dl class="specs">
@@ -1039,14 +1441,20 @@ function vehiclePage(vehicle: Vehicle, siteKey?: string, enquiry?: EnquiryView):
   const gallery = photos
     .map((photo, index) => {
       const priority = index === 0 ? ` fetchpriority="high"` : ` loading="lazy"`;
-      return `<li><img src="${escapeHtml(photo)}" alt="${escapeHtml(title)}" width="900" height="600"${priority}></li>`;
+      const alt = photos.length > 1 ? `${title}, photo ${index + 1} of ${photos.length}` : title;
+      return `<li><img src="${escapeHtml(photo)}" alt="${escapeHtml(alt)}" width="900" height="600"${priority}></li>`;
     })
     .join("");
 
   const notes = vehicle.sellersNotes?.trim()
-    ? `<section class="notes"><h2>Seller's notes</h2><p>${escapeHtml(vehicle.sellersNotes.trim())}</p></section>`
+    ? `<section class="notes"><h2 class="heading">Seller's notes</h2><p>${escapeHtml(vehicle.sellersNotes.trim())}</p></section>`
     : "";
+  const back = isSold(vehicle)
+    ? `<p class="back"><a href="/sold">Sold Stock</a></p>`
+    : `<p class="back"><a href="/stock">Current Stock</a></p>`;
   const main = `
+    <div class="inner">
+    ${back}
     <article class="vehicle-page">
       ${gallery ? `<ul class="gallery">${gallery}</ul>` : ""}
       <div class="vehicle-facts">
@@ -1065,6 +1473,7 @@ function vehiclePage(vehicle: Vehicle, siteKey?: string, enquiry?: EnquiryView):
         ${enquiryForm(vehicle, siteKey, enquiry)}
       </div>
     </article>
+    </div>
   `;
 
   return document({
@@ -1088,40 +1497,59 @@ const postalAddress = "Unit D2, Langland Park West, Newport, NP19 4ED";
 const phone = "07454621101";
 const email = "info@originjapan.co.uk";
 
-function document(page: { title: string; current: NavPage | undefined; main: string }): string {
+function document(page: { title: string; current: NavPage | undefined; main: string; preload?: PagePhoto }): string {
   const nav = navItems
     .map((item) => {
       const current = page.current === item.page ? ` aria-current="page"` : "";
       return `<a href="${item.href}"${current}>${item.label}</a>`;
     })
-    .join("\n        ");
+    .join("\n          ");
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title>${escapeHtml(page.title)}</title>
-    <style>${siteCss}</style>
+    <link rel="preload" href="/fonts/poppins-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/syncopate-700.woff2" as="font" type="font/woff2" crossorigin>
+    ${page.preload ? preloadPhoto(page.preload) : ""}
+    <style>${baseCss}${photoCss}</style>
   </head>
   <body>
     <header class="site-header">
-      <div class="site-bar">
+      <div class="site-strip">
+        <div class="inner">
+          <p class="address">Origin Japan Ltd, ${postalAddress}</p>
+          <p class="reach"><a href="tel:${phone}">${phone}</a><a href="mailto:${email}">${email}</a></p>
+        </div>
+      </div>
+      <div class="site-bar inner">
         <a class="wordmark" href="/">Origin Japan</a>
         <nav class="site-nav" aria-label="Pages">
-        ${nav}
+          ${nav}
         </nav>
       </div>
-      <p class="site-address">Origin Japan Ltd, ${postalAddress}, <a href="tel:${phone}">${phone}</a>, <a href="mailto:${email}">${email}</a></p>
     </header>
-    <main class="wrap">
+    <main>
       ${page.main}
     </main>
     <footer class="site-footer">
-      <p>Origin Japan Ltd</p>
-      <p>${postalAddress}</p>
-      <p><a href="tel:${phone}">${phone}</a></p>
-      <p><a href="mailto:${email}">${email}</a></p>
-      <p><a href="/privacy">Privacy</a></p>
+      <div class="footer-grid inner">
+        <div>
+          <a class="wordmark" href="/">Origin Japan</a>
+          <p>Origin Japan Ltd</p>
+          <p>${postalAddress}</p>
+        </div>
+        <div>
+          <p><a href="tel:${phone}">${phone}</a></p>
+          <p><a href="mailto:${email}">${email}</a></p>
+        </div>
+        <div>
+          <p><a href="/sold">Sold Stock</a></p>
+          <p><a href="/privacy">Privacy</a></p>
+        </div>
+      </div>
     </footer>
   </body>
 </html>`;
@@ -1211,7 +1639,7 @@ function enquiryForm(vehicle: Vehicle, siteKey?: string, enquiry?: EnquiryView):
         ${fieldBlock("message", "Message", "textarea", values?.message, errors?.message)}
         ${turnstile}
         ${spam}
-        <button type="submit">Enquire about this car</button>
+        <button class="button" type="submit">Enquire about this car</button>
       </form>`;
 }
 
