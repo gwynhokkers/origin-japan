@@ -159,6 +159,86 @@ test("Adam's edited copy is what a buyer reads", async () => {
   expect(privacy).toContain("Edited privacy: we keep your message so we can reply.");
 });
 
+test("brochure pages follow the section order Adam saved", async () => {
+  const catalogue = inMemoryCatalogue({
+    vehicles: [forSaleVehicle()],
+    site: {
+      reviews: [{ name: "Pat Example", quote: "An edited review from the catalogue." }],
+      googleReviewsUrl: "https://share.google/edited-reviews",
+      importPhotos: [{ src: "https://photos.example/dock.jpg", alt: "A car at the Japanese agent" }],
+      pages: [
+        {
+          slug: "home",
+          title: "Home title",
+          blocks: [
+            { kind: "reviews" },
+            { kind: "section", heading: "Trusted partners", body: "Two agents in Japan." },
+            { kind: "opening", body: "Cars already in the UK.", linkLabel: "Current Stock", linkHref: "/stock" },
+            { kind: "stock" },
+          ],
+        },
+        {
+          slug: "personal-import",
+          title: "Import title",
+          blocks: [
+            { kind: "photos", heading: "Previous personal imports" },
+            { kind: "section", heading: "Shipping", body: "Insured shipping to the UK." },
+            { kind: "section", heading: "Sourcing", body: "We search the auctions." },
+          ],
+        },
+        {
+          slug: "grade-sheets",
+          title: "Grades title",
+          blocks: [
+            { kind: "exhibit" },
+            { kind: "section", heading: "Marks on the plan", body: "U1 is a small dent." },
+            { kind: "section", heading: "Grades", body: "4.5 is a strong grade." },
+          ],
+        },
+        {
+          slug: "contact",
+          title: "Contact title",
+          blocks: [
+            { kind: "details" },
+            { kind: "opening", body: "Ask us about a car in stock." },
+          ],
+        },
+        {
+          slug: "privacy",
+          title: "Privacy title",
+          blocks: [
+            { kind: "section", heading: "What we keep", body: "We keep your message so we can reply." },
+            { kind: "opening", body: "This page says what happens to a lead." },
+          ],
+        },
+      ],
+    },
+  });
+
+  const home = await pageText(catalogue, "/");
+  expect(at(home, "Pat Example")).toBeLessThan(at(home, "Trusted partners"));
+  expect(at(home, "Trusted partners")).toBeLessThan(at(home, "Cars already in the UK."));
+  expect(at(home, "Cars already in the UK.")).toBeLessThan(at(home, "Subaru Levorg"));
+  expect(home).toContain('href="https://share.google/edited-reviews"');
+  expect(home).not.toContain("Yahoo Japan");
+
+  const personalImport = await pageText(catalogue, "/personal-import");
+  expect(at(personalImport, "dock.jpg")).toBeLessThan(at(personalImport, "Shipping"));
+  expect(at(personalImport, "Shipping")).toBeLessThan(at(personalImport, "Sourcing"));
+  expect(personalImport).not.toContain("before bidding");
+
+  const gradeSheets = await pageText(catalogue, "/grade-sheets");
+  expect(at(gradeSheets, "grade-sheet-v70")).toBeLessThan(at(gradeSheets, "Marks on the plan"));
+  expect(at(gradeSheets, "Marks on the plan")).toBeLessThan(at(gradeSheets, "4.5 is a strong grade."));
+  expect(gradeSheets).not.toContain("A to E");
+
+  const contact = await pageText(catalogue, "/contact");
+  expect(at(contact, "What3Words")).toBeLessThan(at(contact, "Ask us about a car in stock."));
+
+  const privacy = await pageText(catalogue, "/privacy");
+  expect(at(privacy, "What we keep")).toBeLessThan(at(privacy, "This page says what happens to a lead."));
+});
+
 test("home offers current stock, parts, partners, and named reviews", async () => {
   const response = await requestPublicPage(new Request("http://originjapan.test/"), inMemoryCatalogue());
   const html = await response.text();
@@ -1154,6 +1234,12 @@ async function pageText(
   const response = await requestPublicPage(new Request(`http://originjapan.test${path}`), catalogue);
   expect(response.status).toBe(200);
   return response.text();
+}
+
+function at(html: string, needle: string): number {
+  const found = html.indexOf(needle);
+  expect(found, needle).toBeGreaterThan(-1);
+  return found;
 }
 
 function region(html: string, tag: string): string {

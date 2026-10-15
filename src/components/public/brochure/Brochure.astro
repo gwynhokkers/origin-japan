@@ -1,0 +1,100 @@
+---
+import type { BrochureBlock, Vehicle } from "../../../catalogue";
+import { brochureRuns, type BrochurePage, type BrochureRun } from "../../../public/copy";
+import Reviews from "../Reviews.astro";
+import ContactDetails from "./ContactDetails.astro";
+import GradeExhibit from "./GradeExhibit.astro";
+import ImportPhotos from "./ImportPhotos.astro";
+import Opening from "./Opening.astro";
+import SectionGroup from "./SectionGroup.astro";
+import StockPreview from "./StockPreview.astro";
+
+type Props = {
+  page: BrochurePage;
+  title: string;
+  blocks: readonly BrochureBlock[];
+  stock: readonly Vehicle[];
+  reviews: readonly { name: string; quote: string }[];
+  googleHref: string;
+  photos: readonly { src: string; alt: string }[];
+};
+
+const { page, title, blocks, stock, reviews, googleHref, photos } = Astro.props;
+const runs = placeContactDetails(page, brochureRuns(blocks));
+const columns = gradeColumns(page, runs);
+
+function placeContactDetails(current: BrochurePage, source: readonly BrochureRun[]): BrochureRun[] {
+  if (current !== "contact") return [...source];
+  const placed: BrochureRun[] = [];
+  for (let index = 0; index < source.length; index++) {
+    const run = source[index];
+    const following = source[index + 1];
+    if (run?.kind === "opening" && following?.kind === "details") {
+      placed.push({ ...run, withDetails: true });
+      index += 1;
+      continue;
+    }
+    if (run) placed.push(run);
+  }
+  return placed;
+}
+
+function gradeColumns(current: BrochurePage, source: readonly BrochureRun[]) {
+  if (current !== "grade-sheets") return undefined;
+  const exhibit = source.at(-1);
+  if (exhibit?.kind !== "exhibit") return undefined;
+  const rest = source.slice(0, -1);
+  if (rest.some((run) => run.kind !== "opening" && run.kind !== "sections")) return undefined;
+  const sectionFollowedByOpening = rest.some(
+    (run, index) => run.kind === "sections" && rest[index + 1]?.kind === "opening",
+  );
+  if (sectionFollowedByOpening) return undefined;
+  return {
+    openings: rest.filter((run) => run.kind === "opening"),
+    sections: rest.flatMap((run) => (run.kind === "sections" ? run.sections : [])),
+    exhibit,
+  };
+}
+---
+
+{
+  columns ? (
+    <>
+      {columns.openings.map((run) => (
+        <Opening page={page} title={title} body={run.body} linkLabel={run.linkLabel} linkHref={run.linkHref} />
+      ))}
+      <div class="mx-auto grid w-full max-w-[80rem] grid-cols-1 items-start gap-10 px-[clamp(1rem,4vw,2.5rem)] pt-5 pb-[clamp(2.5rem,6vw,4.5rem)] md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-x-16">
+        <article>
+          {columns.sections.length > 0 && <SectionGroup page={page} sections={columns.sections} nested />}
+        </article>
+        <GradeExhibit caption={columns.exhibit.caption} />
+      </div>
+    </>
+  ) : (
+    runs.map((run) => {
+      if (run.kind === "opening") {
+        return (
+          <Opening page={page} title={title} body={run.body} linkLabel={run.linkLabel} linkHref={run.linkHref}>
+            {run.withDetails && <ContactDetails />}
+          </Opening>
+        );
+      }
+      if (run.kind === "sections") return <SectionGroup page={page} sections={run.sections} />;
+      if (run.kind === "stock") return <StockPreview heading={run.heading} stock={stock} />;
+      if (run.kind === "reviews") return <Reviews heading={run.heading} reviews={reviews} googleHref={googleHref} />;
+      if (run.kind === "photos") return <ImportPhotos heading={run.heading} photos={photos} />;
+      if (run.kind === "details") {
+        return (
+          <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)] pb-[clamp(2.5rem,6vw,4.5rem)]">
+            <ContactDetails />
+          </div>
+        );
+      }
+      return (
+        <div class="mx-auto w-full max-w-[40rem] px-[clamp(1rem,4vw,2.5rem)] py-[clamp(2.5rem,6vw,4.5rem)]">
+          <GradeExhibit caption={run.caption} />
+        </div>
+      );
+    })
+  )
+}

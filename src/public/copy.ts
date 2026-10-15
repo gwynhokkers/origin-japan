@@ -1,4 +1,5 @@
-import type { ImportPhoto, SiteContent } from "../catalogue";
+import type { BrochureBlock, ImportPhoto, SiteContent, Vehicle } from "../catalogue";
+import { isOnStock, listStock } from "./vehicles";
 
 export type CopyBlock = { kind: "heading" | "paragraph"; text: string };
 export type CopySection = { heading: string; paragraphs: string[] };
@@ -82,8 +83,99 @@ export const defaultContact = "Please feel free to ask any questions about a sto
 
 export const defaultPrivacy = "Origin Japan Ltd keeps the details you send when you ask about a vehicle or a personal import. We use your name, email, and message to reply to you. We do not sell those details. To ask for a copy, or to ask us to delete them, email info@originjapan.co.uk.";
 
-export function pageCopy(content: SiteContent, slug: string): { title?: string; body?: string } | undefined {
+export function pageCopy(content: SiteContent, slug: string) {
   return content.pages?.find((page) => page.slug === slug);
+}
+
+export type BrochurePage = "home" | "personal-import" | "grade-sheets" | "contact" | "privacy";
+
+/** Blocks Adam saved, or the page's current copy arranged as those same components. */
+export function pageBlocks(
+  slug: BrochurePage,
+  page: { body?: string; blocks?: readonly BrochureBlock[] } | undefined,
+): BrochureBlock[] {
+  if (page?.blocks && page.blocks.length > 0) return [...page.blocks];
+  const { intro, sections } = copySections(page?.body?.trim() || defaultBody(slug));
+  const opening: BrochureBlock = { kind: "opening", body: intro.join("\n\n") || undefined };
+  const sectionBlocks: BrochureBlock[] = sections.map((section) => ({
+    kind: "section",
+    heading: section.heading,
+    body: section.paragraphs.join("\n\n"),
+  }));
+  switch (slug) {
+    case "home":
+      return [
+        { kind: "opening", body: opening.body, linkLabel: "Current Stock", linkHref: "/stock" },
+        { kind: "stock", heading: "In stock" },
+        ...sectionBlocks,
+        { kind: "reviews", heading: "Brilliant reviews" },
+      ];
+    case "personal-import":
+      return [opening, ...sectionBlocks, { kind: "photos", heading: "Previous personal imports" }];
+    case "grade-sheets":
+      return [opening, ...sectionBlocks, { kind: "exhibit" }];
+    case "contact":
+      return [opening, ...sectionBlocks, { kind: "details" }];
+    case "privacy":
+      return [opening, ...sectionBlocks];
+  }
+}
+
+export function stockPreview(vehicles: readonly Vehicle[]): Vehicle[] {
+  return listStock(vehicles.filter(isOnStock))
+    .filter((vehicle) => vehicle.slug)
+    .slice(0, 3);
+}
+
+export type BrochureRun =
+  | { kind: "opening"; body?: string; linkLabel?: string; linkHref?: string; withDetails?: boolean }
+  | { kind: "sections"; sections: CopySection[] }
+  | { kind: "stock"; heading?: string }
+  | { kind: "reviews"; heading?: string }
+  | { kind: "photos"; heading?: string }
+  | { kind: "details" }
+  | { kind: "exhibit"; caption?: string };
+
+/** Consecutive section blocks stay together so a grid does not split them. */
+export function brochureRuns(blocks: readonly BrochureBlock[]): BrochureRun[] {
+  const runs: BrochureRun[] = [];
+  for (const block of blocks) {
+    if (block.kind === "section") {
+      const section: CopySection = { heading: block.heading, paragraphs: copyParagraphs(block.body) };
+      const last = runs.at(-1);
+      if (last?.kind === "sections") last.sections.push(section);
+      else runs.push({ kind: "sections", sections: [section] });
+      continue;
+    }
+    if (block.kind === "opening") {
+      runs.push({ kind: "opening", body: block.body, linkLabel: block.linkLabel, linkHref: block.linkHref });
+      continue;
+    }
+    runs.push(block);
+  }
+  return runs;
+}
+
+export function copyParagraphs(body: string | undefined): string[] {
+  return (body ?? "")
+    .split(/\n\n+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function defaultBody(slug: BrochurePage): string {
+  switch (slug) {
+    case "home":
+      return defaultHomeBody;
+    case "personal-import":
+      return defaultPersonalImport;
+    case "grade-sheets":
+      return defaultGradeSheets;
+    case "contact":
+      return defaultContact;
+    case "privacy":
+      return defaultPrivacy;
+  }
 }
 
 export function copyBlocks(body: string): CopyBlock[] {

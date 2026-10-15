@@ -1,6 +1,6 @@
 import { ContentRepository, getEmDashCollection } from "emdash";
 import { getDb } from "emdash/runtime";
-import type { Catalogue, ImportPhoto, Lead, PageCopy, Review, SiteContent, Vehicle, VehicleEnquiryInput } from "./catalogue";
+import type { BrochureBlock, Catalogue, ImportPhoto, Lead, PageCopy, Review, SiteContent, Vehicle, VehicleEnquiryInput } from "./catalogue";
 import { upsertVehicle } from "./save-vehicle";
 
 export const emdashCatalogue: Catalogue = {
@@ -66,7 +66,46 @@ function pageFromEntry(entry: SiteEntry): PageCopy[] {
   const data = recordData(entry);
   const slug = pageSlug(entry);
   if (!slug) return [];
-  return [{ slug, title: stringValue(data.title), body: stringValue(data.body) }];
+  const blocks = blocksFrom(data.sections);
+  const page: PageCopy = { slug, title: stringValue(data.title), body: stringValue(data.body) };
+  if (blocks.length > 0) page.blocks = blocks;
+  return [page];
+}
+
+function blocksFrom(value: unknown): BrochureBlock[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap(blockFrom);
+}
+
+function blockFrom(value: unknown): BrochureBlock[] {
+  const block = recordValue(value);
+  const type = stringValue(block?._type);
+  if (!block || !type) return [];
+  const heading = stringValue(block.heading)?.trim();
+  const body = stringValue(block.body);
+  switch (type) {
+    case "opening":
+      return [{
+        kind: "opening",
+        body,
+        linkLabel: stringValue(block.link_label)?.trim() || undefined,
+        linkHref: stringValue(block.link_url)?.trim() || undefined,
+      }];
+    case "section":
+      return heading ? [{ kind: "section", heading, body }] : [];
+    case "stock":
+      return [{ kind: "stock", heading: heading || undefined }];
+    case "reviews":
+      return [{ kind: "reviews", heading: heading || undefined }];
+    case "photos":
+      return [{ kind: "photos", heading: heading || undefined }];
+    case "details":
+      return [{ kind: "details" }];
+    case "exhibit":
+      return [{ kind: "exhibit", caption: stringValue(block.caption)?.trim() || undefined }];
+    default:
+      return [];
+  }
 }
 
 function pageSlug(entry: SiteEntry): string | undefined {

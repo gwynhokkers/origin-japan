@@ -24,11 +24,22 @@ export type Vehicle = {
   order?: number;
 };
 
-/** Copy Adam edits for one public page. */
+/** A component Adam places on a brochure page. Buyers read the blocks in this order. */
+export type BrochureBlock =
+  | { kind: "opening"; body?: string; linkLabel?: string; linkHref?: string }
+  | { kind: "section"; heading: string; body?: string }
+  | { kind: "stock"; heading?: string }
+  | { kind: "reviews"; heading?: string }
+  | { kind: "photos"; heading?: string }
+  | { kind: "details" }
+  | { kind: "exhibit"; caption?: string };
+
+/** Copy Adam edits for one public page. Blocks are the sections he can reorder. */
 export type PageCopy = {
   slug: string;
   title?: string;
   body?: string;
+  blocks?: readonly BrochureBlock[];
 };
 
 /** A short review with the reviewer's name. */

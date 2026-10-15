@@ -36,14 +36,81 @@ export interface Lead {
   terms?: Record<string, TaxonomyTerm[]>;
 }
 
+export interface PageSectionsOpeningV1Block {
+  _type: "opening";
+  _version: 1;
+  _key: string;
+  "body"?: string | null;
+  "link_label"?: string | null;
+  "link_url"?: string | null;
+}
+
+export type PageSectionsOpeningBlock = PageSectionsOpeningV1Block;
+
+export interface PageSectionsSectionV1Block {
+  _type: "section";
+  _version: 1;
+  _key: string;
+  "heading": string;
+  "body"?: string | null;
+}
+
+export type PageSectionsSectionBlock = PageSectionsSectionV1Block;
+
+export interface PageSectionsStockV1Block {
+  _type: "stock";
+  _version: 1;
+  _key: string;
+  "heading"?: string | null;
+}
+
+export type PageSectionsStockBlock = PageSectionsStockV1Block;
+
+export interface PageSectionsReviewsV1Block {
+  _type: "reviews";
+  _version: 1;
+  _key: string;
+  "heading"?: string | null;
+}
+
+export type PageSectionsReviewsBlock = PageSectionsReviewsV1Block;
+
+export interface PageSectionsPhotosV1Block {
+  _type: "photos";
+  _version: 1;
+  _key: string;
+  "heading"?: string | null;
+}
+
+export type PageSectionsPhotosBlock = PageSectionsPhotosV1Block;
+
+export interface PageSectionsDetailsV1Block {
+  _type: "details";
+  _version: 1;
+  _key: string;
+}
+
+export type PageSectionsDetailsBlock = PageSectionsDetailsV1Block;
+
+export interface PageSectionsExhibitV1Block {
+  _type: "exhibit";
+  _version: 1;
+  _key: string;
+  "caption"?: string | null;
+}
+
+export type PageSectionsExhibitBlock = PageSectionsExhibitV1Block;
+
+export type PageSectionsBlock = PageSectionsOpeningBlock | PageSectionsSectionBlock | PageSectionsStockBlock | PageSectionsReviewsBlock | PageSectionsPhotosBlock | PageSectionsDetailsBlock | PageSectionsExhibitBlock;
+
 export interface Page {
   id: string;
   slug: string | null;
   status: string;
   key: string;
   title?: string;
-  body?: string;
   google_reviews_url?: string;
+  sections?: PageSectionsBlock[];
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;

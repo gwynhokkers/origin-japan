@@ -1,0 +1,96 @@
+---
+import { sanitizeHref } from "emdash";
+import { copyParagraphs, type BrochurePage } from "../../../public/copy";
+import PageBanner from "../PageBanner.astro";
+
+type Props = {
+  page: BrochurePage;
+  title: string;
+  body?: string;
+  linkLabel?: string;
+  linkHref?: string;
+};
+const { page, title, body, linkLabel, linkHref } = Astro.props;
+const paragraphs = copyParagraphs(body);
+const [lede, ...more] = paragraphs;
+const href = linkHref ? sanitizeHref(linkHref) : "";
+const showLink = Boolean(linkLabel?.trim() && href && href !== "#");
+const linkClass =
+  "inline-flex min-h-11 items-center rounded bg-accent px-5 py-3 font-semibold whitespace-nowrap text-on-accent no-underline hover:bg-accent-hover motion-safe:transition-colors motion-safe:active:scale-[0.98]";
+const headline = title.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+---
+
+{
+  page === "home" && (
+    <>
+      <section class="mx-auto grid w-full max-w-[80rem] grid-cols-1 items-center gap-8 px-[clamp(1rem,4vw,2.5rem)] pt-6 pb-[clamp(2.5rem,6vw,4.5rem)] md:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] md:gap-x-14 md:pt-14" aria-labelledby="home-title">
+        <div>
+          <h1 id="home-title" class="m-0 font-sans text-[clamp(2rem,3.1vw,2.75rem)] leading-[1.12] font-semibold tracking-tight motion-safe:animate-rise" set:html={headline}></h1>
+          {lede && <p class="mt-5 max-w-[46ch] text-[clamp(1.05rem,1.4vw,1.2rem)] text-muted motion-safe:animate-rise motion-safe:delay-75">{lede}</p>}
+          {showLink && (
+            <p class="mt-8 motion-safe:animate-rise motion-safe:delay-150">
+              <a class={linkClass} href={href}>{linkLabel}</a>
+            </p>
+          )}
+        </div>
+        <PageBanner name="home" class="aspect-[16/10] md:aspect-[4/3] max-md:order-first" />
+      </section>
+      {more.length > 0 && (
+        <div class="mx-auto w-full max-w-[65ch] px-[clamp(1rem,4vw,2.5rem)] pb-[clamp(2.5rem,6vw,4.5rem)] [&_p]:mb-3">
+          {more.map((text) => <p class="m-0 mb-3">{text}</p>)}
+        </div>
+      )}
+    </>
+  )
+}
+
+{
+  (page === "personal-import" || page === "grade-sheets") && (
+    <section class="pt-4">
+      <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]">
+        <PageBanner name={page === "personal-import" ? "import" : "grades"} class="aspect-[16/10] md:aspect-[5/2]" />
+        <h1 id="page-title" class="relative -mt-7 inline-block max-w-[calc(100%-1rem)] bg-ground pr-4 pt-3.5 font-display text-[clamp(1.4rem,2.4vw,2rem)] leading-tight font-bold tracking-[0.04em] uppercase md:-mt-[3.25rem] md:pr-7 md:pt-5">{title}</h1>
+      </div>
+      {paragraphs.length > 0 && (
+        <div class="mx-auto w-full max-w-[65ch] px-[clamp(1rem,4vw,2.5rem)] pt-5 pb-[clamp(2.5rem,6vw,4.5rem)] [&_p]:mb-4 [&_p:first-child]:text-[clamp(1.15rem,1.6vw,1.3rem)]">
+          {paragraphs.map((text) => <p>{text}</p>)}
+          {showLink && <p class="mt-6"><a class={linkClass} href={href}>{linkLabel}</a></p>}
+        </div>
+      )}
+    </section>
+  )
+}
+
+{
+  page === "contact" && (
+    <section class="mx-auto grid w-full max-w-[80rem] grid-cols-1 items-start gap-10 px-[clamp(1rem,4vw,2.5rem)] pt-6 pb-[clamp(2.5rem,6vw,4.5rem)] md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-x-16 md:pt-14" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title" class="m-0 font-display text-[clamp(1.4rem,2.4vw,2rem)] leading-tight font-bold tracking-[0.04em] uppercase motion-safe:animate-rise">{title}</h1>
+        {paragraphs.length > 0 && (
+          <div class="max-w-[48ch] text-[1.1rem] text-muted motion-safe:animate-rise motion-safe:delay-75 [&_p]:mt-4">
+            {paragraphs.map((text) => <p>{text}</p>)}
+          </div>
+        )}
+        {showLink && <p class="mt-6"><a class={linkClass} href={href}>{linkLabel}</a></p>}
+        <slot />
+      </div>
+      <PageBanner name="contact" class="aspect-[16/10] md:aspect-[4/5] max-md:order-first" />
+    </section>
+  )
+}
+
+{
+  page === "privacy" && (
+    <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]">
+      <div class="border-b border-line pt-8 pb-5">
+        <h1 class="m-0 font-display text-[clamp(1.4rem,2.4vw,2rem)] leading-tight font-bold tracking-[0.04em] uppercase">{title}</h1>
+      </div>
+      {(paragraphs.length > 0 || showLink) && (
+        <div class="max-w-[65ch] py-5 pb-[clamp(2.5rem,6vw,4.5rem)] [&_p]:mb-4">
+          {paragraphs.map((text) => <p>{text}</p>)}
+          {showLink && <p><a class={linkClass} href={href}>{linkLabel}</a></p>}
+        </div>
+      )}
+    </div>
+  )
+}
