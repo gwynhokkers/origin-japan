@@ -24,10 +24,21 @@ export type Vehicle = {
   order?: number;
 };
 
+/** A picture Adam attaches to a brochure block. Clearing it removes the picture. */
+export type BlockImage = { src: string; alt?: string };
+
 /** A component Adam places on a brochure page. Buyers read the blocks in this order. */
 export type BrochureBlock =
   | { kind: "opening"; body?: string; linkLabel?: string; linkHref?: string }
   | { kind: "section"; heading: string; body?: string }
+  | {
+      kind: "feature";
+      heading: string;
+      body?: string;
+      image?: BlockImage;
+      linkLabel?: string;
+      linkHref?: string;
+    }
   | { kind: "stock"; heading?: string }
   | { kind: "reviews"; heading?: string }
   | { kind: "photos"; heading?: string }

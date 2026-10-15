@@ -3,6 +3,7 @@ import type { BrochureBlock, Vehicle } from "../../../catalogue";
 import { brochureRuns, type BrochurePage, type BrochureRun } from "../../../public/copy";
 import Reviews from "../Reviews.astro";
 import ContactDetails from "./ContactDetails.astro";
+import Feature from "./Feature.astro";
 import GradeExhibit from "./GradeExhibit.astro";
 import ImportPhotos from "./ImportPhotos.astro";
 import Opening from "./Opening.astro";
@@ -80,6 +81,17 @@ function gradeColumns(current: BrochurePage, source: readonly BrochureRun[]) {
         );
       }
       if (run.kind === "sections") return <SectionGroup page={page} sections={run.sections} />;
+      if (run.kind === "feature") {
+        return (
+          <Feature
+            heading={run.heading}
+            body={run.body}
+            image={run.image}
+            linkLabel={run.linkLabel}
+            linkHref={run.linkHref}
+          />
+        );
+      }
       if (run.kind === "stock") return <StockPreview heading={run.heading} stock={stock} />;
       if (run.kind === "reviews") return <Reviews heading={run.heading} reviews={reviews} googleHref={googleHref} />;
       if (run.kind === "photos") return <ImportPhotos heading={run.heading} photos={photos} />;

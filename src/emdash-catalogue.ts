@@ -1,6 +1,6 @@
 import { ContentRepository, getEmDashCollection } from "emdash";
 import { getDb } from "emdash/runtime";
-import type { BrochureBlock, Catalogue, ImportPhoto, Lead, PageCopy, Review, SiteContent, Vehicle, VehicleEnquiryInput } from "./catalogue";
+import type { BlockImage, BrochureBlock, Catalogue, ImportPhoto, Lead, PageCopy, Review, SiteContent, Vehicle, VehicleEnquiryInput } from "./catalogue";
 import { upsertVehicle } from "./save-vehicle";
 
 export const emdashCatalogue: Catalogue = {
@@ -93,6 +93,17 @@ function blockFrom(value: unknown): BrochureBlock[] {
       }];
     case "section":
       return heading ? [{ kind: "section", heading, body }] : [];
+    case "feature":
+      return heading
+        ? [{
+            kind: "feature",
+            heading,
+            body,
+            image: blockImage(block.image),
+            linkLabel: stringValue(block.link_label)?.trim() || undefined,
+            linkHref: stringValue(block.link_url)?.trim() || undefined,
+          }]
+        : [];
     case "stock":
       return [{ kind: "stock", heading: heading || undefined }];
     case "reviews":
@@ -147,13 +158,23 @@ function byOrder(a: SiteEntry, b: SiteEntry): number {
   return a.id.localeCompare(b.id);
 }
 
+function blockImage(value: unknown): BlockImage | undefined {
+  const src = imageSource(value);
+  if (!src) return undefined;
+  const media = recordValue(value);
+  const alt = stringValue(media?.alt)?.trim() || stringValue(recordValue(media?.asset)?.alt)?.trim();
+  return alt ? { src, alt } : { src };
+}
+
 function imageSource(value: unknown): string | undefined {
   if (typeof value === "string" && value.trim()) return value.trim();
   const media = recordValue(value);
-  const src = stringValue(media?.src);
+  if (!media) return undefined;
+  const src = stringValue(media.src)?.trim() || stringValue(media.url)?.trim();
   if (src) return src;
-  const storageKey = stringValue(recordValue(media?.meta)?.storageKey);
-  return storageKey ? `/_emdash/api/media/file/${storageKey}` : undefined;
+  const storageKey = stringValue(recordValue(media.meta)?.storageKey);
+  if (storageKey) return `/_emdash/api/media/file/${storageKey}`;
+  return media.asset ? imageSource(media.asset) : undefined;
 }
 
 async function saveVehicle(vehicle: Vehicle): Promise<void> {

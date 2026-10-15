@@ -57,23 +57,45 @@
 }
 
 @keyframes rise {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 @keyframes settle {
-  from { opacity: 0; transform: scale(1.02); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @layer base {
-  html { color-scheme: light dark; }
+  html {
+    color-scheme: light dark;
+  }
+  html[data-theme="light"] {
+    color-scheme: light;
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
   a {
     color: inherit;
     text-decoration-color: var(--color-accent);
     text-decoration-thickness: 2px;
     text-underline-offset: 0.25em;
   }
-  a:hover { text-decoration-color: currentColor; }
+  a:hover {
+    text-decoration-color: currentColor;
+  }
   a:focus-visible,
   button:focus-visible,
   summary:focus-visible {
@@ -88,6 +110,211 @@
   .badge {
     @apply m-0 inline-block justify-self-start self-start rounded bg-accent px-2 py-1 font-display text-[0.62rem] leading-none font-bold tracking-[0.08em] text-on-accent uppercase;
   }
+
+  .btn,
+  .btn-ghost {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.75rem 1.25rem;
+    overflow: hidden;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    line-height: 1.25;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      transform 0.3s var(--ease-settle),
+      box-shadow 0.3s var(--ease-settle),
+      background-color 0.3s var(--ease-settle),
+      border-color 0.3s var(--ease-settle);
+  }
+  /* A headlight glint passes over the surface once per hover. */
+  .btn::after,
+  .btn-ghost::after {
+    content: "";
+    position: absolute;
+    inset: -20% auto -20% 0;
+    z-index: -1;
+    width: 45%;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      color-mix(in srgb, var(--glint) 27%, transparent) 30%,
+      var(--glint) 50%,
+      color-mix(in srgb, var(--glint) 27%, transparent) 70%,
+      transparent 100%
+    );
+    transform: translateX(-120%) skewX(-18deg);
+    pointer-events: none;
+  }
+  .btn:hover,
+  .btn:focus-visible,
+  .btn-ghost:hover,
+  .btn-ghost:focus-visible {
+    transform: translateY(-1px);
+  }
+  .btn:hover::after,
+  .btn:focus-visible::after,
+  .btn-ghost:hover::after,
+  .btn-ghost:focus-visible::after {
+    transform: translateX(330%) skewX(-18deg);
+    transition: transform 0.75s var(--ease-settle);
+  }
+
+  .btn {
+    --glint: rgb(255 255 255 / 0.55);
+    border: 0;
+    background-color: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+  .btn:hover,
+  .btn:focus-visible {
+    background-color: var(--color-accent-hover);
+    box-shadow: 0 12px 24px -14px color-mix(in srgb, var(--color-accent) 80%, transparent);
+  }
+
+  .btn-ghost {
+    --glint: color-mix(in srgb, currentColor 22%, transparent);
+    border: 1px solid color-mix(in srgb, currentColor 38%, transparent);
+    background-color: color-mix(in srgb, currentColor 6%, transparent);
+    color: inherit;
+  }
+  .btn-ghost:hover,
+  .btn-ghost:focus-visible {
+    border-color: color-mix(in srgb, currentColor 70%, transparent);
+    background-color: color-mix(in srgb, currentColor 11%, transparent);
+    box-shadow: 0 12px 24px -14px rgb(8 10 12 / 0.6);
+  }
+
+  .btn:active,
+  .btn-ghost:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /*
+    A tinted slab sweeps in from the left on hover and carries on out to the
+    right on leave. The origin swap is instant, so the exit runs the other way.
+  */
+  .page-nav {
+    scrollbar-width: none;
+  }
+  .page-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-link {
+    position: relative;
+    isolation: isolate;
+    text-decoration: none;
+  }
+  .nav-link::before {
+    content: "";
+    position: absolute;
+    inset: var(--slab-inset, 0.6rem) 0;
+    z-index: -1;
+    border-left: 2px solid var(--color-accent);
+    background-color: color-mix(in srgb, var(--color-accent) 16%, transparent);
+    transform: skewX(-14deg) scaleX(0);
+    transform-origin: right;
+    transition: transform 0.4s var(--ease-settle);
+    pointer-events: none;
+  }
+  .nav-link:hover::before,
+  .nav-link:focus-visible::before,
+  .nav-link[aria-current="page"]::before {
+    transform: skewX(-14deg) scaleX(1);
+    transform-origin: left;
+  }
+  .nav-link[aria-current="page"]::before {
+    background-color: color-mix(in srgb, var(--color-accent) 24%, transparent);
+  }
+
+  .brand-lockup .brand-lockup-carbon,
+  .brand-lockup .brand-lockup-ink {
+    width: auto;
+    height: 100%;
+  }
+  .brand-lockup .brand-lockup-carbon {
+    display: block;
+  }
+  .brand-lockup .brand-lockup-ink {
+    display: none;
+  }
+
+  .theme-toggle .icon-sun {
+    display: none;
+  }
+  .theme-toggle:hover,
+  .theme-toggle:focus-visible,
+  .menu-toggle:hover,
+  .menu-toggle:focus-visible {
+    color: var(--color-accent);
+  }
+
+  /* Two strokes, the lower one shorter, that meet into an X. */
+  .menu-stroke {
+    position: absolute;
+    right: 0.75rem;
+    height: 1.75px;
+    border-radius: 1px;
+    background-color: currentColor;
+    transition:
+      transform 0.4s var(--ease-settle),
+      width 0.4s var(--ease-settle);
+  }
+  .menu-stroke-top {
+    width: 1.25rem;
+    transform: translateY(-3.5px);
+  }
+  .menu-stroke-bottom {
+    width: 0.8rem;
+    transform: translateY(3.5px);
+  }
+  .menu-toggle:hover .menu-stroke-bottom {
+    width: 1.25rem;
+  }
+  .menu-toggle[aria-expanded="true"] .menu-stroke {
+    width: 1.25rem;
+  }
+  .menu-toggle[aria-expanded="true"] .menu-stroke-top {
+    transform: rotate(45deg);
+  }
+  .menu-toggle[aria-expanded="true"] .menu-stroke-bottom {
+    transform: rotate(-45deg);
+  }
+
+  /* The sheet opens by height, so the page under it does not reflow. */
+  .site-menu {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+      grid-template-rows 0.45s var(--ease-settle),
+      visibility 0s linear 0.45s;
+  }
+  .site-menu[data-open] {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition:
+      grid-template-rows 0.45s var(--ease-settle),
+      visibility 0s;
+  }
+  .site-menu-sheet {
+    min-height: calc(100dvh - 5.25rem);
+    box-shadow: 0 24px 32px -28px rgb(8 10 12 / 0.45);
+  }
+  .site-menu[data-open] .site-menu-item {
+    animation: rise 0.6s var(--ease-settle) both;
+    animation-delay: calc(var(--i, 0) * 40ms + 90ms);
+  }
+}
+
+html.menu-open {
+  overflow: hidden;
 }
 
 /* Decorative page banners. Tailwind has no utility for a different image per viewport. */
@@ -108,17 +335,184 @@
   background-position: 60% 60%;
 }
 @media (max-width: 767px) {
-  .banner-home { background-image: url("/images/home-dusk-row-1000.jpg"); }
-  .banner-import { background-image: url("/images/import-skylines-fuji-1000.jpg"); }
-  .banner-grades { background-image: url("/images/grade-trueno-1000.jpg"); }
-  .banner-contact { background-image: url("/images/contact-supra-gtr-900.jpg"); }
+  .banner-home {
+    background-image: url("/images/home-dusk-row-1000.jpg");
+  }
+  .banner-import {
+    background-image: url("/images/import-skylines-fuji-1000.jpg");
+  }
+  .banner-grades {
+    background-image: url("/images/grade-trueno-1000.jpg");
+  }
+  .banner-contact {
+    background-image: url("/images/contact-supra-gtr-900.jpg");
+  }
+}
+
+/*
+  Homepage hero. The dusk still is the first paint. The rain clip fades in
+  over it only after playback starts. Type stays light in either scheme.
+*/
+.home-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: min(62dvh, 32rem);
+  overflow: hidden;
+  background: #101214;
+  color: #f4f6f8;
+}
+@media (min-width: 768px) {
+  .home-hero {
+    min-height: min(78dvh, 46rem);
+  }
+}
+.home-hero-still,
+.home-hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.home-hero-still {
+  object-position: 62% 70%;
+}
+.home-hero-video {
+  z-index: 1;
+  object-position: 72% center;
+  opacity: 0;
+}
+.home-hero-video.is-on {
+  opacity: 1;
+  transition: opacity 0.8s var(--ease-settle);
+}
+.home-hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    to top,
+    rgb(8 10 12 / 0.88) 0%,
+    rgb(8 10 12 / 0.72) 46%,
+    rgb(8 10 12 / 0.45) 100%
+  );
+  pointer-events: none;
+}
+
+.home-hero-copy {
+  position: relative;
+  z-index: 3;
+  padding: clamp(1.5rem, 4vw, 2.75rem) 0 clamp(1.25rem, 3vw, 2rem);
+}
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1.5rem;
+  margin: 1.75rem 0 0;
+}
+.home-hero :focus-visible {
+  outline-color: #f4f6f8;
+}
+.home-facts {
+  position: relative;
+  z-index: 3;
+  background-color: rgb(8 10 12 / 0.82);
+  border-top: 1px solid rgb(244 246 248 / 0.16);
+}
+.home-facts ul {
+  display: grid;
+  grid-template-columns: 1fr;
+  width: min(80rem, 100%);
+  margin: 0 auto;
+  padding-inline: clamp(1rem, 4vw, 2.5rem);
+  list-style: none;
+}
+.home-facts li {
+  margin: 0;
+  padding: 1.85rem 0;
+  color: #d7dde4;
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+.home-facts li + li {
+  box-shadow: inset 0 1px 0 rgb(244 246 248 / 0.16);
+}
+@media (min-width: 768px) {
+  .home-facts ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .home-facts li {
+    padding-right: 1.25rem;
+  }
+  .home-facts li + li {
+    padding-left: 1.25rem;
+    box-shadow: inset 1px 0 0 rgb(244 246 248 / 0.16);
+  }
+}
+
+/*
+  Carbon fibre photograph. A filtered layer lifts the twill so it reads
+  as a material, then a scrim keeps type readable. Light mode drops the
+  header photograph and paints that band in the accent. The footer stays dark.
+*/
+.carbon-band,
+.carbon-mat {
+  position: relative;
+  isolation: isolate;
+  background-color: #101214;
+  color: #f4f6f8;
+  --band-muted: #d0d6dd;
+  --band-ink: #f4f6f8;
+}
+.carbon-band::before,
+.carbon-mat::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("/images/carbon-fibre-detail.jpg");
+  background-position: center 42%;
+  background-size: cover;
+  filter: contrast(1.7) brightness(0.72);
+  pointer-events: none;
+}
+.carbon-mat {
+  overflow: hidden;
+}
+.carbon-mat::before {
+  filter: contrast(1.85) brightness(0.9);
+}
+@media (min-width: 1024px) {
+  .brand-mark {
+    left: max(0px, calc((100% - 80rem) / 2));
+  }
+}
+.carbon-band::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(8 10 12 / 0.22);
+  pointer-events: none;
+}
+header .carbon-band {
+  background-color: var(--header-band, #101214);
+  --band-muted: var(--header-band-muted, #d0d6dd);
+  --band-ink: var(--header-band-ink, #f4f6f8);
+  color: var(--band-ink);
 }
 
 /*
   The sort summary is pinned as <summary>Sort</summary>, so it cannot carry utilities.
   Closed details hide their contents; desktop keeps the links in the page head.
 */
-.stock-controls > summary { display: none; }
+.stock-controls > summary {
+  display: none;
+}
 @media (max-width: 767px) {
   .stock-controls > summary {
     display: inline-flex;
@@ -136,7 +530,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --color-ground: #121417;
     --color-ink: #eceef1;
     --color-muted: #a4abb3;
@@ -145,6 +539,67 @@
     --color-field: #171a1e;
     --color-field-line: #8c949e;
   }
+  :root:not([data-theme="light"]) .theme-toggle .icon-sun {
+    display: block;
+  }
+  :root:not([data-theme="light"]) .theme-toggle .icon-moon {
+    display: none;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-ground: #121417;
+  --color-ink: #eceef1;
+  --color-muted: #a4abb3;
+  --color-line: #2b3036;
+  --color-surface: #1c2025;
+  --color-field: #171a1e;
+  --color-field-line: #8c949e;
+}
+:root[data-theme="dark"] .theme-toggle .icon-sun {
+  display: block;
+}
+:root[data-theme="dark"] .theme-toggle .icon-moon {
+  display: none;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --header-band: var(--color-accent);
+    --header-band-muted: #fff;
+    --header-band-ink: #fff;
+  }
+  :root:not([data-theme="dark"]) header .carbon-band::before,
+  :root:not([data-theme="dark"]) header .carbon-band::after {
+    content: none;
+  }
+  :root:not([data-theme="dark"]) .brand-lockup .brand-lockup-carbon {
+    display: none;
+  }
+  :root:not([data-theme="dark"]) .brand-lockup .brand-lockup-ink {
+    display: block;
+  }
+}
+:root[data-theme="light"] {
+  --header-band: var(--color-accent);
+  --header-band-muted: #fff;
+  --header-band-ink: #fff;
+}
+:root[data-theme="light"] header .carbon-band::before,
+:root[data-theme="light"] header .carbon-band::after {
+  content: none;
+}
+:root[data-theme="light"] .brand-lockup .brand-lockup-carbon {
+  display: none;
+}
+:root[data-theme="light"] .brand-lockup .brand-lockup-ink {
+  display: block;
+}
+:root[data-theme="dark"] .brand-lockup .brand-lockup-ink {
+  display: none;
+}
+:root[data-theme="dark"] .brand-lockup .brand-lockup-carbon {
+  display: block;
 }
 
 @media (prefers-reduced-motion: reduce) {

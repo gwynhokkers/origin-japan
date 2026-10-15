@@ -1,0 +1,55 @@
+---
+import { sanitizeHref } from "emdash";
+import type { BlockImage } from "../../../catalogue";
+import { copyParagraphs } from "../../../public/copy";
+import CopyBlocks from "../CopyBlocks.astro";
+
+type Props = {
+  heading: string;
+  body?: string;
+  image?: BlockImage;
+  linkLabel?: string;
+  linkHref?: string;
+};
+const { heading, body, image, linkLabel, linkHref } = Astro.props;
+const paragraphs = copyParagraphs(body);
+const href = linkHref ? sanitizeHref(linkHref) : "";
+const showLink = Boolean(linkLabel?.trim() && href && href !== "#");
+const src = image?.src.trim() ?? "";
+const headingClass = "m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase";
+---
+
+<section class="border-t border-line py-[clamp(2.5rem,6vw,4.5rem)]">
+  <div
+    class:list={[
+      "mx-auto grid w-full max-w-[80rem] items-center gap-8 px-[clamp(1rem,4vw,2.5rem)]",
+      src && "md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-x-16",
+    ]}
+  >
+    {
+      src && (
+        <img
+          src={src}
+          alt={image?.alt?.trim() || ""}
+          width="1400"
+          height="1092"
+          loading="lazy"
+          class="aspect-[3/2] w-full rounded bg-surface object-cover max-md:order-first"
+        />
+      )
+    }
+    <div>
+      <h2 class={headingClass}>{heading}</h2>
+      {
+        paragraphs.length > 0 && (
+          <div class="max-w-[46ch] [&_p]:mt-4">
+            <CopyBlocks blocks={paragraphs.map((text) => ({ kind: "paragraph", text }))} />
+          </div>
+        )
+      }
+      {showLink && (
+        <p class="mt-6"><a class="btn-ghost" href={href}>{linkLabel}</a></p>
+      )}
+    </div>
+  </div>
+</section>

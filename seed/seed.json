@@ -221,6 +221,7 @@
           "validation": {
             "allowedTypes": [
               "opening",
+              "feature",
               "section",
               "stock",
               "reviews",
@@ -318,11 +319,21 @@
               "heading": "In stock"
             },
             {
-              "_type": "section",
+              "_type": "feature",
               "_version": 1,
-              "_key": "home-section-1",
+              "_key": "home-feature",
               "heading": "Personal imports",
-              "body": "We provide a personal import service to help you find and secure a car from Japan. With access to many trade only auctions, we inspect these vehicles before purchase."
+              "body": "We provide a personal import service to help you find and secure a car from Japan. With access to many trade only auctions, we inspect these vehicles before purchase.",
+              "image": {
+                "provider": "external",
+                "id": "",
+                "src": "/images/suzuki-carry-sunset-1400.jpg",
+                "alt": "A white Suzuki Carry kei truck at sunset",
+                "width": 1400,
+                "height": 1092
+              },
+              "link_label": "Personal Import Service",
+              "link_url": "/personal-import"
             },
             {
               "_type": "section",
@@ -524,6 +535,46 @@
         {
           "version": 1,
           "fields": [
+            {
+              "slug": "body",
+              "label": "Body",
+              "type": "text"
+            },
+            {
+              "slug": "link_label",
+              "label": "Link label",
+              "type": "string"
+            },
+            {
+              "slug": "link_url",
+              "label": "Link URL",
+              "type": "url"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "feature",
+      "label": "Photo and copy",
+      "description": "A photo beside a heading, the copy, and an optional link",
+      "category": "Brochure",
+      "currentVersion": 1,
+      "versions": [
+        {
+          "version": 1,
+          "fields": [
+            {
+              "slug": "image",
+              "label": "Photo",
+              "type": "image"
+            },
+            {
+              "slug": "heading",
+              "label": "Heading",
+              "type": "string",
+              "required": true
+            },
             {
               "slug": "body",
               "label": "Body",

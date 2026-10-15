@@ -80,7 +80,10 @@ test("personal import explains the service and shows photos Adam adds and remove
   expect(explained).toContain("Sourcing");
   expect(explained).toContain("Inspection");
   expect(explained).toContain("before bidding");
-  expect(explained).not.toContain("<img");
+  expect([...explained.matchAll(/<img\b[^>]*src="([^"]+)"/g)].map((match) => match[1])).toEqual([
+    "/images/origin-japan-lockup.png",
+    "/images/origin-japan-lockup.png",
+  ]);
 
   expect(shown).toContain('src="https://photos.example/dock.jpg"');
   expect(shown).toContain('src="https://photos.example/yard.jpg"');
@@ -239,12 +242,74 @@ test("brochure pages follow the section order Adam saved", async () => {
   expect(at(privacy, "What we keep")).toBeLessThan(at(privacy, "This page says what happens to a lead."));
 });
 
+test("the picture stays on the block Adam attached it to", async () => {
+  const catalogue = inMemoryCatalogue({
+    site: {
+      pages: [
+        {
+          slug: "home",
+          blocks: [
+            { kind: "section", heading: "New and used parts", body: "Yahoo Japan and Up Garage." },
+            {
+              kind: "feature",
+              heading: "Personal imports",
+              body: "We inspect these vehicles before purchase.",
+              image: { src: "/images/dock.jpg", alt: "A car at the dock" },
+              linkLabel: "Personal Import Service",
+              linkHref: "/personal-import",
+            },
+          ],
+        },
+      ],
+    },
+  });
+
+  const html = await pageText(catalogue, "/");
+
+  expect(at(html, "New and used parts")).toBeLessThan(at(html, "/images/dock.jpg"));
+  expect(html).toContain('alt="A car at the dock"');
+  expect(html).not.toContain("suzuki-carry-sunset");
+  const picture = html.slice(at(html, "/images/dock.jpg"));
+  expect(picture).toContain("Personal imports");
+  expect(picture).toContain('href="/personal-import"');
+});
+
+test("clearing a block's picture removes it from the page", async () => {
+  const catalogue = inMemoryCatalogue({
+    site: {
+      pages: [
+        {
+          slug: "home",
+          blocks: [
+            {
+              kind: "feature",
+              heading: "Personal imports",
+              body: "We inspect these vehicles before purchase.",
+            },
+          ],
+        },
+      ],
+    },
+  });
+
+  const html = await pageText(catalogue, "/");
+
+  expect(html).toContain("Personal imports");
+  expect(html).toContain("We inspect these vehicles before purchase.");
+  expect(html).not.toContain("carbon-mat");
+  expect([...html.matchAll(/<img\b[^>]*src="([^"]+)"/g)].map((match) => match[1])).toEqual([
+    "/images/origin-japan-lockup.png",
+    "/images/origin-japan-lockup.png",
+  ]);
+});
+
 test("home offers current stock, parts, partners, and named reviews", async () => {
   const response = await requestPublicPage(new Request("http://originjapan.test/"), inMemoryCatalogue());
   const html = await response.text();
 
   expect(response.status).toBe(200);
   expect(html).toContain("So, you're looking for a car from Japan?");
+  expect(html).toContain('src="/images/home-dusk-row-2000.jpg"');
   expect(html).toContain('href="/stock"');
   expect(html).toContain(">Current Stock<");
   expect(html).toContain("Yahoo Japan");
@@ -348,9 +413,15 @@ test("the nav uses the current labels and the header and footer show the Newport
   expect(header).toContain(">Contact<");
   expect(header).toContain('href="/sold"');
   expect(header).toContain(">Sold Stock<");
+  expect(header).toContain('alt="Origin Japan"');
+  expect(header).toContain("/images/origin-japan-lockup.png");
+  expect(header).not.toContain("originjapanimports");
   expect(header).toContain("Origin Japan Ltd");
   expect(header).toContain("Unit D2, Langland Park West, Newport, NP19 4ED");
   expect(header).toContain("07454621101");
+  expect(footer).toContain('alt="Origin Japan"');
+  expect(footer).toContain("/images/origin-japan-lockup.png");
+  expect(footer).not.toContain("originjapanimports");
   expect(footer).toContain("Origin Japan Ltd");
   expect(footer).toContain("Unit D2, Langland Park West, Newport, NP19 4ED");
   expect(footer).toContain("07454621101");
@@ -900,8 +971,9 @@ test("a buyer sees the vehicle, its price, and photos in Adam's order", async ()
   );
   const stockHtml = await stock.text();
   const html = await page.text();
-  const stockPhoto = stockHtml.match(/<img[^>]*src="([^"]+)"/)?.[1];
-  const pagePhotos = [...html.matchAll(/<img[^>]*src="([^"]+)"/g)].map((match) => match[1]);
+  const contentImage = (src: string) => src !== "/images/origin-japan-lockup.png";
+  const stockPhoto = [...stockHtml.matchAll(/<img[^>]*src="([^"]+)"/g)].map((match) => match[1]).find(contentImage);
+  const pagePhotos = [...html.matchAll(/<img[^>]*src="([^"]+)"/g)].map((match) => match[1]).filter(contentImage);
 
   expect(page.status).toBe(200);
   expect(html).toContain("Subaru Levorg 2.0 GT-S 2016");

@@ -1,13 +1,16 @@
 ---
+import BrandLockup from "./BrandLockup.astro";
 import { company, email, phone, postalAddress } from "../../public/contact";
 
 const frame = "mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]";
 ---
 
-<footer class="border-t border-line bg-surface text-sm">
+<footer class="carbon-band border-t border-white/15 text-sm text-[#d7dde4]">
   <div class:list={[frame, "grid grid-cols-1 gap-6 py-10 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] md:gap-x-12"]}>
     <div>
-      <a class="mb-3 inline-block font-display text-[0.95rem] font-bold tracking-[0.08em] uppercase no-underline" href="/">Origin Japan</a>
+      <a class="mb-4 inline-block rounded-sm no-underline focus-visible:outline-[#f4f6f8]" href="/" aria-label="Origin Japan">
+        <BrandLockup class="h-16 md:h-[4.75rem]" loading="lazy" />
+      </a>
       <p class="m-0 mb-1">{company}</p>
       <p class="m-0 mb-1">{postalAddress}</p>
     </div>
@@ -16,8 +19,8 @@ const frame = "mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]";
       <p class="m-0 mb-1"><a class="no-underline hover:underline hover:decoration-accent" href={`mailto:${email}`}>{email}</a></p>
     </div>
     <div>
-      <p class="m-0 mb-1"><a class="no-underline hover:underline hover:decoration-accent" href="/sold">Sold Stock</a></p>
-      <p class="m-0 mb-1"><a class="no-underline hover:underline hover:decoration-accent" href="/privacy">Privacy</a></p>
+      <p class="m-0 mb-1"><a class="nav-link -mx-2 inline-block px-2 py-0.5 [--slab-inset:0]" href="/sold">Sold Stock</a></p>
+      <p class="m-0 mb-1"><a class="nav-link -mx-2 inline-block px-2 py-0.5 [--slab-inset:0]" href="/privacy">Privacy</a></p>
     </div>
   </div>
 </footer>

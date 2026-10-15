@@ -1,10 +1,15 @@
-import type { BrochureBlock, ImportPhoto, SiteContent, Vehicle } from "../catalogue";
+import type { BlockImage, BrochureBlock, ImportPhoto, SiteContent, Vehicle } from "../catalogue";
 import { isOnStock, listStock } from "./vehicles";
 
 export type CopyBlock = { kind: "heading" | "paragraph"; text: string };
 export type CopySection = { heading: string; paragraphs: string[] };
 
 const defaultGoogleReviewsUrl = "https://share.google/gV9fNc1szaKmE150R";
+
+const defaultPersonalImportImage: BlockImage = {
+  src: "/images/suzuki-carry-sunset-1400.jpg",
+  alt: "A white Suzuki Carry kei truck at sunset",
+};
 
 const defaultReviews: readonly { name: string; quote: string }[] = [
   {
@@ -97,17 +102,13 @@ export function pageBlocks(
   if (page?.blocks && page.blocks.length > 0) return [...page.blocks];
   const { intro, sections } = copySections(page?.body?.trim() || defaultBody(slug));
   const opening: BrochureBlock = { kind: "opening", body: intro.join("\n\n") || undefined };
-  const sectionBlocks: BrochureBlock[] = sections.map((section) => ({
-    kind: "section",
-    heading: section.heading,
-    body: section.paragraphs.join("\n\n"),
-  }));
+  const sectionBlocks: BrochureBlock[] = sections.map((section) => sectionBlock(section));
   switch (slug) {
     case "home":
       return [
         { kind: "opening", body: opening.body, linkLabel: "Current Stock", linkHref: "/stock" },
         { kind: "stock", heading: "In stock" },
-        ...sectionBlocks,
+        ...(page?.body?.trim() ? sectionBlocks : defaultHomeBlocks(sections)),
         { kind: "reviews", heading: "Brilliant reviews" },
       ];
     case "personal-import":
@@ -130,6 +131,14 @@ export function stockPreview(vehicles: readonly Vehicle[]): Vehicle[] {
 export type BrochureRun =
   | { kind: "opening"; body?: string; linkLabel?: string; linkHref?: string; withDetails?: boolean }
   | { kind: "sections"; sections: CopySection[] }
+  | {
+      kind: "feature";
+      heading: string;
+      body?: string;
+      image?: BlockImage;
+      linkLabel?: string;
+      linkHref?: string;
+    }
   | { kind: "stock"; heading?: string }
   | { kind: "reviews"; heading?: string }
   | { kind: "photos"; heading?: string }
@@ -161,6 +170,25 @@ export function copyParagraphs(body: string | undefined): string[] {
     .split(/\n\n+/)
     .map((part) => part.trim())
     .filter(Boolean);
+}
+
+function sectionBlock(section: CopySection): BrochureBlock {
+  return { kind: "section", heading: section.heading, body: section.paragraphs.join("\n\n") };
+}
+
+/** The built-in home page. Saved blocks are left as Adam arranged them. */
+function defaultHomeBlocks(sections: readonly CopySection[]): BrochureBlock[] {
+  return sections.map((section) => {
+    if (section.heading !== "Personal imports") return sectionBlock(section);
+    return {
+      kind: "feature",
+      heading: section.heading,
+      body: section.paragraphs.join("\n\n"),
+      image: defaultPersonalImportImage,
+      linkLabel: "Personal Import Service",
+      linkHref: "/personal-import",
+    };
+  });
 }
 
 function defaultBody(slug: BrochurePage): string {

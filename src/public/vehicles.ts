@@ -50,27 +50,26 @@ function hasPublicPrice(vehicle: Vehicle): boolean {
   return typeof price === "number" && Number.isInteger(price) && price > 0;
 }
 
-function isPresentable(vehicle: Vehicle): boolean {
-  const photos = photosOf(vehicle);
+/** Fields a buyer must be able to read. An empty list is a vehicle that can be on the site. */
+export function fieldsMissingToShow(vehicle: Vehicle): string[] {
+  const missing: string[] = [];
   const year = vehicle.year;
   const mileage = vehicle.mileageMiles;
-  return Boolean(
-    present(vehicle.slug) &&
-      present(vehicle.title) &&
-      present(vehicle.make) &&
-      present(vehicle.model) &&
-      bodies.has(present(vehicle.body) ?? "") &&
-      typeof year === "number" &&
-      Number.isInteger(year) &&
-      year >= 1900 &&
-      year <= 2100 &&
-      transmissions.has(present(vehicle.transmission) ?? "") &&
-      typeof mileage === "number" &&
-      Number.isInteger(mileage) &&
-      mileage >= 0 &&
-      photos.length > 0 &&
-      present(vehicle.sellersNotes),
-  );
+  if (!present(vehicle.slug)) missing.push("slug");
+  if (!present(vehicle.title)) missing.push("title");
+  if (!present(vehicle.make)) missing.push("make");
+  if (!present(vehicle.model)) missing.push("model");
+  if (!bodies.has(present(vehicle.body) ?? "")) missing.push("body");
+  if (typeof year !== "number" || !Number.isInteger(year) || year < 1900 || year > 2100) missing.push("year");
+  if (!transmissions.has(present(vehicle.transmission) ?? "")) missing.push("transmission");
+  if (typeof mileage !== "number" || !Number.isInteger(mileage) || mileage < 0) missing.push("mileage");
+  if (photosOf(vehicle).length === 0) missing.push("photos");
+  if (!present(vehicle.sellersNotes)) missing.push("seller's notes");
+  return missing;
+}
+
+function isPresentable(vehicle: Vehicle): boolean {
+  return fieldsMissingToShow(vehicle).length === 0;
 }
 
 function present(value: string | undefined): string | undefined {
