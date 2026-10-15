@@ -1,6 +1,54 @@
 ---
-import { emdashCatalogue } from "../emdash-catalogue";
-import { requestPublicPage } from "../public-site";
+import HomeServices from "../components/public/HomeServices.astro";
+import PageBanner from "../components/public/PageBanner.astro";
+import Reviews from "../components/public/Reviews.astro";
+import StockCard from "../components/public/StockCard.astro";
+import Public from "../layouts/Public.astro";
+import { copySections, defaultHomeBody, defaultHomeHeadline, googleReviewsHref, pageCopy, reviewsFor } from "../public/copy";
+import { isOnStock, listStock } from "../public/vehicles";
+import { publicLocals } from "../public/locals";
 
-return requestPublicPage(Astro.request, emdashCatalogue);
+const { catalogue } = publicLocals(Astro.locals);
+const content = await catalogue.siteContent();
+const edited = pageCopy(content, "home");
+const headline = edited?.title?.trim() || defaultHomeHeadline;
+const { intro, sections } = copySections(edited?.body?.trim() || defaultHomeBody);
+const [lede, ...moreIntro] = intro;
+const stock = listStock((await catalogue.vehicles()).filter(isOnStock))
+  .filter((vehicle) => vehicle.slug)
+  .slice(0, 3);
 ---
+
+<Public title="Origin Japan" banner="home">
+  <section class="mx-auto grid w-full max-w-[80rem] grid-cols-1 items-center gap-8 px-[clamp(1rem,4vw,2.5rem)] pt-6 pb-[clamp(2.5rem,6vw,4.5rem)] md:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] md:gap-x-14 md:pt-14" aria-labelledby="home-title">
+    <div>
+      <h1 id="home-title" class="m-0 font-sans text-[clamp(2rem,3.1vw,2.75rem)] leading-[1.12] font-semibold tracking-tight motion-safe:animate-rise" set:html={headline.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")}></h1>
+      {lede && <p class="mt-5 max-w-[46ch] text-[clamp(1.05rem,1.4vw,1.2rem)] text-muted motion-safe:animate-rise motion-safe:delay-75">{lede}</p>}
+      <p class="mt-8 motion-safe:animate-rise motion-safe:delay-150">
+        <a class="inline-flex min-h-11 items-center rounded bg-accent px-5 py-3 font-semibold whitespace-nowrap text-on-accent no-underline hover:bg-accent-hover motion-safe:transition-colors motion-safe:active:scale-[0.98]" href="/stock">Current Stock</a>
+      </p>
+    </div>
+    <PageBanner name="home" class="aspect-[16/10] md:aspect-[4/3] max-md:order-first" />
+  </section>
+  {
+    moreIntro.length > 0 && (
+      <div class="mx-auto w-full max-w-[65ch] px-[clamp(1rem,4vw,2.5rem)] pb-[clamp(2.5rem,6vw,4.5rem)] [&_p]:mb-3">
+        {moreIntro.map((text) => <p class="m-0 mb-3">{text}</p>)}
+      </div>
+    )
+  }
+  {
+    stock.length > 0 && (
+      <section class="border-t border-line py-[clamp(2.5rem,6vw,4.5rem)]" aria-labelledby="home-stock">
+        <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]">
+          <h2 id="home-stock" class="m-0 mb-7 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase">In stock</h2>
+          <ul class="m-0 grid list-none grid-cols-1 gap-8 p-0 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] data-[count=1]:grid-cols-1 data-[count=3]:md:[&>li:first-child]:row-span-2" data-count={stock.length}>
+            {stock.map((vehicle) => <StockCard vehicle={vehicle} eager featured />)}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+  <HomeServices sections={sections} />
+  <Reviews reviews={reviewsFor(content)} googleHref={googleReviewsHref(content)} />
+</Public>

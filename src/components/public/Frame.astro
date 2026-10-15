@@ -1,0 +1,7 @@
+---
+type Props = { class?: string };
+---
+
+<div class:list={["mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]", Astro.props.class]}>
+  <slot />
+</div>

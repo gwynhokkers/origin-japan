@@ -1,9 +1,15 @@
 import { expect, test } from "vitest";
 import type { Vehicle } from "../src/catalogue";
 import { inMemoryCatalogue } from "../src/in-memory-catalogue";
-import { requestPublicPage } from "../src/public-site";
+import { requestPublicPage } from "./buyer-page";
 
 type EnquiryMail = { to: string; subject: string; text: string };
+
+test("storybook is not a public page", async () => {
+  const response = await requestPublicPage(new Request("http://originjapan.test/storybook"), inMemoryCatalogue());
+
+  expect(response.status).toBe(404);
+});
 
 test("a buyer receives a response from the public site", async () => {
   const response = await requestPublicPage(

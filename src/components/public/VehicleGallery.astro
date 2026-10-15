@@ -1,0 +1,24 @@
+---
+type Props = { photos: readonly string[]; title: string; class?: string };
+const { photos, title, class: className = "" } = Astro.props;
+---
+
+{
+  photos.length > 0 && (
+    <ul class:list={["order-3 m-0 mt-2 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2 md:[&>li:first-child]:col-span-2 md:[&>li:last-child:nth-child(even)]:col-span-2 lg:order-none lg:col-start-1 lg:row-start-1 lg:mt-0", className]}>
+      {photos.map((photo, index) => (
+        <li>
+          <img
+            src={photo}
+            alt={photos.length > 1 ? `${title}, photo ${index + 1} of ${photos.length}` : title}
+            width="900"
+            height="600"
+            fetchpriority={index === 0 ? "high" : undefined}
+            loading={index === 0 ? undefined : "lazy"}
+            class="aspect-[3/2] h-auto w-full rounded bg-surface object-cover"
+          />
+        </li>
+      ))}
+    </ul>
+  )
+}

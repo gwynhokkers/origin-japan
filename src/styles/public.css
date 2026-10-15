@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+@source "../components";
+@source "../layouts";
+@source "../pages";
+
+/*
+  One accent. Ground, ink, and field colours follow the system.
+  Stories import this file, and public pages import it too.
+*/
+@theme {
+  --font-sans: Poppins, "Segoe UI", sans-serif;
+  --font-display: Syncopate, "Avenir Next", sans-serif;
+  --color-accent: #f29559;
+  --color-accent-hover: color-mix(in srgb, #f29559 86%, black);
+  --color-on-accent: #15181c;
+  --color-ground: #f4f5f6;
+  --color-ink: #15181c;
+  --color-muted: #565d66;
+  --color-line: #d9dde1;
+  --color-surface: #e8ebee;
+  --color-field: #fbfbfc;
+  --color-field-line: #69717b;
+  --color-paper: #fbfbfc;
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-rise: rise 0.8s var(--ease-settle) both;
+  --animate-settle: settle 0.9s var(--ease-settle) both;
+}
+
+@font-face {
+  font-family: Syncopate;
+  src: url("/fonts/syncopate-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Syncopate;
+  src: url("/fonts/syncopate-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Poppins;
+  src: url("/fonts/poppins-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Poppins;
+  src: url("/fonts/poppins-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes settle {
+  from { opacity: 0; transform: scale(1.02); }
+  to { opacity: 1; transform: none; }
+}
+
+@layer base {
+  html { color-scheme: light dark; }
+  a {
+    color: inherit;
+    text-decoration-color: var(--color-accent);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25em;
+  }
+  a:hover { text-decoration-color: currentColor; }
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
+/* The buyer test pins this element to class="badge" and nothing else. */
+@layer components {
+  .badge {
+    @apply m-0 inline-block justify-self-start self-start rounded bg-accent px-2 py-1 font-display text-[0.62rem] leading-none font-bold tracking-[0.08em] text-on-accent uppercase;
+  }
+}
+
+/* Decorative page banners. Tailwind has no utility for a different image per viewport. */
+.banner-home {
+  background-image: url("/images/home-dusk-row-2000.jpg");
+  background-position: 60% 70%;
+}
+.banner-import {
+  background-image: url("/images/import-skylines-fuji-1300.jpg");
+  background-position: 50% 62%;
+}
+.banner-grades {
+  background-image: url("/images/grade-trueno-2000.jpg");
+  background-position: 50% 55%;
+}
+.banner-contact {
+  background-image: url("/images/contact-supra-gtr-1600.jpg");
+  background-position: 60% 60%;
+}
+@media (max-width: 767px) {
+  .banner-home { background-image: url("/images/home-dusk-row-1000.jpg"); }
+  .banner-import { background-image: url("/images/import-skylines-fuji-1000.jpg"); }
+  .banner-grades { background-image: url("/images/grade-trueno-1000.jpg"); }
+  .banner-contact { background-image: url("/images/contact-supra-gtr-900.jpg"); }
+}
+
+/*
+  The sort summary is pinned as <summary>Sort</summary>, so it cannot carry utilities.
+  Closed details hide their contents; desktop keeps the links in the page head.
+*/
+.stock-controls > summary { display: none; }
+@media (max-width: 767px) {
+  .stock-controls > summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+@media (min-width: 768px) {
+  .stock-controls::details-content {
+    content-visibility: visible;
+    display: contents;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-ground: #121417;
+    --color-ink: #eceef1;
+    --color-muted: #a4abb3;
+    --color-line: #2b3036;
+    --color-surface: #1c2025;
+    --color-field: #171a1e;
+    --color-field-line: #8c949e;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

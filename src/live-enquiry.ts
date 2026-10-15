@@ -1,4 +1,4 @@
-import type { EnquiryMail, EnquiryServices } from "./public-site";
+import type { EnquiryMail, EnquiryServices } from "./enquiry-services";
 
 /** Cloudflare's dummy keys. They pass siteverify without a Turnstile account. */
 const devSiteKey = "1x00000000000000000000AA";

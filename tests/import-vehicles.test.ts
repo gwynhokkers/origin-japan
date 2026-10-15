@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { inMemoryCatalogue } from "../src/in-memory-catalogue";
 import { importVehicles } from "../src/import-vehicles";
-import { requestPublicPage } from "../src/public-site";
+import { requestPublicPage } from "./buyer-page";
 
 const vehiclesFile = "tests/fixtures/vehicles.json";
 const updatedVehiclesFile = "tests/fixtures/vehicles-updated.json";

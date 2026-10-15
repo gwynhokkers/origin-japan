@@ -1,0 +1,36 @@
+---
+import { company, email, phone, postalAddress } from "../../public/contact";
+import { navItems, type NavPage } from "../../public/navigation";
+
+type Props = { current?: NavPage };
+const { current } = Astro.props;
+const frame = "mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]";
+---
+
+<header class="border-b border-line">
+  <div class="border-t-4 border-accent bg-surface text-[0.8125rem] leading-snug text-muted">
+    <div class:list={[frame, "flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-2"]}>
+      <p class="m-0 max-md:basis-full">{company}, {postalAddress}</p>
+      <p class="m-0 flex flex-wrap gap-x-5">
+        <a class="text-ink no-underline hover:underline hover:decoration-accent" href={`tel:${phone}`}>{phone}</a>
+        <a class="text-ink no-underline hover:underline hover:decoration-accent" href={`mailto:${email}`}>{email}</a>
+      </p>
+    </div>
+  </div>
+  <div class:list={[frame, "flex min-h-[4.5rem] items-center justify-between gap-x-8 max-lg:flex-wrap max-lg:py-2 max-md:min-h-0 max-md:gap-0 max-md:pt-3"]}>
+    <a class="font-display text-[0.95rem] font-bold tracking-[0.08em] whitespace-nowrap uppercase no-underline" href="/">Origin Japan</a>
+    <nav class="flex gap-x-6 max-lg:overflow-x-auto max-md:w-full max-md:gap-x-5 max-md:snap-x" aria-label="Pages">
+      {
+        navItems.map((item) => (
+          <a
+            href={item.href}
+            aria-current={current === item.page ? "page" : undefined}
+            class="inline-flex min-h-11 snap-start items-center font-display text-[0.66rem] tracking-[0.06em] whitespace-nowrap uppercase underline decoration-transparent decoration-2 underline-offset-[0.6em] hover:decoration-accent aria-[current=page]:font-bold aria-[current=page]:decoration-accent"
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>

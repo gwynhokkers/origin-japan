@@ -1,8 +1,13 @@
-import { defineConfig } from "vitest/config";
+import tailwindcss from "@tailwindcss/vite";
+import { getViteConfig } from "astro/config";
 
-export default defineConfig({
-  test: {
-    include: ["tests/**/*.test.ts"],
-    environment: "node",
+export default getViteConfig(
+  {
+    plugins: [tailwindcss()],
+    test: {
+      include: ["tests/**/*.test.ts"],
+      environment: "node",
+    },
   },
-});
+  { configFile: false },
+);
