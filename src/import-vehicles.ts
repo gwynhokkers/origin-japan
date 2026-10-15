@@ -4,7 +4,7 @@ import type { Availability, Catalogue, Vehicle } from "./catalogue";
 const unpricedAvailability = ["in prep", "on water"] as const satisfies readonly Availability[];
 
 /** Read vehicles already described in the project's words and save each one by slug. */
-export async function importVehicles(file: string, catalogue: Catalogue): Promise<void> {
+export async function importVehicles(file: string, catalogue: Pick<Catalogue, "saveVehicle">): Promise<void> {
   const parsed: unknown = JSON.parse(readFileSync(file, "utf8"));
   if (!Array.isArray(parsed)) throw new Error("Vehicle import must be a list of vehicles");
   for (const [index, row] of parsed.entries()) {

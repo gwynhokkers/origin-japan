@@ -1,6 +1,7 @@
 import { ContentRepository, getEmDashCollection } from "emdash";
 import { getDb } from "emdash/runtime";
 import type { Catalogue, ImportPhoto, Lead, PageCopy, Review, SiteContent, Vehicle, VehicleEnquiryInput } from "./catalogue";
+import { upsertVehicle } from "./save-vehicle";
 
 export const emdashCatalogue: Catalogue = {
   vehicles: listVehicles,
@@ -117,50 +118,7 @@ function imageSource(value: unknown): string | undefined {
 }
 
 async function saveVehicle(vehicle: Vehicle): Promise<void> {
-  const repo = new ContentRepository(await getDb());
-  const slug = vehicle.slug?.trim();
-  if (!slug) throw new Error("A vehicle needs a slug");
-  const existing = await repo.findBySlug("vehicles", slug);
-  const input = {
-    slug,
-    status: "published",
-    data: vehicleRecord(vehicle),
-  };
-  if (existing) {
-    await repo.update("vehicles", existing.id, input);
-    return;
-  }
-  await repo.create({
-    type: "vehicles",
-    publishedAt: new Date().toISOString(),
-    ...input,
-  });
-}
-
-function vehicleRecord(vehicle: Vehicle): Record<string, unknown> {
-  const data: Record<string, unknown> = {
-    title: vehicle.title ?? null,
-    make: vehicle.make ?? null,
-    model: vehicle.model ?? null,
-    body: vehicle.body ?? null,
-    year: vehicle.year ?? null,
-    transmission: vehicle.transmission ?? null,
-    mileage: vehicle.mileageMiles ?? null,
-    price: vehicle.pricePounds ?? null,
-    photos: (vehicle.photos ?? []).map((photo) => ({ photo })),
-    sellers_notes: vehicle.sellersNotes ?? null,
-    availability: storedAvailability(vehicle.availability),
-  };
-  if (vehicle.vin !== undefined) data.vin = vehicle.vin;
-  if (vehicle.order !== undefined) data.order = vehicle.order;
-  return data;
-}
-
-function storedAvailability(availability: Vehicle["availability"]): string | null {
-  if (availability === "in prep") return "In prep";
-  if (availability === "on water") return "On water";
-  if (availability === "sold") return "Sold";
-  return null;
+  await upsertVehicle(new ContentRepository(await getDb()), vehicle);
 }
 
 async function saveVehicleEnquiry(input: VehicleEnquiryInput): Promise<Lead> {
