@@ -1,0 +1,161 @@
+---
+import { sanitizeHref } from "emdash";
+import { copyParagraphs, type BrochurePage } from "../../../public/copy";
+import PageBanner from "../PageBanner.astro";
+
+type Props = {
+  page: BrochurePage;
+  title: string;
+  body?: string;
+  linkLabel?: string;
+  linkHref?: string;
+};
+const { page, title, body, linkLabel, linkHref } = Astro.props;
+const paragraphs = copyParagraphs(body);
+const [lede, ...more] = paragraphs;
+const href = linkHref ? sanitizeHref(linkHref) : "";
+const showLink = Boolean(linkLabel?.trim() && href && href !== "#");
+const linkClass = "btn";
+const headline = title.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+const frame = "mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]";
+---
+
+{
+  page === "home" && (
+    <>
+      <section class="home-hero" aria-labelledby="home-title">
+        <img
+          class="home-hero-still"
+          src="/images/home-dusk-row-2000.jpg"
+          srcset="/images/home-dusk-row-1000.jpg 1000w, /images/home-dusk-row-2000.jpg 2000w"
+          sizes="100vw"
+          alt=""
+          fetchpriority="high"
+          width="2000"
+          height="1500"
+        />
+        <video class="home-hero-video" muted loop playsinline preload="none" hidden></video>
+        <div class="home-hero-scrim"></div>
+        <div class="home-hero-copy">
+          <div class={frame}>
+            <h1 id="home-title" class="m-0 font-sans text-[clamp(2.15rem,3.6vw,3.35rem)] leading-[1.08] font-semibold tracking-tight text-[#f4f6f8] motion-safe:animate-rise" set:html={headline}></h1>
+            {lede && <p class="mt-5 max-w-[36ch] text-[clamp(1.05rem,1.35vw,1.2rem)] leading-relaxed text-[#c9d0d8] motion-safe:animate-rise motion-safe:delay-75">{lede}</p>}
+            <p class="home-hero-actions motion-safe:animate-rise motion-safe:delay-150">
+              {showLink && <a class={linkClass} href={href}>{linkLabel}</a>}
+              <a class="btn-ghost" href="/personal-import">Personal Import Service</a>
+            </p>
+          </div>
+        </div>
+        <div class="home-facts">
+          <ul>
+            <li>Stock already in the UK</li>
+            <li>Personal imports from Japanese auctions</li>
+            <li>Two English-speaking agents in Japan</li>
+          </ul>
+        </div>
+      </section>
+      {more.length > 0 && (
+        <div class="mx-auto w-full max-w-[65ch] px-[clamp(1rem,4vw,2.5rem)] pt-8 pb-[clamp(2.5rem,6vw,4.5rem)] [&_p]:mb-3">
+          {more.map((text) => <p class="m-0 mb-3">{text}</p>)}
+        </div>
+      )}
+      <script is:inline>
+        (() => {
+          const hero = document.querySelector(".home-hero");
+          const video = hero && hero.querySelector(".home-hero-video");
+          if (!hero || !(video instanceof HTMLVideoElement)) return;
+          const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          const connection = navigator.connection;
+          if (reduce || (connection && connection.saveData)) return;
+          const narrow = window.matchMedia("(max-width: 767px)").matches;
+          const base = narrow ? "/video/home-rain-960" : "/video/home-rain-1920";
+          for (const [ext, type] of [["webm", "video/webm"], ["mp4", "video/mp4"]]) {
+            const source = document.createElement("source");
+            source.src = base + "." + ext;
+            source.type = type;
+            video.append(source);
+          }
+          video.hidden = false;
+          let playing = false;
+          video.addEventListener("playing", () => {
+            playing = true;
+            video.classList.add("is-on");
+          });
+          video.play().catch((error) => {
+            if (playing || error?.name === "AbortError") return;
+            video.hidden = true;
+            video.classList.remove("is-on");
+            video.replaceChildren();
+          });
+          if ("IntersectionObserver" in window) {
+            new IntersectionObserver((entries) => {
+              const entry = entries[0];
+              if (!entry || !video.classList.contains("is-on")) return;
+              if (entry.isIntersecting) video.play();
+              else video.pause();
+            }, { threshold: 0.25 }).observe(hero);
+          }
+        })();
+      </script>
+    </>
+  )
+}
+
+{
+  (page === "personal-import" || page === "grade-sheets") && (
+    <section>
+      <div class="carbon-band">
+        <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)] pt-5 md:pt-7">
+          <div class="px-3 pt-3 md:px-4 md:pt-4">
+            <PageBanner name={page === "personal-import" ? "import" : "grades"} class="aspect-[16/10] md:aspect-[5/2]" />
+          </div>
+        </div>
+      </div>
+      <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]">
+        <h1 id="page-title" class="relative -mt-7 inline-block max-w-[calc(100%-1rem)] bg-ground pr-4 pt-3.5 font-display text-[clamp(1.4rem,2.4vw,2rem)] leading-tight font-bold tracking-[0.04em] uppercase md:-mt-[3.25rem] md:pr-7 md:pt-5">{title}</h1>
+      </div>
+      {paragraphs.length > 0 && (
+        <div class="mx-auto w-full max-w-[65ch] px-[clamp(1rem,4vw,2.5rem)] pt-5 pb-[clamp(2.5rem,6vw,4.5rem)] [&_p]:mb-4 [&_p:first-child]:text-[clamp(1.15rem,1.6vw,1.3rem)]">
+          {paragraphs.map((text) => <p>{text}</p>)}
+          {showLink && <p class="mt-6"><a class={linkClass} href={href}>{linkLabel}</a></p>}
+        </div>
+      )}
+    </section>
+  )
+}
+
+{
+  page === "contact" && (
+    <section class="mx-auto grid w-full max-w-[80rem] grid-cols-1 items-start gap-10 px-[clamp(1rem,4vw,2.5rem)] pt-6 pb-[clamp(2.5rem,6vw,4.5rem)] md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] md:gap-x-16 md:pt-14" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title" class="m-0 font-display text-[clamp(1.4rem,2.4vw,2rem)] leading-tight font-bold tracking-[0.04em] uppercase motion-safe:animate-rise">{title}</h1>
+        {paragraphs.length > 0 && (
+          <div class="max-w-[48ch] text-[1.1rem] text-muted motion-safe:animate-rise motion-safe:delay-75 [&_p]:mt-4">
+            {paragraphs.map((text) => <p>{text}</p>)}
+          </div>
+        )}
+        {showLink && <p class="mt-6"><a class={linkClass} href={href}>{linkLabel}</a></p>}
+        <slot />
+      </div>
+      <div class="carbon-mat rounded p-3 max-md:order-first md:p-4">
+        <PageBanner name="contact" class="aspect-[16/10] md:aspect-[4/5]" />
+      </div>
+    </section>
+  )
+}
+
+{
+  page === "privacy" && (
+    <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]">
+      <div class="border-b border-line pt-8 pb-5">
+        <h1 class="m-0 font-display text-[clamp(1.4rem,2.4vw,2rem)] leading-tight font-bold tracking-[0.04em] uppercase">{title}</h1>
+      </div>
+      {(paragraphs.length > 0 || showLink) && (
+        <div class="max-w-[65ch] py-5 pb-[clamp(2.5rem,6vw,4.5rem)] [&_p]:mb-4">
+          {paragraphs.map((text) => <p>{text}</p>)}
+          {showLink && <p><a class={linkClass} href={href}>{linkLabel}</a></p>}
+        </div>
+      )}
+    </div>
+  )
+}

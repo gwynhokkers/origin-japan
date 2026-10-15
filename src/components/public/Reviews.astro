@@ -1,0 +1,29 @@
+---
+type Props = { reviews: readonly { name: string; quote: string }[]; googleHref: string; heading?: string };
+const { reviews, googleHref } = Astro.props;
+const heading = Astro.props.heading?.trim() || "Brilliant reviews";
+---
+
+<section class="border-t border-line py-[clamp(2.5rem,6vw,4.5rem)]" aria-labelledby="reviews">
+  <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]">
+    <h2 id="reviews" class="m-0 mb-7 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase">{heading}</h2>
+    <ul class="m-0 grid list-none grid-cols-1 gap-10 p-0 md:grid-cols-2 md:gap-x-16 md:[&>li:first-child]:col-span-full md:[&>li:last-child:nth-child(even)]:col-span-full">
+      {
+        reviews.map((review) => (
+          <li>
+            <figure class="m-0">
+              <blockquote class="m-0">
+                <p class="m-0 max-w-[48ch] text-[1.05rem] leading-snug first-of-type:max-w-[34ch] [[data-review]_&]:text-[1.05rem] [li:first-child_&]:max-w-[34ch] [li:first-child_&]:text-[clamp(1.35rem,2.3vw,1.85rem)] [li:first-child_&]:leading-snug [li:first-child_&]:font-semibold">“{review.quote}”</p>
+              </blockquote>
+              <figcaption class="mt-3 font-semibold">
+                {review.name}
+                <span class="block text-sm font-normal text-muted">Google review</span>
+              </figcaption>
+            </figure>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="mt-7"><a class="btn-ghost" href={googleHref}>Google reviews</a></p>
+  </div>
+</section>

@@ -1,0 +1,68 @@
+---
+import "../styles/public.css";
+import type { NavPage } from "../public/navigation";
+import SiteFooter from "../components/public/SiteFooter.astro";
+import SiteHeader from "../components/public/SiteHeader.astro";
+
+type Banner = "home" | "import" | "grades" | "contact";
+type Props = { title: string; current?: NavPage; banner?: Banner };
+
+const banners: Record<Banner, { narrow: string; wide: string }> = {
+  home: { narrow: "/images/home-dusk-row-1000.jpg", wide: "/images/home-dusk-row-2000.jpg" },
+  import: { narrow: "/images/import-skylines-fuji-1000.jpg", wide: "/images/import-skylines-fuji-1300.jpg" },
+  grades: { narrow: "/images/grade-trueno-1000.jpg", wide: "/images/grade-trueno-2000.jpg" },
+  contact: { narrow: "/images/contact-supra-gtr-900.jpg", wide: "/images/contact-supra-gtr-1600.jpg" },
+};
+
+const { title, current, banner } = Astro.props;
+const photo = banner ? banners[banner] : undefined;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <script is:inline>
+      (() => {
+        try {
+          const stored = localStorage.getItem("theme");
+          if (stored === "light" || stored === "dark") document.documentElement.dataset.theme = stored;
+        } catch {}
+      })();
+    </script>
+    <title>{title}</title>
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/poppins-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/syncopate-700.woff2" as="font" type="font/woff2" crossorigin />
+    {
+      photo && (
+        <>
+          <link rel="preload" as="image" href={photo.narrow} media="(max-width: 767px)" />
+          <link rel="preload" as="image" href={photo.wide} media="(min-width: 768px)" />
+        </>
+      )
+    }
+    <style is:inline>
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-delay: 0s !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="m-0 bg-ground font-sans text-base leading-relaxed text-ink">
+    <SiteHeader current={current} />
+    <main>
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

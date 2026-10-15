@@ -1,0 +1,9 @@
+/*
+  The public theme paints --color-ground and --color-ink on :root.
+  Storybook's preview iframe stays white unless the canvas uses those tokens.
+*/
+body.sb-show-main,
+.docs-story {
+  background-color: var(--color-ground);
+  color: var(--color-ink);
+}

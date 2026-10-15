@@ -1,0 +1,10 @@
+---
+type Banner = "home" | "import" | "grades" | "contact";
+type Props = { name: Banner; class?: string };
+const { name, class: className = "" } = Astro.props;
+---
+
+<div
+  class:list={[`banner-${name}`, "rounded bg-cover bg-no-repeat motion-safe:animate-settle", className]}
+  aria-hidden="true"
+></div>

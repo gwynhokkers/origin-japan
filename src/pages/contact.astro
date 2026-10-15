@@ -1,0 +1,13 @@
+---
+import Brochure from "../components/public/brochure/Brochure.astro";
+import Public from "../layouts/Public.astro";
+import { brochurePage } from "../public/brochure";
+import { publicLocals } from "../public/locals";
+
+const { catalogue } = publicLocals(Astro.locals);
+const page = await brochurePage(catalogue, "contact", "Contact");
+---
+
+<Public title={page.title} current="contact" banner="contact">
+  <Brochure page="contact" {...page} />
+</Public>

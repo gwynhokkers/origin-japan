@@ -1,0 +1,12 @@
+---
+import type { CopyBlock } from "../../public/copy";
+
+type Props = { blocks: readonly CopyBlock[] };
+const heading = "m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase";
+---
+
+{
+  Astro.props.blocks.map((block) =>
+    block.kind === "heading" ? <h2 class={heading}>{block.text}</h2> : <p>{block.text}</p>,
+  )
+}

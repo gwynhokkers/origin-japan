@@ -1,0 +1,18 @@
+---
+import { company, email, phone, postalAddress, what3Words } from "../../../public/contact";
+---
+
+<address class="mt-9 grid gap-6 border-t border-line pt-7 font-normal not-italic">
+  <p class="m-0 text-base text-ink">
+    <span class="mb-1 block text-sm text-muted">Address</span>
+    {company}<br />{postalAddress}<br />What3Words {what3Words}
+  </p>
+  <p class="m-0 text-ink">
+    <span class="mb-1 block text-sm text-muted">Phone</span>
+    <a class="inline-flex min-h-11 items-center text-[clamp(1.15rem,2vw,1.4rem)] font-semibold" href={`tel:${phone}`}>{phone}</a>
+  </p>
+  <p class="m-0 text-ink">
+    <span class="mb-1 block text-sm text-muted">Email</span>
+    <a class="inline-flex min-h-11 items-center text-[clamp(1.15rem,2vw,1.4rem)] font-semibold" href={`mailto:${email}`}>{email}</a>
+  </p>
+</address>

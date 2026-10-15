@@ -1,0 +1,96 @@
+---
+import Badge from "../../components/public/Badge.astro";
+import VehicleEnquiry from "../../components/public/VehicleEnquiry.astro";
+import VehicleGallery from "../../components/public/VehicleGallery.astro";
+import Public from "../../layouts/Public.astro";
+import { receiveVehicleEnquiry, type EnquiryView } from "../../public/enquiry";
+import { publicLocals } from "../../public/locals";
+import { availabilityLabel, formatMiles, formatPounds, isForSale, isOnStock, isPublic, isSold, photosOf } from "../../public/vehicles";
+
+const { catalogue, enquiry } = publicLocals(Astro.locals);
+const slug = Astro.params.slug ?? "";
+const vehicle = (await catalogue.vehicles()).find((item) => item.slug === slug && isPublic(item));
+if (!vehicle) {
+  return new Response("Not found", {
+    status: 404,
+    headers: { "content-type": "text/plain; charset=utf-8" },
+  });
+}
+
+let view: EnquiryView | undefined;
+if (Astro.request.method === "POST") {
+  const result = await receiveVehicleEnquiry(Astro.request, vehicle, catalogue, enquiry);
+  Astro.response.status = result.status;
+  view = result.view;
+}
+
+const title = vehicle.title?.trim() || "Vehicle";
+const price = isForSale(vehicle) ? formatPounds(vehicle.pricePounds) : "";
+const badge = availabilityLabel(vehicle);
+const notes = vehicle.sellersNotes?.trim() ?? "";
+const paragraphs = notes
+  .split(/\n\s*\n/)
+  .map((paragraph) => paragraph.trim())
+  .filter(Boolean);
+const specs = [
+  ["Make", vehicle.make],
+  ["Model", vehicle.model],
+  ["Body", vehicle.body],
+  ["Year", vehicle.year === undefined ? "" : String(vehicle.year)],
+  ["Transmission", vehicle.transmission],
+  ["Mileage", formatMiles(vehicle.mileageMiles)],
+].flatMap(([label, value]) => {
+  const text = value?.trim() ?? "";
+  return text ? [{ label, text }] : [];
+});
+---
+
+<Public title={title}>
+  <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]">
+    <nav class="mt-4 border-b border-line" aria-label="Breadcrumb">
+      <ol class="m-0 flex min-h-12 list-none items-center gap-2.5 p-0 text-sm">
+        <li class="shrink-0">
+          <a
+            class="inline-flex min-h-11 items-center text-muted no-underline decoration-2 decoration-accent underline-offset-4 hover:text-ink hover:underline"
+            href={isSold(vehicle) ? "/sold" : "/stock"}
+          >
+            {isSold(vehicle) ? "Sold Stock" : "Current Stock"}
+          </a>
+        </li>
+        <li class="shrink-0 text-accent" aria-hidden="true">/</li>
+        <li class="min-w-0 truncate font-semibold" aria-current="page">{title}</li>
+      </ol>
+    </nav>
+    <article class="flex flex-col gap-3.5 pt-3 pb-[clamp(2.5rem,6vw,4.5rem)] lg:grid lg:grid-cols-[minmax(0,7fr)_minmax(19rem,5fr)] lg:items-start lg:gap-x-12">
+      <VehicleGallery photos={photosOf(vehicle)} title={title} />
+      <div class="contents lg:col-start-2 lg:row-start-1 lg:flex lg:flex-col lg:gap-3.5">
+        <h1 class="order-1 m-0 font-sans text-[clamp(1.6rem,2.6vw,2.2rem)] leading-tight font-semibold tracking-tight lg:order-none">{title}</h1>
+        {badge && <div class="order-2 lg:order-none"><Badge label={badge} /></div>}
+        {price && <p class="order-2 m-0 text-[clamp(1.5rem,2.2vw,1.85rem)] leading-none font-semibold lg:order-none">{price}</p>}
+        {
+          specs.length > 0 && (
+            <dl class="order-4 m-0 mt-3 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 border-y border-line py-5 md:grid-cols-[auto_1fr_auto_1fr] lg:order-none lg:grid-cols-[auto_1fr]">
+              {specs.map((spec) => (
+                <>
+                  <dt class="m-0 text-sm text-muted">{spec.label}</dt>
+                  <dd class="m-0 font-semibold">{spec.text}</dd>
+                </>
+              ))}
+            </dl>
+          )
+        }
+        {
+          paragraphs.length > 0 && (
+            <section class="order-5 mt-3 max-w-[65ch] lg:order-none">
+              <h2 class="m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase">Seller's notes</h2>
+              {paragraphs.map((paragraph) => (
+                <p class="mt-2">{paragraph}</p>
+              ))}
+            </section>
+          )
+        }
+        {isOnStock(vehicle) && <VehicleEnquiry slug={vehicle.slug ?? ""} siteKey={enquiry.siteKey} view={view} />}
+      </div>
+    </article>
+  </div>
+</Public>

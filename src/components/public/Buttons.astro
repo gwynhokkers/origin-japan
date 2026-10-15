@@ -1,0 +1,10 @@
+---
+type Props = { variant: "solid" | "ghost" };
+const { variant } = Astro.props;
+const className = variant === "solid" ? "btn" : "btn-ghost";
+---
+
+<p class="flex flex-wrap items-center gap-4">
+  <a class={className} href="/stock">Current stock</a>
+  <button class={className} type="button">Send enquiry</button>
+</p>

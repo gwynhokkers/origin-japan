@@ -1,0 +1,23 @@
+---
+import { stockHref, stockSortLabels, stockSorts, type StockSort } from "../../public/vehicles";
+
+type Props = { base: "/stock" | "/sold"; current?: StockSort; sorts?: readonly StockSort[] };
+const { base, current, sorts = stockSorts } = Astro.props;
+---
+
+<details class="stock-controls">
+  <summary>Sort</summary>
+  <nav class="flex flex-wrap gap-x-5 text-sm" aria-label="Sort">
+    {
+      sorts.map((sort) => (
+        <a
+          href={stockHref(base, { sort })}
+          aria-current={current === sort ? "true" : undefined}
+          class="inline-flex min-h-11 items-center underline decoration-transparent decoration-2 underline-offset-[0.25em] hover:decoration-accent aria-[current=true]:font-semibold aria-[current=true]:decoration-accent"
+        >
+          {stockSortLabels[sort]}
+        </a>
+      ))
+    }
+  </nav>
+</details>

@@ -1,0 +1,14 @@
+---
+import Brochure from "../components/public/brochure/Brochure.astro";
+import Public from "../layouts/Public.astro";
+import { defaultHomeHeadline } from "../public/copy";
+import { brochurePage } from "../public/brochure";
+import { publicLocals } from "../public/locals";
+
+const { catalogue } = publicLocals(Astro.locals);
+const page = await brochurePage(catalogue, "home", defaultHomeHeadline);
+---
+
+<Public title="Origin Japan" banner="home">
+  <Brochure page="home" {...page} />
+</Public>

@@ -1,0 +1,79 @@
+---
+import type { Vehicle } from "../../catalogue";
+import { availabilityLabel, formatMiles, formatPounds, isForSale, photosOf, vehicleHref } from "../../public/vehicles";
+import Badge from "./Badge.astro";
+
+type Props = { vehicle: Vehicle; eager?: boolean; featured?: boolean };
+
+const { vehicle, eager = false, featured = false } = Astro.props;
+const title = vehicle.title?.trim() ?? "";
+const photo = photosOf(vehicle)[0];
+const price = isForSale(vehicle) ? formatPounds(vehicle.pricePounds) : "";
+const badge = availabilityLabel(vehicle);
+const href = vehicleHref(vehicle.slug);
+const alt = title || "Vehicle photo";
+const meta = [vehicle.year, formatMiles(vehicle.mileageMiles)].filter(Boolean).join(" · ");
+const specs = [
+  ["Make", vehicle.make],
+  ["Model", vehicle.model],
+  ["Year", vehicle.year === undefined ? undefined : String(vehicle.year)],
+  ["Mileage", formatMiles(vehicle.mileageMiles)],
+  ["Transmission", vehicle.transmission],
+].flatMap(([label, value]) => {
+  const text = value?.trim() ?? "";
+  return text ? [{ label, text }] : [];
+});
+---
+
+<li>
+  {
+    featured ? (
+      <a class="group flex h-full flex-col gap-3.5 no-underline" href={href}>
+        <div class="overflow-hidden rounded bg-surface">
+          {photo && (
+            <img
+              src={photo}
+              alt={alt}
+              width="900"
+              height="600"
+              loading={eager ? undefined : "lazy"}
+              class="aspect-[16/10] h-full w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-[1.03] [[data-count='3']_li:first-child_&]:md:aspect-auto [[data-count='3']_li:first-child_&]:md:min-h-80 max-md:[[data-count='3']_li:first-child_&]:aspect-[16/10] max-md:[[data-count='3']_li:first-child_&]:min-h-0"
+            />
+          )}
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+          <h3 class="min-w-[14rem] flex-1 text-[1.05rem] leading-snug font-semibold">{title}</h3>
+          {price ? <p class="m-0 text-xl leading-none font-semibold">{price}</p> : badge && <Badge label={badge} />}
+          {meta && <p class="m-0 basis-full text-sm text-muted">{meta}</p>}
+        </div>
+      </a>
+    ) : (
+      <a class="group grid content-start gap-2.5 no-underline motion-safe:active:scale-[0.98]" href={href}>
+        <div class="overflow-hidden rounded bg-surface">
+          {photo && (
+            <img
+              src={photo}
+              alt={alt}
+              width="900"
+              height="600"
+              loading={eager ? undefined : "lazy"}
+              class="aspect-[3/2] w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-[1.03]"
+            />
+          )}
+        </div>
+        {title && <h2 class="m-0 text-[1.05rem] leading-snug font-semibold">{title}</h2>}
+        {price ? <p class="m-0 text-xl leading-none font-semibold">{price}</p> : badge && <Badge label={badge} />}
+        {specs.length > 0 && (
+          <dl class="m-0 mt-0.5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-0.5 text-sm">
+            {specs.map((spec) => (
+              <>
+                <dt class="m-0 text-muted">{spec.label}</dt>
+                <dd class="m-0">{spec.text}</dd>
+              </>
+            ))}
+          </dl>
+        )}
+      </a>
+    )
+  }
+</li>
