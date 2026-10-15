@@ -8,8 +8,9 @@ export async function upsertVehicle(repo: ContentRepository, vehicle: Vehicle): 
   const existing = await repo.findBySlug("vehicles", slug);
   const input = {
     slug,
-    status: "published",
+    status: vehicle.draft ? "draft" : "published",
     data: vehicleRecord(vehicle),
+    ...(vehicle.publishedAt ? { publishedAt: vehicle.publishedAt } : {}),
   };
   if (existing) {
     await repo.update("vehicles", existing.id, input);
@@ -17,7 +18,7 @@ export async function upsertVehicle(repo: ContentRepository, vehicle: Vehicle): 
   }
   await repo.create({
     type: "vehicles",
-    publishedAt: new Date().toISOString(),
+    publishedAt: vehicle.publishedAt ?? new Date().toISOString(),
     ...input,
   });
 }

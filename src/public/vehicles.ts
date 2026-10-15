@@ -7,6 +7,12 @@ export type StockSort = "price" | "model-year" | "mileage" | "newest";
 
 export const stockSorts = ["price", "model-year", "mileage", "newest"] as const satisfies readonly StockSort[];
 
+/** Sold stock does not show a price, so price is not a sort there. */
+export const soldSorts = ["model-year", "mileage", "newest"] as const satisfies readonly StockSort[];
+
+/** Twelve keeps full rows on the two- and three-column grids. */
+export const stockPageSize = 12;
+
 export const stockSortLabels: Record<StockSort, string> = {
   price: "Price",
   "model-year": "Model year",
@@ -77,9 +83,30 @@ function present(value: string | undefined): string | undefined {
   return text ? text : undefined;
 }
 
-export function readStockSort(url: URL): StockSort | undefined {
+export function readStockSort(url: URL, allowed: readonly StockSort[] = stockSorts): StockSort | undefined {
   const value = url.searchParams.get("sort");
-  return stockSorts.find((sort) => sort === value);
+  return allowed.find((sort) => sort === value);
+}
+
+export function readStockPage(url: URL): number {
+  const value = url.searchParams.get("page");
+  if (value === null || !/^[1-9]\d*$/.test(value)) return 1;
+  return Number(value);
+}
+
+export function pageOf<T>(items: readonly T[], page: number, size = stockPageSize): { items: T[]; page: number; pages: number } {
+  const pages = Math.max(1, Math.ceil(items.length / size));
+  const current = Math.min(Math.max(1, page), pages);
+  const start = (current - 1) * size;
+  return { items: items.slice(start, start + size), page: current, pages };
+}
+
+export function stockHref(base: "/stock" | "/sold", options?: { sort?: StockSort; page?: number }): string {
+  const params = new URLSearchParams();
+  if (options?.sort) params.set("sort", options.sort);
+  if (options?.page && options.page > 1) params.set("page", String(options.page));
+  const query = params.toString();
+  return query ? `${base}?${query}` : base;
 }
 
 /** Priced for-sale vehicles, then in-prep and on-water. A buyer sort stays inside each group. */

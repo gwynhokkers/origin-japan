@@ -547,6 +547,11 @@ test("a sold vehicle is only on sold stock, and its page shows Sold with no pric
   expect(soldHtml).not.toContain("£");
 
   expect(page.status).toBe(200);
+  const crumb = html.match(/<nav[^>]*aria-label="Breadcrumb"[\s\S]*?<\/nav>/)?.[0] ?? "";
+  expect(crumb).toContain('href="/sold"');
+  expect(crumb).toContain(">Sold Stock<");
+  expect(crumb).toContain("Subaru Legacy 2011");
+  expect(crumb).toContain('aria-current="page"');
   expect(html).toContain('<p class="badge">Sold</p>');
   expect(html).toContain("https://photos.example/legacy-front.jpg");
   expect(html).toContain("https://photos.example/legacy-rear.jpg");
@@ -884,6 +889,78 @@ test("a buyer sort reorders inside each stock group and stays in the page addres
   }
 });
 
+test("stock longer than one page shows the next page, and the page keeps the buyer's sort", async () => {
+  const catalogue = inMemoryCatalogue({
+    vehicles: Array.from({ length: 13 }, (_, index) => ({
+      ...forSaleVehicle(),
+      id: `car-${index}`,
+      slug: `car-${String(index).padStart(2, "0")}`,
+      title: `Car ${index}`,
+      pricePounds: 20000 - index * 100,
+      order: index,
+    })),
+  });
+
+  const first = await pageText(catalogue, "/stock");
+  const second = await pageText(catalogue, "/stock?page=2");
+  const priced = await pageText(catalogue, "/stock?sort=price&page=2");
+  const short = await pageText(inMemoryCatalogue({ vehicles: [forSaleVehicle()] }), "/stock");
+
+  expect(stockSlugs(first)).toEqual(Array.from({ length: 12 }, (_, index) => `car-${String(index).padStart(2, "0")}`));
+  expect(first).toContain('href="/stock?page=2"');
+  expect(first).toContain('aria-label="Pagination"');
+  expect(first).not.toContain("car-12");
+
+  expect(stockSlugs(second)).toEqual(["car-12"]);
+  expect(second).toContain('href="/stock?page=2" aria-current="page"');
+  expect(second).toContain('href="/stock"');
+
+  expect(stockSlugs(priced)).toEqual(["car-00"]);
+  expect(priced).toContain('href="/stock?sort=price&amp;page=2" aria-current="page"');
+
+  expect(short).not.toContain('aria-label="Pagination"');
+});
+
+test("sold stock does not offer a price sort, and a price query leaves the order alone", async () => {
+  const catalogue = inMemoryCatalogue({
+    vehicles: [
+      {
+        ...forSaleVehicle(),
+        id: "older",
+        slug: "older-expensive",
+        title: "Older Expensive",
+        year: 1998,
+        pricePounds: 20000,
+        order: 1,
+        availability: "sold",
+      },
+      {
+        ...forSaleVehicle(),
+        id: "newer",
+        slug: "newer-cheap",
+        title: "Newer Cheap",
+        year: 2020,
+        pricePounds: 2000,
+        order: 2,
+        availability: "sold",
+      },
+    ],
+  });
+
+  const html = await pageText(catalogue, "/sold?sort=price");
+  const byYear = await pageText(catalogue, "/sold?sort=model-year");
+
+  expect(stockSlugs(html)).toEqual(["older-expensive", "newer-cheap"]);
+  expect(html).not.toContain("sort=price");
+  expect(html).toContain('href="/sold?sort=model-year"');
+  expect(html).toContain('href="/sold?sort=mileage"');
+  expect(html).toContain('href="/sold?sort=newest"');
+  expect(html).not.toContain('aria-label="Pagination"');
+
+  expect(stockSlugs(byYear)).toEqual(["newer-cheap", "older-expensive"]);
+  expect(byYear).toContain('href="/sold?sort=model-year" aria-current="true"');
+});
+
 test("a public price on an in-prep or on-water vehicle makes it for sale", async () => {
   const catalogue = inMemoryCatalogue({
     vehicles: [
@@ -976,6 +1053,11 @@ test("a buyer sees the vehicle, its price, and photos in Adam's order", async ()
   const pagePhotos = [...html.matchAll(/<img[^>]*src="([^"]+)"/g)].map((match) => match[1]).filter(contentImage);
 
   expect(page.status).toBe(200);
+  const crumb = html.match(/<nav[^>]*aria-label="Breadcrumb"[\s\S]*?<\/nav>/)?.[0] ?? "";
+  expect(crumb).toContain('href="/stock"');
+  expect(crumb).toContain(">Current Stock<");
+  expect(crumb).toContain("Subaru Levorg 2.0 GT-S 2016");
+  expect(crumb).toContain('aria-current="page"');
   expect(html).toContain("Subaru Levorg 2.0 GT-S 2016");
   expect(html).toContain("Subaru");
   expect(html).toContain("Levorg 2.0 GT-S");
@@ -1280,6 +1362,16 @@ test("an on-water vehicle offers Enquire about this car", async () => {
   expect(html).toContain("Enquire about this car");
   expect(html).toContain("<form");
   expect(html).not.toContain("£");
+});
+
+test("seller's notes with a blank line are separate paragraphs", async () => {
+  const html = await vehicleHtml({
+    ...forSaleVehicle(),
+    sellersNotes: "One owner from Osaka.\n\nFull service history.",
+  });
+
+  expect(html).toContain('<p class="mt-2">One owner from Osaka.</p>');
+  expect(html).toContain('<p class="mt-2">Full service history.</p>');
 });
 
 function enquiryRequest(fields: Record<string, string>): Request {

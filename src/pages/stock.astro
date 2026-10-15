@@ -1,13 +1,16 @@
 ---
+import Pagination from "../components/public/Pagination.astro";
 import SortControls from "../components/public/SortControls.astro";
 import StockCard from "../components/public/StockCard.astro";
 import Public from "../layouts/Public.astro";
 import { publicLocals } from "../public/locals";
-import { isOnStock, listStock, readStockSort } from "../public/vehicles";
+import { isOnStock, listStock, pageOf, readStockPage, readStockSort } from "../public/vehicles";
 
 const { catalogue } = publicLocals(Astro.locals);
 const sort = readStockSort(Astro.url);
-const stock = listStock((await catalogue.vehicles()).filter(isOnStock), sort).filter((vehicle) => vehicle.slug);
+const listed = listStock((await catalogue.vehicles()).filter(isOnStock), sort).filter((vehicle) => vehicle.slug);
+const { items: stock, page, pages } = pageOf(listed, readStockPage(Astro.url));
+const grid = "m-0 grid list-none grid-cols-1 gap-x-6 gap-y-11 py-8 md:grid-cols-2 lg:grid-cols-3";
 ---
 
 <Public title="Current Stock" current="stock">
@@ -18,9 +21,12 @@ const stock = listStock((await catalogue.vehicles()).filter(isOnStock), sort).fi
     </div>
     {
       stock.length > 0 ? (
-        <ul class="m-0 grid list-none grid-cols-1 gap-x-6 gap-y-11 py-8 pb-[clamp(2.5rem,6vw,4.5rem)] md:grid-cols-2 lg:grid-cols-3">
-          {stock.map((vehicle, index) => <StockCard vehicle={vehicle} eager={index < 3} />)}
-        </ul>
+        <>
+          <ul class:list={[grid, pages === 1 && "pb-[clamp(2.5rem,6vw,4.5rem)]"]}>
+            {stock.map((vehicle, index) => <StockCard vehicle={vehicle} eager={index < 3} />)}
+          </ul>
+          <Pagination base="/stock" page={page} pages={pages} sort={sort} />
+        </>
       ) : (
         <p class="m-0 max-w-[65ch] py-8 pb-[clamp(2.5rem,6vw,4.5rem)] text-muted">No vehicles in stock.</p>
       )

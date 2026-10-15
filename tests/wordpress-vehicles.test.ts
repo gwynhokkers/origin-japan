@@ -136,6 +136,32 @@ test("an integer gallery keeps the featured image first and skips ids the export
   ]);
 });
 
+test("mileage can come from post meta when the taxonomy is empty", async () => {
+  const { vehicles, reports } = await vehiclesFromWordpress(
+    wxr(
+      listing({
+        id: "5",
+        slug: "levorg-4",
+        title: "Subaru Levorg",
+        content: "<p>Eyesight pack.</p>",
+        terms: {
+          make: ["subaru", "Subaru"],
+          serie: ["levorg", "Levorg 2.0 GT-S"],
+          body: ["estate", "Estate"],
+          "ca-year": ["2015", "2015"],
+          transmission: ["automatic", "Automatic"],
+        },
+        meta: { price: "11995", mileage: "68,000", _thumbnail_id: "10" },
+      }),
+      attachment("10", "https://originjapan.co.uk/thumb.jpg"),
+    ),
+  );
+
+  expect(reports).toEqual([]);
+  expect(vehicles[0]?.mileageMiles).toBe(68000);
+  expect(vehicles[0]?.draft).toBeUndefined();
+});
+
 test("a listing that cannot be shown is a draft, and other post types are skipped", async () => {
   const { vehicles } = await vehiclesFromWordpress(
     wxr(

@@ -28,6 +28,10 @@ const title = vehicle.title?.trim() || "Vehicle";
 const price = isForSale(vehicle) ? formatPounds(vehicle.pricePounds) : "";
 const badge = availabilityLabel(vehicle);
 const notes = vehicle.sellersNotes?.trim() ?? "";
+const paragraphs = notes
+  .split(/\n\s*\n/)
+  .map((paragraph) => paragraph.trim())
+  .filter(Boolean);
 const specs = [
   ["Make", vehicle.make],
   ["Model", vehicle.model],
@@ -43,9 +47,20 @@ const specs = [
 
 <Public title={title}>
   <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]">
-    <p class="m-0 pt-5 text-sm">
-      <a class="inline-flex min-h-11 items-center" href={isSold(vehicle) ? "/sold" : "/stock"}>{isSold(vehicle) ? "Sold Stock" : "Current Stock"}</a>
-    </p>
+    <nav class="mt-4 border-b border-line" aria-label="Breadcrumb">
+      <ol class="m-0 flex min-h-12 list-none items-center gap-2.5 p-0 text-sm">
+        <li class="shrink-0">
+          <a
+            class="inline-flex min-h-11 items-center text-muted no-underline decoration-2 decoration-accent underline-offset-4 hover:text-ink hover:underline"
+            href={isSold(vehicle) ? "/sold" : "/stock"}
+          >
+            {isSold(vehicle) ? "Sold Stock" : "Current Stock"}
+          </a>
+        </li>
+        <li class="shrink-0 text-accent" aria-hidden="true">/</li>
+        <li class="min-w-0 truncate font-semibold" aria-current="page">{title}</li>
+      </ol>
+    </nav>
     <article class="flex flex-col gap-3.5 pt-3 pb-[clamp(2.5rem,6vw,4.5rem)] lg:grid lg:grid-cols-[minmax(0,7fr)_minmax(19rem,5fr)] lg:items-start lg:gap-x-12">
       <VehicleGallery photos={photosOf(vehicle)} title={title} />
       <div class="contents lg:col-start-2 lg:row-start-1 lg:flex lg:flex-col lg:gap-3.5">
@@ -65,10 +80,12 @@ const specs = [
           )
         }
         {
-          notes && (
+          paragraphs.length > 0 && (
             <section class="order-5 mt-3 max-w-[65ch] lg:order-none">
               <h2 class="m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase">Seller's notes</h2>
-              <p class="mt-2">{notes}</p>
+              {paragraphs.map((paragraph) => (
+                <p class="mt-2">{paragraph}</p>
+              ))}
             </section>
           )
         }

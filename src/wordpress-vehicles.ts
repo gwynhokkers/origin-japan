@@ -1,6 +1,6 @@
 import { parseWxrString, type WxrPost } from "emdash";
 import type { Availability, Vehicle } from "./catalogue";
-import { fieldsMissingToShow } from "./public/vehicles";
+import { fieldsMissingToShow } from "./public/vehicles.ts";
 
 export type WordpressVehicleReport = {
   slug: string;
@@ -56,7 +56,7 @@ function vehicleFromListing(post: WxrPost, attachments: Map<string, string>, slu
     body: termLabel(post, "body"),
     year: wholeNumber(termLabel(post, "ca-year")),
     transmission: termLabel(post, "transmission"),
-    mileageMiles: wholeNumber(termLabel(post, "mileage")?.replace(/,/g, "")),
+    mileageMiles: wholeNumber(termLabel(post, "mileage")) ?? wholeNumber(meta(post, "mileage")),
     pricePounds: keepPrice ? recordedPrice : undefined,
     photos: photoUrls(post, attachments),
     sellersNotes: sellersNotesFromHtml(post.content ?? ""),
@@ -171,7 +171,7 @@ function isImportedForSale(vehicle: Vehicle): boolean {
   return vehicle.availability === undefined && typeof vehicle.pricePounds === "number" && vehicle.pricePounds > 0;
 }
 
-function draftMessage(fields: readonly string[]): string {
+export function draftMessage(fields: readonly string[]): string {
   if (fields.length === 1) return `Draft, missing ${fields[0]}.`;
   const last = fields[fields.length - 1];
   return `Draft, missing ${fields.slice(0, -1).join(", ")}, and ${last}.`;
