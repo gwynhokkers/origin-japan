@@ -5,12 +5,45 @@
 
 import type { BylineSummary, ContentBylineCredit, TaxonomyTerm, PortableTextBlock } from "emdash";
 
+export interface ImportPhoto {
+  id: string;
+  slug: string | null;
+  status: string;
+  photo: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
+  alt?: string;
+  order?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  byline?: BylineSummary | null;
+  bylines?: ContentBylineCredit[];
+  terms?: Record<string, TaxonomyTerm[]>;
+}
+
+export interface Lead {
+  id: string;
+  slug: string | null;
+  status: string;
+  vehicle: string;
+  first_name: string;
+  email: string;
+  message: string;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  byline?: BylineSummary | null;
+  bylines?: ContentBylineCredit[];
+  terms?: Record<string, TaxonomyTerm[]>;
+}
+
 export interface Page {
   id: string;
   slug: string | null;
   status: string;
-  title: string;
-  content?: PortableTextBlock[];
+  key: string;
+  title?: string;
+  body?: string;
+  google_reviews_url?: string;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -35,6 +68,21 @@ export interface Post {
   terms?: Record<string, TaxonomyTerm[]>;
 }
 
+export interface Review {
+  id: string;
+  slug: string | null;
+  status: string;
+  name: string;
+  quote: string;
+  order?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  byline?: BylineSummary | null;
+  bylines?: ContentBylineCredit[];
+  terms?: Record<string, TaxonomyTerm[]>;
+}
+
 export interface Vehicle {
   id: string;
   slug: string | null;
@@ -51,6 +99,7 @@ export interface Vehicle {
   sellers_notes?: string;
   vin?: string;
   availability?: "In prep" | "On water" | "Sold";
+  order?: number;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -61,8 +110,11 @@ export interface Vehicle {
 
 declare module "emdash" {
   interface EmDashCollections {
+    import_photos: ImportPhoto;
+    leads: Lead;
     pages: Page;
     posts: Post;
+    reviews: Review;
     vehicles: Vehicle;
   }
 }

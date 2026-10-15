@@ -12,7 +12,7 @@
   --font-sans: Poppins, "Segoe UI", sans-serif;
   --font-display: Syncopate, "Avenir Next", sans-serif;
   --color-accent: #f29559;
-  --color-accent-hover: color-mix(in srgb, #f29559 86%, black);
+  --color-accent-hover: color-mix(in srgb, var(--color-accent) 86%, black);
   --color-on-accent: #15181c;
   --color-ground: #f4f5f6;
   --color-ink: #15181c;
