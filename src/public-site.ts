@@ -1,5 +1,29 @@
 import type { Catalogue, Vehicle } from "./catalogue";
 
+export type EnquiryMail = {
+  to: string;
+  subject: string;
+  text: string;
+};
+
+export type EnquiryServices = {
+  /** Present when the page should show the Turnstile widget. */
+  siteKey?: string;
+  checkSpam: (token: string) => Promise<boolean>;
+  sendEmail: (mail: EnquiryMail) => Promise<void>;
+};
+
+const enquiryInbox = "info@originjapan.co.uk";
+
+const closedEnquiry: EnquiryServices = {
+  async checkSpam() {
+    return false;
+  },
+  async sendEmail() {
+    throw new Error("Email is not configured");
+  },
+};
+
 const siteCss = `
 @font-face {
   font-family: Syncopate;
@@ -34,6 +58,7 @@ const siteCss = `
   --bg: #f3f4f2;
   --text: #1c2630;
   --line: #d5d8dc;
+  --field-line: #5c6770;
   --surface: #e7e9ea;
   --display: Syncopate, "Avenir Next", sans-serif;
   --body: Poppins, "Segoe UI", sans-serif;
@@ -44,6 +69,7 @@ const siteCss = `
     --bg: #141a20;
     --text: #e6eaee;
     --line: #2c3844;
+    --field-line: #8b98a6;
     --surface: #1c252e;
   }
 }
@@ -195,6 +221,8 @@ h1 {
 .vehicle-page .gallery { order: 3; }
 .vehicle-specs { order: 4; }
 .notes { order: 5; }
+.enquiry,
+.enquiry-confirmation { order: 6; }
 .vehicle-title {
   font-family: var(--body);
   font-size: clamp(1.75rem, 3vw, 2.35rem);
@@ -235,6 +263,54 @@ h1 {
   font-size: 1.05rem;
   font-weight: 600;
 }
+.enquiry {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  max-width: 65ch;
+}
+.field { display: grid; gap: 0.35rem; }
+.field label { font-size: 0.875rem; font-weight: 600; }
+.field input,
+.field textarea {
+  width: 100%;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--field-line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.field textarea { min-height: 8rem; resize: vertical; }
+.field input:focus-visible,
+.field textarea:focus-visible,
+.enquiry button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+.field-error {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.enquiry button {
+  justify-self: start;
+  min-height: 2.75rem;
+  padding: 0.65rem 1.1rem;
+  border: 1px solid var(--text);
+  border-radius: var(--radius);
+  background: var(--text);
+  color: var(--bg);
+  font-family: var(--body);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.enquiry-confirmation { margin: 0.5rem 0 0; max-width: 65ch; font-weight: 600; }
 @media (max-width: 1023px) {
   .stock { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -280,21 +356,29 @@ h1 {
   .vehicle-page .badge,
   .vehicle-page .price,
   .vehicle-specs,
-  .notes { order: 0; }
+  .notes,
+  .enquiry,
+  .enquiry-confirmation { order: 0; }
   .vehicle-page .vehicle-specs { grid-template-columns: auto 1fr; margin-top: 0.5rem; }
   .vehicle-page .notes { margin-top: 0.5rem; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .vehicle img {
+  .vehicle img,
+  .enquiry button {
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .vehicle:hover img,
   .vehicle:focus-visible img { transform: scale(1.03); }
-  .vehicle:active { transform: scale(0.98); }
+  .vehicle:active,
+  .enquiry button:active { transform: scale(0.98); }
 }
 `;
 
-export async function requestPublicPage(request: Request, catalogue: Catalogue): Promise<Response> {
+export async function requestPublicPage(
+  request: Request,
+  catalogue: Catalogue,
+  services: EnquiryServices = closedEnquiry,
+): Promise<Response> {
   const url = new URL(request.url);
   const { pathname } = url;
 
@@ -319,7 +403,8 @@ export async function requestPublicPage(request: Request, catalogue: Catalogue):
     const vehicles = await catalogue.vehicles();
     const vehicle = vehicles.find((item) => item.slug === slug && isPublic(item));
     if (!vehicle) return text("Not found", 404);
-    return html(vehiclePage(vehicle));
+    if (request.method === "POST") return submitVehicleEnquiry(request, vehicle, catalogue, services);
+    return html(vehiclePage(vehicle, services.siteKey));
   }
 
   return text("Not found", 404);
@@ -532,7 +617,14 @@ function stockCard(vehicle: Vehicle): string {
   </li>`;
 }
 
-function vehiclePage(vehicle: Vehicle): string {
+type EnquiryView = {
+  confirmed?: boolean;
+  spamRejected?: boolean;
+  values?: { firstName: string; email: string; message: string };
+  errors?: { firstName?: string; email?: string; message?: string };
+};
+
+function vehiclePage(vehicle: Vehicle, siteKey?: string, enquiry?: EnquiryView): string {
   const title = vehicle.title?.trim() || "Vehicle";
   const price = isForSale(vehicle) ? formatPounds(vehicle.pricePounds) : "";
   const photos = photosOf(vehicle);
@@ -562,6 +654,7 @@ function vehiclePage(vehicle: Vehicle): string {
           ${spec("Mileage", formatMiles(vehicle.mileageMiles))}
         </dl>
         ${notes}
+        ${enquiryForm(vehicle, siteKey, enquiry)}
       </div>
     </article>
   `;
@@ -597,6 +690,115 @@ function document(page: { title: string; current: "stock" | "sold" | undefined; 
     </main>
   </body>
 </html>`;
+}
+
+async function submitVehicleEnquiry(
+  request: Request,
+  vehicle: Vehicle,
+  catalogue: Catalogue,
+  services: EnquiryServices,
+): Promise<Response> {
+  if (!isOnStock(vehicle)) return html(vehiclePage(vehicle, services.siteKey), 400);
+
+  const form = await request.formData();
+  const values = {
+    firstName: fieldText(form, "first-name"),
+    email: fieldText(form, "email"),
+    message: fieldText(form, "message"),
+  };
+  const errors = enquiryErrors(values);
+  if (errors) return html(vehiclePage(vehicle, services.siteKey, { values, errors }), 400);
+
+  let accepted = false;
+  try {
+    accepted = await services.checkSpam(fieldText(form, "cf-turnstile-response"));
+  } catch {
+    accepted = false;
+  }
+  if (!accepted) {
+    return html(vehiclePage(vehicle, services.siteKey, { values, spamRejected: true }), 400);
+  }
+
+  const lead = await catalogue.saveVehicleEnquiry({
+    vehicle: vehicle.title?.trim() ?? "",
+    ...values,
+  });
+  try {
+    await services.sendEmail({
+      to: enquiryInbox,
+      subject: `Vehicle enquiry: ${lead.vehicle ?? ""}`,
+      text: [
+        `Vehicle: ${lead.vehicle ?? ""}`,
+        `First name: ${lead.firstName ?? ""}`,
+        `Email: ${lead.email ?? ""}`,
+        "Message:",
+        lead.message ?? "",
+      ].join("\n"),
+    });
+  } catch (error) {
+    console.error("Vehicle enquiry email failed after the lead was saved", error);
+  }
+  return html(vehiclePage(vehicle, services.siteKey, { confirmed: true }));
+}
+
+function enquiryErrors(values: { firstName: string; email: string; message: string }): EnquiryView["errors"] | undefined {
+  const errors: NonNullable<EnquiryView["errors"]> = {};
+  if (!values.firstName) errors.firstName = "Enter your first name.";
+  if (!values.email) errors.email = "Enter your email.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errors.email = "Enter a valid email address.";
+  if (!values.message) errors.message = "Enter a message.";
+  return errors.firstName || errors.email || errors.message ? errors : undefined;
+}
+
+function fieldText(form: FormData, name: string): string {
+  const value = form.get(name);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function enquiryForm(vehicle: Vehicle, siteKey?: string, enquiry?: EnquiryView): string {
+  if (!isOnStock(vehicle)) return "";
+  if (enquiry?.confirmed) {
+    return `<p class="enquiry-confirmation" role="status">Your enquiry has been sent.</p>`;
+  }
+  const slug = vehicle.slug ?? "";
+  const values = enquiry?.values;
+  const errors = enquiry?.errors;
+  const turnstile = siteKey
+    ? `<div class="cf-turnstile" data-sitekey="${escapeHtml(siteKey)}"></div>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>`
+    : "";
+  const spam = enquiry?.spamRejected
+    ? `<p class="field-error" role="alert">The spam check was not accepted. Submit the form again.</p>`
+    : "";
+  return `<form class="enquiry" method="post" action="/listings/${escapeHtml(encodeURIComponent(slug))}" aria-label="Enquire about this car" novalidate>
+        ${fieldBlock("first-name", "First name", "text", values?.firstName, errors?.firstName, `autocomplete="given-name"`)}
+        ${fieldBlock("email", "Email", "email", values?.email, errors?.email, `autocomplete="email" inputmode="email"`)}
+        ${fieldBlock("message", "Message", "textarea", values?.message, errors?.message)}
+        ${turnstile}
+        ${spam}
+        <button type="submit">Enquire about this car</button>
+      </form>`;
+}
+
+function fieldBlock(
+  id: string,
+  label: string,
+  type: "text" | "email" | "textarea",
+  value = "",
+  error?: string,
+  extra = "",
+): string {
+  const described = error ? ` aria-invalid="true" aria-describedby="${id}-error"` : "";
+  const control =
+    type === "textarea"
+      ? `<textarea id="${id}" name="${id}"${described}>${escapeHtml(value)}</textarea>`
+      : `<input id="${id}" name="${id}" type="${type}" value="${escapeHtml(value)}"${extra ? ` ${extra}` : ""}${described}>`;
+  const message = error ? `<p id="${id}-error" class="field-error">${escapeHtml(error)}</p>` : "";
+  return `<div class="field">
+          <label for="${id}">${escapeHtml(label)}</label>
+          ${control}
+          ${message}
+        </div>`;
 }
 
 function availabilityBadge(vehicle: Vehicle): string {

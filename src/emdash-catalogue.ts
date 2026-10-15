@@ -1,9 +1,11 @@
-import { getEmDashCollection } from "emdash";
-import type { Catalogue, Lead, Vehicle } from "./catalogue";
+import { ContentRepository, getEmDashCollection } from "emdash";
+import { getDb } from "emdash/runtime";
+import type { Catalogue, Lead, Vehicle, VehicleEnquiryInput } from "./catalogue";
 
 export const emdashCatalogue: Catalogue = {
   vehicles: listVehicles,
   leads: listLeads,
+  saveVehicleEnquiry,
 };
 
 async function listVehicles(): Promise<readonly Vehicle[]> {
@@ -15,7 +17,29 @@ async function listVehicles(): Promise<readonly Vehicle[]> {
 async function listLeads(): Promise<readonly Lead[]> {
   const { entries, error } = await getEmDashCollection("leads");
   if (error) throw error;
-  return entries.map((entry) => ({ id: entry.id }));
+  return entries.map((entry) => ({
+    id: entry.id,
+    vehicle: stringValue(entry.data.vehicle),
+    firstName: stringValue(entry.data.first_name),
+    email: stringValue(entry.data.email),
+    message: stringValue(entry.data.message),
+  }));
+}
+
+async function saveVehicleEnquiry(input: VehicleEnquiryInput): Promise<Lead> {
+  const repo = new ContentRepository(await getDb());
+  const item = await repo.create({
+    type: "leads",
+    status: "published",
+    publishedAt: new Date().toISOString(),
+    data: {
+      vehicle: input.vehicle,
+      first_name: input.firstName,
+      email: input.email,
+      message: input.message,
+    },
+  });
+  return { id: item.id, ...input };
 }
 
 function vehicleFromEntry(entry: { id: string; status?: string; data: object }): Vehicle {

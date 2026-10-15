@@ -24,12 +24,25 @@ export type Vehicle = {
   order?: number;
 };
 
+/** A vehicle enquiry names one vehicle. Adam reads it in the admin. */
 export type Lead = {
   id: string;
+  vehicle?: string;
+  firstName?: string;
+  email?: string;
+  message?: string;
+};
+
+export type VehicleEnquiryInput = {
+  vehicle: string;
+  firstName: string;
+  email: string;
+  message: string;
 };
 
 /** Vehicles and leads a public page can read. Tests stand in for EmDash with memory. */
 export type Catalogue = {
   vehicles(): Promise<readonly Vehicle[]>;
   leads(): Promise<readonly Lead[]>;
+  saveVehicleEnquiry(input: VehicleEnquiryInput): Promise<Lead>;
 };

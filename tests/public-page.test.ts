@@ -3,6 +3,8 @@ import type { Vehicle } from "../src/catalogue";
 import { inMemoryCatalogue } from "../src/in-memory-catalogue";
 import { requestPublicPage } from "../src/public-site";
 
+type EnquiryMail = { to: string; subject: string; text: string };
+
 test("a buyer receives a response from the public site", async () => {
   const response = await requestPublicPage(
     new Request("http://originjapan.test/"),
@@ -637,6 +639,251 @@ test("a vehicle missing a required field is absent, and the VIN stays off the pa
     expect(hiddenPage.status).toBe(404);
   }
 });
+
+test("a for-sale vehicle offers Enquire about this car", async () => {
+  const html = await vehicleHtml(forSaleVehicle());
+
+  expect(html).toContain("Enquire about this car");
+  expect(html).toContain("<form");
+});
+
+test("an in-prep vehicle offers Enquire about this car", async () => {
+  const html = await vehicleHtml({
+    ...forSaleVehicle(),
+    pricePounds: undefined,
+    availability: "in prep",
+  });
+
+  expect(html).toContain("Enquire about this car");
+  expect(html).toContain("<form");
+  expect(html).not.toContain("£");
+});
+
+test("a saved vehicle enquiry is confirmed and emailed to info@originjapan.co.uk", async () => {
+  const catalogue = inMemoryCatalogue({ vehicles: [forSaleVehicle()] });
+  const sent: EnquiryMail[] = [];
+
+  const response = await requestPublicPage(
+    enquiryRequest({
+      "first-name": "Ada",
+      email: "ada@example.com",
+      message: "Is this Levorg still available?",
+      "cf-turnstile-response": "pass",
+    }),
+    catalogue,
+    {
+      checkSpam: async (token) => token === "pass",
+      sendEmail: async (mail) => {
+        sent.push(mail);
+      },
+    },
+  );
+  const html = await response.text();
+  const leads = await catalogue.leads();
+
+  expect(response.status).toBe(200);
+  expect(html).toContain("Your enquiry has been sent.");
+  expect(leads).toEqual([
+    {
+      id: "lead-1",
+      vehicle: "Subaru Levorg 2.0 GT-S 2016",
+      firstName: "Ada",
+      email: "ada@example.com",
+      message: "Is this Levorg still available?",
+    },
+  ]);
+  expect(sent).toEqual([
+    {
+      to: "info@originjapan.co.uk",
+      subject: "Vehicle enquiry: Subaru Levorg 2.0 GT-S 2016",
+      text: [
+        "Vehicle: Subaru Levorg 2.0 GT-S 2016",
+        "First name: Ada",
+        "Email: ada@example.com",
+        "Message:",
+        "Is this Levorg still available?",
+      ].join("\n"),
+    },
+  ]);
+});
+
+test("a vehicle enquiry rejects a missing first name, email, or message under that field", async () => {
+  const catalogue = inMemoryCatalogue({ vehicles: [forSaleVehicle()] });
+  const services = {
+    checkSpam: async () => true,
+    sendEmail: async () => {
+      throw new Error("email should not be sent");
+    },
+  };
+  const cases = [
+    {
+      fields: { email: "ada@example.com", message: "Hello" },
+      error: "Enter your first name.",
+      field: "first-name",
+      next: "email",
+    },
+    {
+      fields: { "first-name": "Ada", message: "Hello" },
+      error: "Enter your email.",
+      field: "email",
+      next: "message",
+    },
+    {
+      fields: { "first-name": "Ada", email: "ada@example.com" },
+      error: "Enter a message.",
+      field: "message",
+      next: "Enquire about this car",
+    },
+    {
+      fields: { "first-name": "Ada", email: "not-an-email", message: "Hello" },
+      error: "Enter a valid email address.",
+      field: "email",
+      next: "message",
+    },
+  ];
+
+  for (const item of cases) {
+    const response = await requestPublicPage(
+      enquiryRequest({ ...item.fields, "cf-turnstile-response": "pass" }),
+      catalogue,
+      services,
+    );
+    const html = await response.text();
+    const fieldAt = html.indexOf(`id="${item.field}"`);
+    const errorAt = html.indexOf(item.error);
+    const nextAt = html.indexOf(item.next, fieldAt + 1);
+
+    expect(response.status).toBe(400);
+    expect(html).not.toContain("Your enquiry has been sent.");
+    expect(fieldAt).toBeGreaterThan(-1);
+    expect(errorAt).toBeGreaterThan(fieldAt);
+    expect(nextAt).toBeGreaterThan(errorAt);
+  }
+
+  expect(await catalogue.leads()).toEqual([]);
+});
+
+test("a failed Turnstile check is rejected and does not save a lead", async () => {
+  const catalogue = inMemoryCatalogue({ vehicles: [forSaleVehicle()] });
+  let emailed = false;
+
+  const response = await requestPublicPage(
+    enquiryRequest({
+      "first-name": "Ada",
+      email: "ada@example.com",
+      message: "Is this Levorg still available?",
+      "cf-turnstile-response": "fail",
+    }),
+    catalogue,
+    {
+      checkSpam: async (token) => token === "pass",
+      sendEmail: async () => {
+        emailed = true;
+      },
+    },
+  );
+  const html = await response.text();
+
+  expect(response.status).toBe(400);
+  expect(html).toContain("The spam check was not accepted.");
+  expect(html).not.toContain("Your enquiry has been sent.");
+  expect(await catalogue.leads()).toEqual([]);
+  expect(emailed).toBe(false);
+});
+
+test("a sold vehicle has no vehicle enquiry", async () => {
+  const catalogue = inMemoryCatalogue({
+    vehicles: [{ ...forSaleVehicle(), availability: "sold" }],
+  });
+
+  const page = await requestPublicPage(
+    new Request("http://originjapan.test/listings/subaru-levorg-2-0-gt-s"),
+    catalogue,
+  );
+  const posted = await requestPublicPage(
+    enquiryRequest({
+      "first-name": "Ada",
+      email: "ada@example.com",
+      message: "Is this Levorg still available?",
+      "cf-turnstile-response": "pass",
+    }),
+    catalogue,
+    {
+      checkSpam: async () => true,
+      sendEmail: async () => {
+        throw new Error("email should not be sent");
+      },
+    },
+  );
+
+  expect(page.status).toBe(200);
+  expect(await page.text()).not.toContain("Enquire");
+  expect(posted.status).toBe(400);
+  expect(await posted.text()).not.toContain("<form");
+  expect(await catalogue.leads()).toEqual([]);
+});
+
+test("a failed email still confirms the enquiry and keeps the lead", async () => {
+  const catalogue = inMemoryCatalogue({ vehicles: [forSaleVehicle()] });
+
+  const response = await requestPublicPage(
+    enquiryRequest({
+      "first-name": "Ada",
+      email: "ada@example.com",
+      message: "Is this Levorg still available?",
+      "cf-turnstile-response": "pass",
+    }),
+    catalogue,
+    {
+      checkSpam: async () => true,
+      sendEmail: async () => {
+        throw new Error("mailbox unavailable");
+      },
+    },
+  );
+  const html = await response.text();
+
+  expect(response.status).toBe(200);
+  expect(html).toContain("Your enquiry has been sent.");
+  expect(await catalogue.leads()).toEqual([
+    {
+      id: "lead-1",
+      vehicle: "Subaru Levorg 2.0 GT-S 2016",
+      firstName: "Ada",
+      email: "ada@example.com",
+      message: "Is this Levorg still available?",
+    },
+  ]);
+});
+
+test("an on-water vehicle offers Enquire about this car", async () => {
+  const html = await vehicleHtml({
+    ...forSaleVehicle(),
+    pricePounds: undefined,
+    availability: "on water",
+  });
+
+  expect(html).toContain("Enquire about this car");
+  expect(html).toContain("<form");
+  expect(html).not.toContain("£");
+});
+
+function enquiryRequest(fields: Record<string, string>): Request {
+  return new Request("http://originjapan.test/listings/subaru-levorg-2-0-gt-s", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(fields),
+  });
+}
+
+async function vehicleHtml(vehicle: Vehicle): Promise<string> {
+  const response = await requestPublicPage(
+    new Request(`http://originjapan.test/listings/${vehicle.slug}`),
+    inMemoryCatalogue({ vehicles: [vehicle] }),
+  );
+  expect(response.status).toBe(200);
+  return response.text();
+}
 
 function stockSlugs(html: string): string[] {
   return [...html.matchAll(/href="\/listings\/([^"]+)"/g)].map((match) => match[1]);

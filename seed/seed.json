@@ -110,6 +110,51 @@
           "translatable": false
         }
       ]
+    },
+    {
+      "slug": "leads",
+      "label": "Leads",
+      "labelSingular": "Lead",
+      "icon": "envelope",
+      "routable": false,
+      "titleField": "vehicle",
+      "admin": {
+        "listColumns": ["first_name", "email"]
+      },
+      "fields": [
+        {
+          "slug": "vehicle",
+          "label": "Vehicle",
+          "type": "string",
+          "required": true,
+          "searchable": true,
+          "translatable": false
+        },
+        {
+          "slug": "first_name",
+          "label": "First name",
+          "type": "string",
+          "required": true,
+          "searchable": true,
+          "translatable": false
+        },
+        {
+          "slug": "email",
+          "label": "Email",
+          "type": "string",
+          "required": true,
+          "searchable": true,
+          "translatable": false
+        },
+        {
+          "slug": "message",
+          "label": "Message",
+          "type": "text",
+          "required": true,
+          "searchable": true,
+          "translatable": false
+        }
+      ]
     }
   ]
 }

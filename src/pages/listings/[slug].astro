@@ -1,6 +1,7 @@
 ---
 import { emdashCatalogue } from "../../emdash-catalogue";
+import { liveEnquiryServices } from "../../live-enquiry";
 import { requestPublicPage } from "../../public-site";
 
-return requestPublicPage(Astro.request, emdashCatalogue);
+return requestPublicPage(Astro.request, emdashCatalogue, await liveEnquiryServices());
 ---
