@@ -80,11 +80,12 @@ test("personal import explains the service and shows photos Adam adds and remove
   expect(explained).toContain("Sourcing");
   expect(explained).toContain("Inspection");
   expect(explained).toContain("before bidding");
-  expect([...explained.matchAll(/<img\b[^>]*src="([^"]+)"/g)].map((match) => match[1])).toEqual([
-    "/images/origin-japan-lockup.png",
-    "/images/origin-japan-lockup.png",
-  ]);
+  expect(explained).not.toContain('aria-labelledby="import-photos"');
 
+  expect(imageSources(sectionContaining(shown, 'aria-labelledby="import-photos"'))).toEqual([
+    "https://photos.example/dock.jpg",
+    "https://photos.example/yard.jpg",
+  ]);
   expect(shown).toContain('src="https://photos.example/dock.jpg"');
   expect(shown).toContain('src="https://photos.example/yard.jpg"');
   expect(shown).toContain('alt="A car at the Japanese agent"');
@@ -297,10 +298,7 @@ test("clearing a block's picture removes it from the page", async () => {
   expect(html).toContain("Personal imports");
   expect(html).toContain("We inspect these vehicles before purchase.");
   expect(html).not.toContain("carbon-mat");
-  expect([...html.matchAll(/<img\b[^>]*src="([^"]+)"/g)].map((match) => match[1])).toEqual([
-    "/images/origin-japan-lockup.png",
-    "/images/origin-japan-lockup.png",
-  ]);
+  expect(imageSources(sectionContaining(html, "We inspect these vehicles before purchase."))).toEqual([]);
 });
 
 test("home offers current stock, parts, partners, and named reviews", async () => {
@@ -1048,9 +1046,8 @@ test("a buyer sees the vehicle, its price, and photos in Adam's order", async ()
   );
   const stockHtml = await stock.text();
   const html = await page.text();
-  const contentImage = (src: string) => src !== "/images/origin-japan-lockup.png";
-  const stockPhoto = [...stockHtml.matchAll(/<img[^>]*src="([^"]+)"/g)].map((match) => match[1]).find(contentImage);
-  const pagePhotos = [...html.matchAll(/<img[^>]*src="([^"]+)"/g)].map((match) => match[1]).filter(contentImage);
+  const stockPhoto = imageSources(stockHtml, /^Subaru Levorg 2\.0 GT-S 2016$/)[0];
+  const pagePhotos = imageSources(html, /^Subaru Levorg 2\.0 GT-S 2016, photo \d+ of \d+$/);
 
   expect(page.status).toBe(200);
   const crumb = html.match(/<nav[^>]*aria-label="Breadcrumb"[\s\S]*?<\/nav>/)?.[0] ?? "";
@@ -1410,6 +1407,18 @@ function region(html: string, tag: string): string {
   const start = html.indexOf(`<${tag}`);
   const end = html.indexOf(`</${tag}>`);
   return start === -1 || end === -1 ? "" : html.slice(start, end);
+}
+
+function sectionContaining(html: string, needle: string): string {
+  const found = at(html, needle);
+  return html.slice(html.lastIndexOf("<section", found), html.indexOf("</section>", found));
+}
+
+function imageSources(html: string, alt?: RegExp): string[] {
+  return [...html.matchAll(/<img\b[^>]*>/g)]
+    .map((match) => match[0])
+    .filter((tag) => !alt || alt.test(tag.match(/\balt="([^"]*)"/)?.[1] ?? ""))
+    .map((tag) => tag.match(/\bsrc="([^"]+)"/)?.[1] ?? "");
 }
 
 function stockSlugs(html: string): string[] {
