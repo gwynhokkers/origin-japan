@@ -1,5 +1,6 @@
 ---
 import "../styles/public.css";
+import { homeHero } from "../public/hero";
 import type { NavPage } from "../public/navigation";
 import SiteFooter from "../components/public/SiteFooter.astro";
 import SiteHeader from "../components/public/SiteHeader.astro";
@@ -7,15 +8,14 @@ import SiteHeader from "../components/public/SiteHeader.astro";
 type Banner = "home" | "import" | "grades" | "contact";
 type Props = { title: string; current?: NavPage; banner?: Banner };
 
-const banners: Record<Banner, { narrow: string; wide: string }> = {
-  home: { narrow: "/images/home-dusk-row-1000.jpg", wide: "/images/home-dusk-row-2000.jpg" },
+const banners: Record<Exclude<Banner, "home">, { narrow: string; wide: string }> = {
   import: { narrow: "/images/import-skylines-fuji-1000.jpg", wide: "/images/import-skylines-fuji-1300.jpg" },
   grades: { narrow: "/images/grade-trueno-1000.jpg", wide: "/images/grade-trueno-2000.jpg" },
   contact: { narrow: "/images/contact-supra-gtr-900.jpg", wide: "/images/contact-supra-gtr-1600.jpg" },
 };
 
 const { title, current, banner } = Astro.props;
-const photo = banner ? banners[banner] : undefined;
+const photo = banner && banner !== "home" ? banners[banner] : undefined;
 ---
 
 <!doctype html>
@@ -38,6 +38,18 @@ const photo = banner ? banners[banner] : undefined;
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preload" href="/fonts/poppins-400.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/syncopate-700.woff2" as="font" type="font/woff2" crossorigin />
+    {
+      banner === "home" && (
+        <link
+          rel="preload"
+          as="image"
+          href={homeHero.src}
+          imagesrcset={homeHero.srcset}
+          imagesizes={homeHero.sizes}
+          fetchpriority="high"
+        />
+      )
+    }
     {
       photo && (
         <>
