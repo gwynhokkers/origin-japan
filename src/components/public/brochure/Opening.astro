@@ -1,6 +1,7 @@
 ---
 import { sanitizeHref } from "emdash";
 import { copyParagraphs, type BrochurePage } from "../../../public/copy";
+import { homeHero } from "../../../public/hero";
 import PageBanner from "../PageBanner.astro";
 
 type Props = {
@@ -26,9 +27,9 @@ const frame = "mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]";
       <section class="home-hero" aria-labelledby="home-title">
         <img
           class="home-hero-still"
-          src="/images/home-dusk-row-2000.jpg"
-          srcset="/images/home-dusk-row-1000.jpg 1000w, /images/home-dusk-row-2000.jpg 2000w"
-          sizes="100vw"
+          src={homeHero.src}
+          srcset={homeHero.srcset}
+          sizes={homeHero.sizes}
           alt=""
           fetchpriority="high"
           width="2000"

@@ -327,6 +327,34 @@ test("home offers current stock, parts, partners, and named reviews", async () =
   expect(emptied).toContain("Emily Renshaw");
 });
 
+test("home preloads its hero photo with the same choice of file as the hero image", async () => {
+  const html = await pageText(inMemoryCatalogue(), "/");
+  const preloads = [...html.matchAll(/<link\b[^>]*rel="preload"[^>]*as="image"[^>]*>/g)].map((match) => match[0]);
+  const hero = html.match(/<img\b[^>]*class="home-hero-still"[^>]*>/)?.[0] ?? "";
+  const attribute = (tag: string, name: string) => tag.match(new RegExp(`\\s${name}="([^"]*)"`))?.[1];
+
+  expect(preloads).toHaveLength(1);
+  expect(attribute(preloads[0], "imagesrcset")).toBe(attribute(hero, "srcset"));
+  expect(attribute(preloads[0], "imagesizes")).toBe(attribute(hero, "sizes"));
+  expect(attribute(preloads[0], "fetchpriority")).toBe("high");
+  expect(attribute(preloads[0], "media")).toBeUndefined();
+});
+
+test("banner pages preload the narrow photo on small screens and the wide one on larger screens", async () => {
+  const cases = [
+    ["/personal-import", "/images/import-skylines-fuji-1000.jpg", "/images/import-skylines-fuji-1300.jpg"],
+    ["/grade-sheets", "/images/grade-trueno-1000.jpg", "/images/grade-trueno-2000.jpg"],
+    ["/contact", "/images/contact-supra-gtr-900.jpg", "/images/contact-supra-gtr-1600.jpg"],
+  ];
+
+  for (const [path, narrow, wide] of cases) {
+    const html = await pageText(inMemoryCatalogue(), path);
+    expect(html).toContain(`<link rel="preload" as="image" href="${narrow}" media="(max-width: 767px)">`);
+    expect(html).toContain(`<link rel="preload" as="image" href="${wide}" media="(min-width: 768px)">`);
+    expect(html).not.toContain("imagesrcset");
+  }
+});
+
 test("home shows the first three vehicles in stock with their own photos, and no sold vehicle or draft", async () => {
   const catalogue = inMemoryCatalogue({
     vehicles: [
