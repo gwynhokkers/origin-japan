@@ -17,6 +17,24 @@ test("a for-sale stock card shows the first photo, the title, and the price", as
   expect(document.body.textContent).not.toContain("Sold");
 });
 
+test("a stock card photo stored in EmDash media loads resized WebP variants sized to the stock grid", async () => {
+  const vehicle = { ...ForSale.args.vehicle, photos: ["/_emdash/api/media/file/01ABC.jpg"] };
+  await renderPublicStory(stories.default.component, { args: { vehicle } });
+
+  const img = document.querySelector("img");
+  expect(img?.getAttribute("src")).toBe("/_image?href=%2F_emdash%2Fapi%2Fmedia%2Ffile%2F01ABC.jpg&w=960&f=webp");
+  expect(img?.getAttribute("srcset")).toContain("&w=480&f=webp 480w");
+  expect(img?.getAttribute("srcset")).toContain("&w=1600&f=webp 1600w");
+  expect(img?.getAttribute("sizes")).toContain("(min-width: 1024px)");
+});
+
+test("a stock card photo that is not EmDash media has no srcset", async () => {
+  await renderPublicStory(stories.default.component, ForSale);
+
+  expect(document.querySelector("img")?.hasAttribute("srcset")).toBe(false);
+  expect(document.querySelector("img")?.hasAttribute("sizes")).toBe(false);
+});
+
 test("an in-prep stock card shows the label and no price", async () => {
   await renderPublicStory(stories.default.component, InPrep);
 
