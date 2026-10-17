@@ -5,6 +5,18 @@ import StockCard from "../StockCard.astro";
 type Props = { heading?: string; stock: readonly Vehicle[] };
 const { stock } = Astro.props;
 const heading = Astro.props.heading?.trim() || "In stock";
+
+const fullSizes = "(min-width: 1280px) 75rem, (min-width: 1024px) calc(100vw - 5rem), 92vw";
+const wideSizes =
+  "(min-width: 1280px) 43rem, (min-width: 1024px) calc((100vw - 7rem) * 7 / 12), (min-width: 768px) calc((92vw - 2rem) * 7 / 12), 92vw";
+const narrowSizes =
+  "(min-width: 1280px) 31rem, (min-width: 1024px) calc((100vw - 7rem) * 5 / 12), (min-width: 768px) calc((92vw - 2rem) * 5 / 12), 92vw";
+
+/** The first of three spans two rows and crops its photo to that height, so it needs about the full width. */
+function sizesFor(index: number): string {
+  if (stock.length === 1 || (stock.length === 3 && index === 0)) return fullSizes;
+  return index === 0 ? wideSizes : narrowSizes;
+}
 ---
 
 {
@@ -13,7 +25,7 @@ const heading = Astro.props.heading?.trim() || "In stock";
       <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]">
         <h2 id="home-stock" class="m-0 mb-7 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase">{heading}</h2>
         <ul class="m-0 grid list-none grid-cols-1 gap-8 p-0 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] data-[count=1]:grid-cols-1 data-[count=3]:md:[&>li:first-child]:row-span-2" data-count={stock.length}>
-          {stock.map((vehicle) => <StockCard vehicle={vehicle} eager featured />)}
+          {stock.map((vehicle, index) => <StockCard vehicle={vehicle} eager featured sizes={sizesFor(index)} />)}
         </ul>
       </div>
     </section>

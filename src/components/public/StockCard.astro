@@ -1,13 +1,19 @@
 ---
 import type { Vehicle } from "../../catalogue";
+import { responsivePhoto } from "../../public/photos";
 import { availabilityLabel, formatMiles, formatPounds, isForSale, photosOf, vehicleHref } from "../../public/vehicles";
 import Badge from "./Badge.astro";
 
-type Props = { vehicle: Vehicle; eager?: boolean; featured?: boolean };
+/** `sizes` is the width this card's photo fills; it defaults to the stock and sold stock grid. */
+type Props = { vehicle: Vehicle; eager?: boolean; featured?: boolean; sizes?: string };
 
-const { vehicle, eager = false, featured = false } = Astro.props;
+const stockGridSizes =
+  "(min-width: 1280px) 24rem, (min-width: 1024px) calc((100vw - 8rem) / 3), (min-width: 768px) calc(46vw - 0.75rem), 92vw";
+
+const { vehicle, eager = false, featured = false, sizes = stockGridSizes } = Astro.props;
 const title = vehicle.title?.trim() ?? "";
-const photo = photosOf(vehicle)[0];
+const firstPhoto = photosOf(vehicle)[0];
+const photo = firstPhoto ? responsivePhoto(firstPhoto, sizes) : undefined;
 const price = isForSale(vehicle) ? formatPounds(vehicle.pricePounds) : "";
 const badge = availabilityLabel(vehicle);
 const href = vehicleHref(vehicle.slug);
@@ -32,7 +38,9 @@ const specs = [
         <div class="overflow-hidden rounded bg-surface">
           {photo && (
             <img
-              src={photo}
+              src={photo.src}
+              srcset={photo.srcset}
+              sizes={photo.sizes}
               alt={alt}
               width="900"
               height="600"
@@ -52,7 +60,9 @@ const specs = [
         <div class="overflow-hidden rounded bg-surface">
           {photo && (
             <img
-              src={photo}
+              src={photo.src}
+              srcset={photo.srcset}
+              sizes={photo.sizes}
               alt={alt}
               width="900"
               height="600"
