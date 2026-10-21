@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 import type { Vehicle } from "../src/catalogue";
 import { inMemoryCatalogue } from "../src/in-memory-catalogue";
@@ -338,20 +339,52 @@ test("home preloads its hero photo with the same choice of file as the hero imag
   expect(attribute(preloads[0], "media")).toBeUndefined();
 });
 
-test("banner pages preload the narrow photo on small screens and the wide one on larger screens", async () => {
+test("banner pages preload the AVIF banner their stylesheet shows on small screens and on larger ones", async () => {
   const cases = [
-    ["/personal-import", "/images/import-skylines-fuji-1000.jpg", "/images/import-skylines-fuji-1300.jpg"],
-    ["/grade-sheets", "/images/grade-trueno-1000.jpg", "/images/grade-trueno-2000.jpg"],
-    ["/contact", "/images/contact-supra-gtr-900.jpg", "/images/contact-supra-gtr-1600.jpg"],
+    ["/personal-import", "import", "/images/import-skylines-fuji-1000", "/images/import-skylines-fuji-1300"],
+    ["/grade-sheets", "grades", "/images/grade-trueno-1000", "/images/grade-trueno-2000"],
+    ["/contact", "contact", "/images/contact-supra-gtr-900", "/images/contact-supra-gtr-1600"],
   ];
 
-  for (const [path, narrow, wide] of cases) {
+  for (const [path, banner, narrow, wide] of cases) {
     const html = await pageText(inMemoryCatalogue(), path);
-    expect(html).toContain(`<link rel="preload" as="image" href="${narrow}" media="(max-width: 767px)">`);
-    expect(html).toContain(`<link rel="preload" as="image" href="${wide}" media="(min-width: 768px)">`);
+    expect(html).toContain(`<link rel="preload" as="image" href="${narrow}.avif" type="image/avif" media="(max-width: 767px)">`);
+    expect(html).toContain(`<link rel="preload" as="image" href="${wide}.avif" type="image/avif" media="(min-width: 768px)">`);
+    expect(html.match(/rel="preload" as="image"/g)).toHaveLength(2);
     expect(html).not.toContain("imagesrcset");
+
+    expect(backgroundCandidates(bannerRule(banner, "narrow"))).toEqual(modernThenJpeg(narrow));
+    expect(backgroundCandidates(bannerRule(banner, "wide"))).toEqual(modernThenJpeg(wide));
   }
 });
+
+test("the carbon fibre texture is AVIF or WebP where supported, with a JPEG fallback", () => {
+  const rule = stylesheet.match(/\.carbon-band::before,\s*\.carbon-mat::before \{([^}]*)\}/)?.[1] ?? "";
+
+  expect(backgroundCandidates(rule)).toEqual(modernThenJpeg("/images/carbon-fibre-detail"));
+});
+
+const stylesheet = readFileSync(new URL("../src/styles/public.css", import.meta.url), "utf8");
+
+function bannerRule(banner: string, screen: "narrow" | "wide"): string {
+  const narrowBlock = stylesheet.search(/@media \(max-width: 767px\) \{\s*\.banner-/);
+  const scope = screen === "wide" ? stylesheet.slice(0, narrowBlock) : stylesheet.slice(narrowBlock);
+  return scope.match(new RegExp(`\\.banner-${banner} \\{([^}]*)\\}`))?.[1] ?? "";
+}
+
+/** The `image-set()` candidates of a rule's background, in the order a browser considers them. */
+function backgroundCandidates(rule: string): string[][] {
+  const set = rule.match(/background-image:\s*image-set\(([^;]+)\);/)?.[1] ?? "";
+  return [...set.matchAll(/url\("([^"]+)"\) type\("([^"]+)"\)/g)].map((match) => [match[1] ?? "", match[2] ?? ""]);
+}
+
+function modernThenJpeg(path: string): string[][] {
+  return [
+    [`${path}.avif`, "image/avif"],
+    [`${path}.webp`, "image/webp"],
+    [`${path}.jpg`, "image/jpeg"],
+  ];
+}
 
 test("home shows the first three vehicles in stock with their own photos, and no sold vehicle or draft", async () => {
   const catalogue = inMemoryCatalogue({

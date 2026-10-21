@@ -2,7 +2,9 @@
 import { sanitizeHref } from "emdash";
 import type { BlockImage } from "../../../catalogue";
 import { copyParagraphs } from "../../../public/copy";
+import { brochurePicture } from "../../../public/photos";
 import CopyBlocks from "../CopyBlocks.astro";
+import Picture from "../Picture.astro";
 
 type Props = {
   heading: string;
@@ -16,6 +18,8 @@ const paragraphs = copyParagraphs(body);
 const href = linkHref ? sanitizeHref(linkHref) : "";
 const showLink = Boolean(linkLabel?.trim() && href && href !== "#");
 const src = image?.src.trim() ?? "";
+/** The image takes 7 of 12 columns of an 80rem frame from the medium breakpoint. */
+const sizes = "(min-width: 1280px) 41.5rem, (min-width: 768px) 52vw, 92vw";
 const headingClass = "m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase";
 ---
 
@@ -28,12 +32,11 @@ const headingClass = "m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leadin
   >
     {
       src && (
-        <img
-          src={src}
+        <Picture
+          picture={brochurePicture(src, sizes)}
           alt={image?.alt?.trim() || ""}
-          width="1400"
-          height="1092"
-          loading="lazy"
+          width={1200}
+          height={800}
           class="aspect-[3/2] w-full rounded bg-surface object-cover max-md:order-first"
         />
       )

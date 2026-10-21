@@ -1,6 +1,7 @@
 ---
-type Banner = "home" | "import" | "grades" | "contact";
-type Props = { name: Banner; class?: string };
+import type { BannerName } from "../../public/site-photos";
+
+type Props = { name: BannerName; class?: string };
 const { name, class: className = "" } = Astro.props;
 ---
 
