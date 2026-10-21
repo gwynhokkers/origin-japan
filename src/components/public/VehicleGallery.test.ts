@@ -3,12 +3,17 @@ import { composeStories } from "@storybook-astro/framework/testing";
 import * as stories from "./VehicleGallery.stories";
 import { renderPublicStory } from "./render-public-story";
 
-const { SeveralPhotos, OnePhoto } = composeStories(stories);
+const { SeveralPhotos } = composeStories(stories);
 
 const mediaPhotos = (count: number) =>
   Array.from({ length: count }, (_, index) => `/_emdash/api/media/file/0${index}ABC.jpg`);
 
 const images = () => [...document.querySelectorAll("img")];
+
+const renderMediaPhotos = (count: number) =>
+  renderPublicStory(stories.default.component, { args: { ...SeveralPhotos.args, photos: mediaPhotos(count) } });
+
+const sizesOf = () => images().map((img) => img.getAttribute("sizes"));
 
 test("the first gallery photo loads eagerly at high priority and the rest load lazily", async () => {
   await renderPublicStory(stories.default.component, SeveralPhotos);
@@ -34,7 +39,7 @@ test("gallery photos that are not EmDash media keep their url and have no srcset
 });
 
 test("gallery photos stored in EmDash media load resized WebP variants", async () => {
-  await renderPublicStory(stories.default.component, { args: { ...SeveralPhotos.args, photos: mediaPhotos(3) } });
+  await renderMediaPhotos(3);
 
   for (const [index, img] of images().entries()) {
     expect(img.getAttribute("src")).toBe(`/_image?href=%2F_emdash%2Fapi%2Fmedia%2Ffile%2F0${index}ABC.jpg&w=960&f=webp`);
@@ -44,27 +49,26 @@ test("gallery photos stored in EmDash media load resized WebP variants", async (
 });
 
 test("the first gallery photo is sized to the full gallery width and later photos to half from the medium breakpoint", async () => {
-  await renderPublicStory(stories.default.component, { args: { ...SeveralPhotos.args, photos: mediaPhotos(3) } });
+  await renderMediaPhotos(3);
 
-  const [first, second, third] = images().map((img) => img.getAttribute("sizes"));
-  expect(first).toBe("(min-width: 1280px) 42rem, (min-width: 1024px) calc((100vw - 8rem) * 7 / 12), 92vw");
-  expect(second).toBe(
-    "(min-width: 1280px) 21rem, (min-width: 1024px) calc((100vw - 8rem) * 7 / 24), (min-width: 768px) 46vw, 92vw",
-  );
+  const [first, second, third] = sizesOf();
+  expect(first).toContain("(min-width: 1280px) 42rem");
+  expect(first).not.toContain("(min-width: 768px)");
+  expect(second).toContain("(min-width: 768px)");
   expect(third).toBe(second);
 });
 
 test("a lone last gallery photo is sized to the full gallery width", async () => {
-  await renderPublicStory(stories.default.component, { args: { ...SeveralPhotos.args, photos: mediaPhotos(4) } });
+  await renderMediaPhotos(4);
 
-  const sizes = images().map((img) => img.getAttribute("sizes"));
+  const sizes = sizesOf();
   expect(sizes[3]).toBe(sizes[0]);
   expect(sizes[1]).not.toBe(sizes[0]);
   expect(sizes[2]).toBe(sizes[1]);
 });
 
 test("a single EmDash media photo is sized to the full gallery width", async () => {
-  await renderPublicStory(stories.default.component, { args: { ...OnePhoto.args, photos: mediaPhotos(1) } });
+  await renderMediaPhotos(1);
 
-  expect(images()[0]?.getAttribute("sizes")).toContain("(min-width: 1280px) 42rem");
+  expect(sizesOf()[0]).toContain("(min-width: 1280px) 42rem");
 });

@@ -1161,6 +1161,25 @@ test("a vehicle missing a required field is absent, and the VIN stays off the pa
   }
 });
 
+test("vehicle page photos stored in EmDash media load resized WebP variants, the first at high priority", async () => {
+  const html = await vehicleHtml({
+    ...forSaleVehicle(),
+    photos: ["/_emdash/api/media/file/01FRONT.jpg", "/_emdash/api/media/file/02REAR.jpg"],
+  });
+  const photos = [...html.matchAll(/<img\b[^>]*alt="Subaru Levorg 2\.0 GT-S 2016, photo \d+ of 2"[^>]*>/g)].map(
+    (match) => match[0],
+  );
+
+  expect(photos).toHaveLength(2);
+  for (const photo of photos) {
+    expect(photo).toMatch(/\bsrc="\/_image\?href=%2F_emdash%2Fapi%2Fmedia%2Ffile%2F0\d\w+\.jpg&amp;w=960&amp;f=webp"/);
+    expect(photo).toContain("&amp;w=1600&amp;f=webp 1600w");
+    expect(photo).toMatch(/\bsizes="[^"]+"/);
+  }
+  expect(photos[0]).toContain('fetchpriority="high"');
+  expect(photos[1]).toContain('loading="lazy"');
+});
+
 test("a for-sale vehicle offers Enquire about this car", async () => {
   const html = await vehicleHtml(forSaleVehicle());
 

@@ -7,8 +7,9 @@ const { photos, title, class: className = "" } = Astro.props;
 /** Widths of the gallery column on the vehicle page, which takes 7 of 12 columns from the large breakpoint. */
 const fullWidthSizes = "(min-width: 1280px) 42rem, (min-width: 1024px) calc((100vw - 8rem) * 7 / 12), 92vw";
 const halfWidthSizes =
-  "(min-width: 1280px) 21rem, (min-width: 1024px) calc((100vw - 8rem) * 7 / 24), (min-width: 768px) 46vw, 92vw";
+  "(min-width: 1280px) 20.625rem, (min-width: 1024px) calc((100vw - 8rem) * 7 / 24 - 0.375rem), (min-width: 768px) calc(46vw - 0.375rem), 92vw";
 
+/** Must agree with the `col-span-2` rules on the list below. */
 const spansBothColumns = (index: number) =>
   index === 0 || (index === photos.length - 1 && photos.length % 2 === 0);
 ---
