@@ -4,19 +4,19 @@ overview: Deploy the already-configured EmDash Worker to Cloudflare, copy the lo
 todos:
   - id: auth-deploy
     content: Confirm Cloudflare account, build, and deploy the Worker so D1 and R2 are provisioned
-    status: pending
+    status: completed
   - id: setup-empty
     content: Complete remote setup without applying sample seed content
-    status: pending
+    status: completed
   - id: site-transfer
     content: Export the local site package and import it into the empty remote site
-    status: pending
+    status: completed
   - id: r2-copy
     content: Upload the 599 local listing-photo objects to remote R2 under the same keys
-    status: pending
+    status: completed
   - id: verify-demo
     content: Check home, stock, a listing gallery, a sold page, and admin sign-in on the workers.dev URL
-    status: pending
+    status: completed
 isProject: false
 ---
 
