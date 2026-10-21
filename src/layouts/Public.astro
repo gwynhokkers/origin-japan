@@ -2,20 +2,14 @@
 import "../styles/public.css";
 import { homeHero } from "../public/hero";
 import type { NavPage } from "../public/navigation";
+import { bannerNarrowMedia, bannerWideMedia, pageBanners, type BannerName } from "../public/site-photos";
 import SiteFooter from "../components/public/SiteFooter.astro";
 import SiteHeader from "../components/public/SiteHeader.astro";
 
-type Banner = "home" | "import" | "grades" | "contact";
-type Props = { title: string; current?: NavPage; banner?: Banner };
-
-const banners: Record<Exclude<Banner, "home">, { narrow: string; wide: string }> = {
-  import: { narrow: "/images/import-skylines-fuji-1000.jpg", wide: "/images/import-skylines-fuji-1300.jpg" },
-  grades: { narrow: "/images/grade-trueno-1000.jpg", wide: "/images/grade-trueno-2000.jpg" },
-  contact: { narrow: "/images/contact-supra-gtr-900.jpg", wide: "/images/contact-supra-gtr-1600.jpg" },
-};
+type Props = { title: string; current?: NavPage; banner?: BannerName };
 
 const { title, current, banner } = Astro.props;
-const photo = banner && banner !== "home" ? banners[banner] : undefined;
+const photo = banner && banner !== "home" ? pageBanners[banner] : undefined;
 ---
 
 <!doctype html>
@@ -53,8 +47,8 @@ const photo = banner && banner !== "home" ? banners[banner] : undefined;
     {
       photo && (
         <>
-          <link rel="preload" as="image" href={photo.narrow} media="(max-width: 767px)" />
-          <link rel="preload" as="image" href={photo.wide} media="(min-width: 768px)" />
+          <link rel="preload" as="image" href={photo.narrow.avif} type="image/avif" media={bannerNarrowMedia} />
+          <link rel="preload" as="image" href={photo.wide.avif} type="image/avif" media={bannerWideMedia} />
         </>
       )
     }

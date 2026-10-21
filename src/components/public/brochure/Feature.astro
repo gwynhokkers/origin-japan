@@ -2,7 +2,10 @@
 import { sanitizeHref } from "emdash";
 import type { BlockImage } from "../../../catalogue";
 import { copyParagraphs } from "../../../public/copy";
+import { responsivePhoto } from "../../../public/photos";
+import { featurePhoto, staticPicture } from "../../../public/site-photos";
 import CopyBlocks from "../CopyBlocks.astro";
+import SitePicture from "./SitePicture.astro";
 
 type Props = {
   heading: string;
@@ -16,7 +19,10 @@ const paragraphs = copyParagraphs(body);
 const href = linkHref ? sanitizeHref(linkHref) : "";
 const showLink = Boolean(linkLabel?.trim() && href && href !== "#");
 const src = image?.src.trim() ?? "";
+const bundled = src === featurePhoto.source ? staticPicture(featurePhoto) : undefined;
+const uploaded = !bundled && src.length > 0 ? responsivePhoto(src, featurePhoto.sizes) : undefined;
 const headingClass = "m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase";
+const imageClass = "aspect-[3/2] w-full rounded bg-surface object-cover";
 ---
 
 <section class="border-t border-line py-[clamp(2.5rem,6vw,4.5rem)]">
@@ -27,14 +33,26 @@ const headingClass = "m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leadin
     ]}
   >
     {
-      src && (
-        <img
-          src={src}
+      bundled && (
+        <SitePicture
+          photo={bundled}
           alt={image?.alt?.trim() || ""}
-          width="1400"
-          height="1092"
+          pictureClass="max-md:order-first"
+          class={imageClass}
+        />
+      )
+    }
+    {
+      uploaded && (
+        <img
+          src={uploaded.src}
+          srcset={uploaded.srcset}
+          sizes={uploaded.sizes}
+          alt={image?.alt?.trim() || ""}
+          width={featurePhoto.width}
+          height={featurePhoto.height}
           loading="lazy"
-          class="aspect-[3/2] w-full rounded bg-surface object-cover max-md:order-first"
+          class:list={[imageClass, "max-md:order-first"]}
         />
       )
     }

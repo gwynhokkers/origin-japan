@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import type { Vehicle } from "../src/catalogue";
 import { inMemoryCatalogue } from "../src/in-memory-catalogue";
+import { bannerNarrowMedia, bannerWideMedia, featurePhoto, gradeExhibit, pageBanners, staticPicture } from "../src/public/site-photos";
 import { requestPublicPage } from "./buyer-page";
 
 type EnquiryMail = { to: string; subject: string; text: string };
@@ -338,19 +339,72 @@ test("home preloads its hero photo with the same choice of file as the hero imag
   expect(attribute(preloads[0], "media")).toBeUndefined();
 });
 
-test("banner pages preload the narrow photo on small screens and the wide one on larger screens", async () => {
+test("banner pages preload the AVIF file the stylesheet chooses for that breakpoint", async () => {
   const cases = [
-    ["/personal-import", "/images/import-skylines-fuji-1000.jpg", "/images/import-skylines-fuji-1300.jpg"],
-    ["/grade-sheets", "/images/grade-trueno-1000.jpg", "/images/grade-trueno-2000.jpg"],
-    ["/contact", "/images/contact-supra-gtr-900.jpg", "/images/contact-supra-gtr-1600.jpg"],
-  ];
+    ["/personal-import", pageBanners.import],
+    ["/grade-sheets", pageBanners.grades],
+    ["/contact", pageBanners.contact],
+  ] as const;
 
-  for (const [path, narrow, wide] of cases) {
+  for (const [path, banner] of cases) {
     const html = await pageText(inMemoryCatalogue(), path);
-    expect(html).toContain(`<link rel="preload" as="image" href="${narrow}" media="(max-width: 767px)">`);
-    expect(html).toContain(`<link rel="preload" as="image" href="${wide}" media="(min-width: 768px)">`);
+    expect(html).toContain(
+      `<link rel="preload" as="image" href="${banner.narrow.avif}" type="image/avif" media="${bannerNarrowMedia}">`,
+    );
+    expect(html).toContain(
+      `<link rel="preload" as="image" href="${banner.wide.avif}" type="image/avif" media="${bannerWideMedia}">`,
+    );
     expect(html).not.toContain("imagesrcset");
+    expect(html).not.toContain(`href="${banner.narrow.jpg}"`);
+    expect(html).not.toContain(`href="${banner.wide.jpg}"`);
   }
+});
+
+test("the home feature photograph is a 3:2 picture of modern-format variants", async () => {
+  const html = await pageText(inMemoryCatalogue(), "/");
+  const picture = staticPicture(featurePhoto);
+  const img = html.match(/<img\b[^>]*suzuki-carry-sunset[^>]*>/)?.[0] ?? "";
+
+  expect(img).toContain(`src="${picture.src}"`);
+  expect(img).toContain(`srcset="${picture.jpeg}"`);
+  expect(img).toContain('width="1350"');
+  expect(img).toContain('height="900"');
+  expect(html).toContain(`<source type="image/avif" srcset="${picture.avif}" sizes="${picture.sizes}">`);
+  expect(html).toContain(`<source type="image/webp" srcset="${picture.webp}" sizes="${picture.sizes}">`);
+});
+
+test("the grade sheet exhibit keeps the sheet's ratio and offers an AVIF srcset", async () => {
+  const html = await pageText(inMemoryCatalogue(), "/grade-sheets");
+  const picture = staticPicture(gradeExhibit);
+
+  expect(html).toContain(`<source type="image/avif" srcset="${picture.avif}" sizes="${picture.sizes}">`);
+  expect(html).toContain(`width="${picture.width}"`);
+  expect(html).toContain(`height="${picture.height}"`);
+});
+
+test("import photos stored in EmDash media use a WebP srcset sized to their grid slot", async () => {
+  const html = await pageText(
+    inMemoryCatalogue({
+      site: {
+        importPhotos: [
+          { src: "/_emdash/api/media/file/01DOCK.jpg", alt: "A car at the Japanese agent" },
+          { src: "/_emdash/api/media/file/02YARD.jpg", alt: "Prep in the Newport workshop" },
+        ],
+      },
+    }),
+    "/personal-import",
+  );
+  const section = sectionContaining(html, 'aria-labelledby="import-photos"');
+  const images = [...section.matchAll(/<img\b[^>]*>/g)].map((match) => match[0]);
+
+  expect(images).toHaveLength(2);
+  expect(images[0]).toContain("/_image?href=%2F_emdash%2Fapi%2Fmedia%2Ffile%2F01DOCK.jpg&amp;w=960&amp;f=webp");
+  expect(images[0]).toContain("w=480&amp;f=webp 480w");
+  expect(images[0]).toContain("w=1600&amp;f=webp 1600w");
+  expect(images[0]).toContain('width="900"');
+  expect(images[0]).toContain('height="600"');
+  expect(images[0]).toContain("(min-width: 1280px) 37rem");
+  expect(images[1]).toContain("(min-width: 1280px) 18rem");
 });
 
 test("home shows the first three vehicles in stock with their own photos, and no sold vehicle or draft", async () => {

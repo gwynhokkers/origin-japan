@@ -1,0 +1,27 @@
+---
+import type { StaticPicture } from "../../../public/site-photos";
+
+type Props = {
+  photo: StaticPicture;
+  alt: string;
+  class?: string;
+  pictureClass?: string;
+  loading?: "eager" | "lazy";
+};
+const { photo, alt, class: className = "", pictureClass = "", loading = "lazy" } = Astro.props;
+---
+
+<picture class:list={["block w-full", pictureClass]}>
+  <source type="image/avif" srcset={photo.avif} sizes={photo.sizes} />
+  <source type="image/webp" srcset={photo.webp} sizes={photo.sizes} />
+  <img
+    src={photo.src}
+    srcset={photo.jpeg}
+    sizes={photo.sizes}
+    alt={alt}
+    width={photo.width}
+    height={photo.height}
+    loading={loading}
+    class={className}
+  />
+</picture>

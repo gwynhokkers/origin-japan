@@ -11,7 +11,8 @@
     "storybook": "storybook dev -p 6006",
     "typecheck": "astro check && tsc --noEmit",
     "import-vehicles": "node --experimental-strip-types scripts/import-vehicles.ts",
-    "import-wordpress": "node --experimental-strip-types scripts/import-wordpress.ts"
+    "import-wordpress": "node --experimental-strip-types scripts/import-wordpress.ts",
+    "encode-photos": "node --experimental-strip-types scripts/encode-photos.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.4",
@@ -32,6 +33,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/dom": "^10.4.2",
     "happy-dom": "^21.0.1",
+    "sharp": "^0.35.5",
     "storybook": "^10.6.2",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
