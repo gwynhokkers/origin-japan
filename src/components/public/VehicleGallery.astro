@@ -1,24 +1,39 @@
 ---
+import { responsivePhoto } from "../../public/photos";
+
 type Props = { photos: readonly string[]; title: string; class?: string };
 const { photos, title, class: className = "" } = Astro.props;
+
+/** Widths of the gallery column on the vehicle page, which takes 7 of 12 columns from the large breakpoint. */
+const fullWidthSizes = "(min-width: 1280px) 42rem, (min-width: 1024px) calc((100vw - 8rem) * 7 / 12), 92vw";
+const halfWidthSizes =
+  "(min-width: 1280px) 21rem, (min-width: 1024px) calc((100vw - 8rem) * 7 / 24), (min-width: 768px) 46vw, 92vw";
+
+const spansBothColumns = (index: number) =>
+  index === 0 || (index === photos.length - 1 && photos.length % 2 === 0);
 ---
 
 {
   photos.length > 0 && (
     <ul class:list={["order-3 m-0 mt-2 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2 md:[&>li:first-child]:col-span-2 md:[&>li:last-child:nth-child(even)]:col-span-2 lg:order-none lg:col-start-1 lg:row-start-1 lg:mt-0", className]}>
-      {photos.map((photo, index) => (
-        <li>
-          <img
-            src={photo}
-            alt={photos.length > 1 ? `${title}, photo ${index + 1} of ${photos.length}` : title}
-            width="900"
-            height="600"
-            fetchpriority={index === 0 ? "high" : undefined}
-            loading={index === 0 ? undefined : "lazy"}
-            class="aspect-[3/2] h-auto w-full rounded bg-surface object-cover"
-          />
-        </li>
-      ))}
+      {photos.map((url, index) => {
+        const photo = responsivePhoto(url, spansBothColumns(index) ? fullWidthSizes : halfWidthSizes);
+        return (
+          <li>
+            <img
+              src={photo.src}
+              srcset={photo.srcset}
+              sizes={photo.sizes}
+              alt={photos.length > 1 ? `${title}, photo ${index + 1} of ${photos.length}` : title}
+              width="900"
+              height="600"
+              fetchpriority={index === 0 ? "high" : undefined}
+              loading={index === 0 ? undefined : "lazy"}
+              class="aspect-[3/2] h-auto w-full rounded bg-surface object-cover"
+            />
+          </li>
+        );
+      })}
     </ul>
   )
 }
