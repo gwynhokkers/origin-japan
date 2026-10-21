@@ -355,6 +355,44 @@ html.menu-open {
 }
 
 /*
+  Chrome 111-112 and Safari 16 are inside Tailwind's targets but drop an image-set()
+  that uses type(). A plain fallback in the same rule is merged away by Lightning CSS,
+  so it lives here instead.
+*/
+@supports not (background-image: image-set(url("/x.avif") type("image/avif"))) {
+  .banner-home {
+    background-image: url("/images/home-dusk-row-2000.jpg");
+  }
+  .banner-import {
+    background-image: url("/images/import-skylines-fuji-1300.jpg");
+  }
+  .banner-grades {
+    background-image: url("/images/grade-trueno-2000.jpg");
+  }
+  .banner-contact {
+    background-image: url("/images/contact-supra-gtr-1600.jpg");
+  }
+  @media (max-width: 767px) {
+    .banner-home {
+      background-image: url("/images/home-dusk-row-1000.jpg");
+    }
+    .banner-import {
+      background-image: url("/images/import-skylines-fuji-1000.jpg");
+    }
+    .banner-grades {
+      background-image: url("/images/grade-trueno-1000.jpg");
+    }
+    .banner-contact {
+      background-image: url("/images/contact-supra-gtr-900.jpg");
+    }
+  }
+  .carbon-band::before,
+  .carbon-mat::before {
+    background-image: url("/images/carbon-fibre-detail.jpg");
+  }
+}
+
+/*
   Homepage hero. The dusk still is the first paint. The rain clip fades in
   over it only after playback starts. Type stays light in either scheme.
 */

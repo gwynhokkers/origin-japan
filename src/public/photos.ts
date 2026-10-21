@@ -1,4 +1,4 @@
-import { sitePhotoHeight, sitePhotos, sitePhotoVariants, type SitePhotoVariant } from "./site-photos";
+import { sitePhotos, sitePhotoSources, type PictureSource } from "./site-photos";
 
 const mediaPrefix = "/_emdash/api/media/file/";
 
@@ -35,8 +35,6 @@ export function responsivePhoto(url: string, sizes: string): ResponsivePhoto {
   };
 }
 
-export type PictureSource = { type: "image/avif" | "image/webp"; srcset: string };
-
 /** A `<picture>`: `sources` come before the `<img>`, and share its `sizes`. */
 export type Picture = ResponsivePhoto & { sources: PictureSource[]; width?: number; height?: number };
 
@@ -47,21 +45,5 @@ export type Picture = ResponsivePhoto & { sources: PictureSource[]; width?: numb
 export function brochurePicture(url: string, sizes: string): Picture {
   const photo = sitePhotos.find((candidate) => candidate.source === url);
   if (!photo) return { ...responsivePhoto(url, sizes), sources: [] };
-  const variants = sitePhotoVariants(photo);
-  const srcset = (format: SitePhotoVariant["format"]) =>
-    variants
-      .filter((variant) => variant.format === format)
-      .map((variant) => `${variant.path} ${variant.width}w`)
-      .join(", ");
-  const largest = Math.max(...photo.widths);
-  return {
-    src: photo.source,
-    sizes,
-    sources: [
-      { type: "image/avif", srcset: srcset("avif") },
-      { type: "image/webp", srcset: srcset("webp") },
-    ],
-    width: largest,
-    height: sitePhotoHeight(photo, largest),
-  };
+  return { src: photo.source, sizes, ...sitePhotoSources(photo) };
 }

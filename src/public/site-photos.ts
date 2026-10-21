@@ -20,19 +20,40 @@ export const sitePhotos: readonly SitePhoto[] = [
   { source: "/images/grade-sheet-v70-1400.jpg", name: "grade-sheet-v70", widths: [480, 720, 960], aspect: [1155, 1400] },
 ];
 
-export function sitePhotoHeight(photo: SitePhoto, width: number): number {
+export type PictureSource = { type: "image/avif" | "image/webp"; srcset: string };
+
+const formats = ["avif", "webp"] as const;
+
+function heightAt(photo: SitePhoto, width: number): number {
   return Math.round((width * photo.aspect[1]) / photo.aspect[0]);
 }
 
 export function sitePhotoVariants(photo: SitePhoto): SitePhotoVariant[] {
-  return (["avif", "webp"] as const).flatMap((format) =>
+  return formats.flatMap((format) =>
     photo.widths.map((width) => ({
       path: `/images/${photo.name}-${width}.${format}`,
       format,
       width,
-      height: sitePhotoHeight(photo, width),
+      height: heightAt(photo, width),
     })),
   );
+}
+
+/** The `<picture>` sources for a site photo, AVIF first, and the size of its largest variant. */
+export function sitePhotoSources(photo: SitePhoto): { sources: PictureSource[]; width: number; height: number } {
+  const variants = sitePhotoVariants(photo);
+  const width = Math.max(...photo.widths);
+  return {
+    sources: formats.map((format) => ({
+      type: `image/${format}`,
+      srcset: variants
+        .filter((variant) => variant.format === format)
+        .map((variant) => `${variant.path} ${variant.width}w`)
+        .join(", "),
+    })),
+    width,
+    height: heightAt(photo, width),
+  };
 }
 
 /** Page banners, as JPEG paths without the extension. Each has an AVIF and WebP of the same size. */
@@ -45,10 +66,8 @@ export const banners = {
 
 export type BannerName = keyof typeof banners;
 
-export const carbonTexture = "/images/carbon-fibre-detail";
-
-/** Every CSS background photo, as a JPEG path without the extension. */
+/** Every CSS background photo, as a JPEG path without the extension: the banners and the carbon fibre texture. */
 export const backgroundPhotos: readonly string[] = [
   ...Object.values(banners).flatMap((banner) => [banner.narrow, banner.wide]),
-  carbonTexture,
+  "/images/carbon-fibre-detail",
 ];

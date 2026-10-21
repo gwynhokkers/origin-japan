@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 import type { Vehicle } from "../src/catalogue";
 import { inMemoryCatalogue } from "../src/in-memory-catalogue";
+import { banners } from "../src/public/site-photos";
 import { requestPublicPage } from "./buyer-page";
 
 type EnquiryMail = { to: string; subject: string; text: string };
@@ -95,6 +96,23 @@ test("personal import explains the service and shows photos Adam adds and remove
 
   expect(afterRemoval).toContain('src="https://photos.example/dock.jpg"');
   expect(afterRemoval).not.toContain("yard.jpg");
+});
+
+test("brochure photos reach the buyer as AVIF and WebP sized to where they sit", async () => {
+  const home = sectionContaining(await pageText(inMemoryCatalogue(), "/"), "many trade only auctions");
+  const grades = await pageText(inMemoryCatalogue(), "/grade-sheets");
+  const imports = sectionContaining(
+    await pageText(
+      inMemoryCatalogue({ site: { importPhotos: [{ src: "/_emdash/api/media/file/01DOCK.jpg", alt: "A car at the agent" }] } }),
+      "/personal-import",
+    ),
+    'aria-labelledby="import-photos"',
+  );
+
+  expect(home).toMatch(/<source type="image\/avif" srcset="\/images\/suzuki-carry-sunset-640\.avif 640w, [^"]+" sizes="[^"]+">/);
+  expect(home).toMatch(/<img src="\/images\/suzuki-carry-sunset-1400\.jpg"[^>]* width="1350" height="900"/);
+  expect(grades).toMatch(/<source type="image\/avif" srcset="\/images\/grade-sheet-v70-480\.avif 480w, [^"]+" sizes="[^"]+">/);
+  expect(imports).toMatch(/srcset="[^"]*\/_image\?href=%2F_emdash%2Fapi%2Fmedia%2Ffile%2F01DOCK\.jpg&amp;w=480&amp;f=webp 480w/);
 });
 
 test("grade sheets explains how to read a grade sheet", async () => {
@@ -359,9 +377,24 @@ test("banner pages preload the AVIF banner their stylesheet shows on small scree
 });
 
 test("the carbon fibre texture is AVIF or WebP where supported, with a JPEG fallback", () => {
-  const rule = stylesheet.match(/\.carbon-band::before,\s*\.carbon-mat::before \{([^}]*)\}/)?.[1] ?? "";
+  const rules = [...stylesheet.matchAll(/\.carbon-band::before,\s*\.carbon-mat::before \{([^}]*)\}/g)].map((match) => match[1] ?? "");
+  const rule = rules.find((candidate) => candidate.includes("image-set(")) ?? "";
 
   expect(backgroundCandidates(rule)).toEqual(modernThenJpeg("/images/carbon-fibre-detail"));
+});
+
+test("browsers that cannot choose an image-set() type get the JPEG banners and texture", () => {
+  const start = stylesheet.indexOf('@supports not (background-image: image-set(url("/x.avif") type("image/avif")))');
+  const fallback = start === -1 ? "" : stylesheet.slice(start);
+  const narrowBlock = fallback.search(/@media \(max-width: 767px\) \{\s*\.banner-/);
+  const jpeg = (scope: string, selector: string) =>
+    scope.match(new RegExp(`${selector} \\{\\s*background-image: url\\("([^"]+)"\\);`))?.[1];
+
+  for (const [banner, paths] of Object.entries(banners)) {
+    expect(jpeg(fallback.slice(0, narrowBlock), `\\.banner-${banner}`), banner).toBe(`${paths.wide}.jpg`);
+    expect(jpeg(fallback.slice(narrowBlock), `\\.banner-${banner}`), banner).toBe(`${paths.narrow}.jpg`);
+  }
+  expect(jpeg(fallback, "\\.carbon-band::before,\\s*\\.carbon-mat::before")).toBe("/images/carbon-fibre-detail.jpg");
 });
 
 const stylesheet = readFileSync(new URL("../src/styles/public.css", import.meta.url), "utf8");
