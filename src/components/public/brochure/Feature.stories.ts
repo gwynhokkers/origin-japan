@@ -12,7 +12,7 @@ export const WithImage = {
   args: {
     heading,
     body,
-    image: { src: "/images/home-dusk-row-2000.jpg", alt: "A row of imported cars at dusk" },
+    image: { src: "/images/suzuki-carry-sunset-1400.jpg", alt: "A white Suzuki Carry kei truck at sunset" },
     linkLabel: "Personal Import Service",
     linkHref: "/personal-import",
   },

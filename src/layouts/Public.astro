@@ -2,14 +2,14 @@
 import "../styles/public.css";
 import { homeHero } from "../public/hero";
 import type { NavPage } from "../public/navigation";
-import { bannerNarrowMedia, bannerWideMedia, pageBanners, type BannerName } from "../public/site-photos";
+import { banners, type BannerName } from "../public/site-photos";
 import SiteFooter from "../components/public/SiteFooter.astro";
 import SiteHeader from "../components/public/SiteHeader.astro";
 
 type Props = { title: string; current?: NavPage; banner?: BannerName };
 
 const { title, current, banner } = Astro.props;
-const photo = banner && banner !== "home" ? pageBanners[banner] : undefined;
+const photo = banner && banner !== "home" ? banners[banner] : undefined;
 ---
 
 <!doctype html>
@@ -47,8 +47,8 @@ const photo = banner && banner !== "home" ? pageBanners[banner] : undefined;
     {
       photo && (
         <>
-          <link rel="preload" as="image" href={photo.narrow.avif} type="image/avif" media={bannerNarrowMedia} />
-          <link rel="preload" as="image" href={photo.wide.avif} type="image/avif" media={bannerWideMedia} />
+          <link rel="preload" as="image" href={`${photo.narrow}.avif`} type="image/avif" media="(max-width: 767px)" />
+          <link rel="preload" as="image" href={`${photo.wide}.avif`} type="image/avif" media="(min-width: 768px)" />
         </>
       )
     }

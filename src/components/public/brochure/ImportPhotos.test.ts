@@ -1,57 +1,54 @@
 import { expect, test } from "vitest";
 import { composeStories } from "@storybook-astro/framework/testing";
-import { importPhotoSizes } from "../../../public/site-photos";
-import { renderPublicStory } from "../render-public-story";
 import * as stories from "./ImportPhotos.stories";
+import { renderPublicStory } from "../render-public-story";
 
 const { SeveralPhotos } = composeStories(stories);
 
-const images = () => [...document.querySelectorAll("img")];
+const images = () => [...document.querySelectorAll("li img")];
 
-test("the import photos story renders each photograph", async () => {
-  await renderPublicStory(stories.default.component, SeveralPhotos);
-
-  expect(document.body.textContent).toContain("Previous personal imports");
-  expect(images().map((img) => img.getAttribute("alt"))).toEqual(SeveralPhotos.args.photos.map((photo) => photo.alt));
-});
-
-test("import photos that are not EmDash media keep their url, with a 3:2 box", async () => {
-  await renderPublicStory(stories.default.component, SeveralPhotos);
-
-  expect(images().map((img) => img.getAttribute("src"))).toEqual(SeveralPhotos.args.photos.map((photo) => photo.src));
-  for (const img of images()) {
-    expect(img.hasAttribute("srcset")).toBe(false);
-    expect(img.hasAttribute("sizes")).toBe(false);
-    expect(img.getAttribute("width")).toBe("900");
-    expect(img.getAttribute("height")).toBe("600");
-  }
-});
-
-test("import photos stored in EmDash media load a WebP srcset sized to the grid slot", async () => {
-  const photos = [
-    { src: "/_emdash/api/media/file/01DOCK.jpg", alt: "A white estate at the docks" },
-    { src: "/_emdash/api/media/file/02YARD.jpg", alt: "A dark coupe on the trailer" },
-    { src: "/_emdash/api/media/file/03SHOP.jpg", alt: "A silver saloon in the yard" },
-  ];
-  await renderPublicStory(stories.default.component, { args: { ...SeveralPhotos.args, photos } });
-
-  const [lead, ...tiles] = images();
-  expect(lead?.getAttribute("src")).toBe("/_image?href=%2F_emdash%2Fapi%2Fmedia%2Ffile%2F01DOCK.jpg&w=960&f=webp");
-  expect(lead?.getAttribute("srcset")).toContain("&w=480&f=webp 480w");
-  expect(lead?.getAttribute("srcset")).toContain("&w=960&f=webp 960w");
-  expect(lead?.getAttribute("srcset")).toContain("&w=1600&f=webp 1600w");
-  expect(lead?.getAttribute("sizes")).toBe(importPhotoSizes.lead);
-  expect(lead?.getAttribute("width")).toBe("900");
-  expect(lead?.getAttribute("height")).toBe("600");
-  for (const tile of tiles) expect(tile.getAttribute("sizes")).toBe(importPhotoSizes.tile);
-});
-
-test("a single import photo is sized to the whole row", async () => {
-  await renderPublicStory(stories.default.component, {
+const renderMediaPhotos = (count: number) =>
+  renderPublicStory(stories.default.component, {
     args: {
-      photos: [{ src: "/_emdash/api/media/file/01DOCK.jpg", alt: "A white estate at the docks" }],
+      ...SeveralPhotos.args,
+      photos: Array.from({ length: count }, (_, index) => ({
+        src: `/_emdash/api/media/file/0${index}ABC.jpg`,
+        alt: `Import ${index}`,
+      })),
     },
   });
 
-  expect(images()[0]?.getAttribute("sizes")).toBe(importPhotoSizes.sole);
+test("import photos stored in EmDash media load resized WebP variants at 3:2", async () => {
+  await renderMediaPhotos(3);
+
+  for (const [index, img] of images().entries()) {
+    expect(img.getAttribute("src")).toBe(`/_image?href=%2F_emdash%2Fapi%2Fmedia%2Ffile%2F0${index}ABC.jpg&w=960&f=webp`);
+    expect(img.getAttribute("srcset")).toContain("&w=480&f=webp 480w");
+    expect(img.getAttribute("alt")).toBe(`Import ${index}`);
+    expect(img.getAttribute("loading")).toBe("lazy");
+    expect(Number(img.getAttribute("width")) / Number(img.getAttribute("height"))).toBe(1.5);
+  }
+});
+
+test("the first import photo, which spans two columns, is sized larger than the rest", async () => {
+  await renderMediaPhotos(3);
+
+  const [first, second, third] = images().map((img) => img.getAttribute("sizes"));
+  expect(first).toContain("(min-width: 1280px) 37rem");
+  expect(second).toContain("(min-width: 1280px) 18rem");
+  expect(third).toBe(second);
+});
+
+test("a lone import photo is sized to the full frame", async () => {
+  await renderMediaPhotos(1);
+
+  expect(images()[0]?.getAttribute("sizes")).toContain("(min-width: 1280px) 75rem");
+});
+
+test("import photos that are not EmDash media keep their url and have no srcset", async () => {
+  await renderPublicStory(stories.default.component, SeveralPhotos);
+
+  const photos: readonly { src: string }[] = SeveralPhotos.args.photos;
+  expect(images().map((img) => img.getAttribute("src"))).toEqual(photos.map((photo) => photo.src));
+  for (const img of images()) expect(img.hasAttribute("srcset")).toBe(false);
 });

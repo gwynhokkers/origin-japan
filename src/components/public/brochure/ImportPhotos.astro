@@ -1,15 +1,18 @@
 ---
-import { responsivePhoto } from "../../../public/photos";
-import { importPhotoSizes } from "../../../public/site-photos";
+import { brochurePicture } from "../../../public/photos";
+import Picture from "../Picture.astro";
 
 type Props = { heading?: string; photos: readonly { src: string; alt: string }[] };
 const { photos } = Astro.props;
 const heading = Astro.props.heading?.trim() || "Previous personal imports";
 const title = "m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase";
-const sized = photos.map((photo, index) => {
-  const sizes = photos.length === 1 ? importPhotoSizes.sole : index === 0 ? importPhotoSizes.lead : importPhotoSizes.tile;
-  return { alt: photo.alt, ...responsivePhoto(photo.src, sizes) };
-});
+
+/** Columns are at least 17rem in an 80rem frame. From the medium breakpoint the first photo spans two, and a lone photo spans all. */
+const sizesFor = (index: number) => {
+  if (photos.length === 1) return "(min-width: 1280px) 75rem, 92vw";
+  if (index === 0) return "(min-width: 1280px) 37rem, 92vw";
+  return "(min-width: 1280px) 18rem, (min-width: 768px) 46vw, 92vw";
+};
 ---
 
 {
@@ -18,16 +21,13 @@ const sized = photos.map((photo, index) => {
       <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]">
         <h2 id="import-photos" class:list={[title, "mb-7"]}>{heading}</h2>
         <ul class="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-4 p-0 md:[&>li:first-child]:col-span-2 md:[&>li:first-child]:row-span-2 md:[&>li:only-child]:col-span-full max-md:[&>li:first-child]:col-auto max-md:[&>li:first-child]:row-auto">
-          {sized.map((photo) => (
+          {photos.map((photo, index) => (
             <li>
-              <img
-                src={photo.src}
-                srcset={photo.srcset}
-                sizes={photo.sizes}
+              <Picture
+                picture={brochurePicture(photo.src, sizesFor(index))}
                 alt={photo.alt}
-                width="900"
-                height="600"
-                loading="lazy"
+                width={900}
+                height={600}
                 class="aspect-[3/2] h-full w-full rounded bg-surface object-cover"
               />
             </li>

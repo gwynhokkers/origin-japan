@@ -12,7 +12,7 @@
     "typecheck": "astro check && tsc --noEmit",
     "import-vehicles": "node --experimental-strip-types scripts/import-vehicles.ts",
     "import-wordpress": "node --experimental-strip-types scripts/import-wordpress.ts",
-    "encode-photos": "node --experimental-strip-types scripts/encode-photos.ts"
+    "encode-photos": "node --experimental-strip-types scripts/encode-site-photos.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.4",

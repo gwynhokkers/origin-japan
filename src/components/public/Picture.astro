@@ -1,0 +1,30 @@
+---
+import type { Picture } from "../../public/photos";
+
+type Props = {
+  picture: Picture;
+  alt: string;
+  /** Used when the picture does not know its own size; sets the shape the photo is shown at. */
+  width: number;
+  height: number;
+  loading?: "eager" | "lazy";
+  class?: string;
+};
+const { picture, alt, loading = "lazy", class: className } = Astro.props;
+const width = picture.width ?? Astro.props.width;
+const height = picture.height ?? Astro.props.height;
+---
+
+<picture class="contents">
+  {picture.sources.map((source) => <source type={source.type} srcset={source.srcset} sizes={picture.sizes} />)}
+  <img
+    src={picture.src}
+    srcset={picture.srcset}
+    sizes={picture.srcset ? picture.sizes : undefined}
+    alt={alt}
+    width={width}
+    height={height}
+    loading={loading}
+    class={className}
+  />
+</picture>

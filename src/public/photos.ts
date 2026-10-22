@@ -1,3 +1,5 @@
+import { sitePhotos, sitePhotoSources, type PictureSource } from "./site-photos";
+
 const mediaPrefix = "/_emdash/api/media/file/";
 
 /** Kept to three so every photo stays within the Cloudflare Images free tier of unique transforms. */
@@ -31,4 +33,17 @@ export function responsivePhoto(url: string, sizes: string): ResponsivePhoto {
     srcset: photoWidths.map((width) => `${resizedPhotoUrl(url, width)} ${width}w`).join(", "),
     sizes,
   };
+}
+
+/** A `<picture>`: `sources` come before the `<img>`, and share its `sizes`. */
+export type Picture = ResponsivePhoto & { sources: PictureSource[]; width?: number; height?: number };
+
+/**
+ * A photo in a brochure block. Site photos get their pre-encoded AVIF and WebP variants,
+ * EmDash media gets resized WebP from `/_image`, and any other url is returned as it is.
+ */
+export function brochurePicture(url: string, sizes: string): Picture {
+  const photo = sitePhotos.find((candidate) => candidate.source === url);
+  if (!photo) return { ...responsivePhoto(url, sizes), sources: [] };
+  return { src: photo.source, sizes, ...sitePhotoSources(photo) };
 }
