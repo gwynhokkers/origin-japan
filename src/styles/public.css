@@ -5,7 +5,7 @@
 @source "../pages";
 
 /*
-  One accent. Ground, ink, and field colours follow the system.
+  One accent on a dark ground. The site has no light theme.
   Stories import this file, and public pages import it too.
 */
 @theme {
@@ -14,13 +14,13 @@
   --color-accent: #f29559;
   --color-accent-hover: color-mix(in srgb, var(--color-accent) 86%, black);
   --color-on-accent: #15181c;
-  --color-ground: #f4f5f6;
-  --color-ink: #15181c;
-  --color-muted: #565d66;
-  --color-line: #d9dde1;
-  --color-surface: #e8ebee;
-  --color-field: #fbfbfc;
-  --color-field-line: #69717b;
+  --color-ground: #121417;
+  --color-ink: #eceef1;
+  --color-muted: #a4abb3;
+  --color-line: #2b3036;
+  --color-surface: #1c2025;
+  --color-field: #171a1e;
+  --color-field-line: #8c949e;
   --color-paper: #fbfbfc;
   --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
   --animate-rise: rise 0.8s var(--ease-settle) both;
@@ -79,12 +79,6 @@
 
 @layer base {
   html {
-    color-scheme: light dark;
-  }
-  html[data-theme="light"] {
-    color-scheme: light;
-  }
-  html[data-theme="dark"] {
     color-scheme: dark;
   }
   a {
@@ -233,23 +227,6 @@
     background-color: color-mix(in srgb, var(--color-accent) 24%, transparent);
   }
 
-  .brand-lockup .brand-lockup-carbon,
-  .brand-lockup .brand-lockup-ink {
-    width: auto;
-    height: 100%;
-  }
-  .brand-lockup .brand-lockup-carbon {
-    display: block;
-  }
-  .brand-lockup .brand-lockup-ink {
-    display: none;
-  }
-
-  .theme-toggle .icon-sun {
-    display: none;
-  }
-  .theme-toggle:hover,
-  .theme-toggle:focus-visible,
   .menu-toggle:hover,
   .menu-toggle:focus-visible {
     color: var(--color-accent);
@@ -394,7 +371,7 @@ html.menu-open {
 
 /*
   Homepage hero. The dusk still is the first paint. The rain clip fades in
-  over it only after playback starts. Type stays light in either scheme.
+  over it only after playback starts.
 */
 .home-hero {
   position: relative;
@@ -499,8 +476,7 @@ html.menu-open {
 
 /*
   Carbon fibre photograph. A filtered layer lifts the twill so it reads
-  as a material, then a scrim keeps type readable. Light mode drops the
-  header photograph and paints that band in the accent. The footer stays dark.
+  as a material, then a scrim keeps type readable.
 */
 .carbon-band,
 .carbon-mat {
@@ -542,12 +518,6 @@ html.menu-open {
   background: rgb(8 10 12 / 0.22);
   pointer-events: none;
 }
-header .carbon-band {
-  background-color: var(--header-band, #101214);
-  --band-muted: var(--header-band-muted, #d0d6dd);
-  --band-ink: var(--header-band-ink, #f4f6f8);
-  color: var(--band-ink);
-}
 
 /*
   The sort summary is pinned as <summary>Sort</summary>, so it cannot carry utilities.
@@ -570,79 +540,6 @@ header .carbon-band {
     content-visibility: visible;
     display: contents;
   }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-ground: #121417;
-    --color-ink: #eceef1;
-    --color-muted: #a4abb3;
-    --color-line: #2b3036;
-    --color-surface: #1c2025;
-    --color-field: #171a1e;
-    --color-field-line: #8c949e;
-  }
-  :root:not([data-theme="light"]) .theme-toggle .icon-sun {
-    display: block;
-  }
-  :root:not([data-theme="light"]) .theme-toggle .icon-moon {
-    display: none;
-  }
-}
-
-:root[data-theme="dark"] {
-  --color-ground: #121417;
-  --color-ink: #eceef1;
-  --color-muted: #a4abb3;
-  --color-line: #2b3036;
-  --color-surface: #1c2025;
-  --color-field: #171a1e;
-  --color-field-line: #8c949e;
-}
-:root[data-theme="dark"] .theme-toggle .icon-sun {
-  display: block;
-}
-:root[data-theme="dark"] .theme-toggle .icon-moon {
-  display: none;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --header-band: var(--color-accent);
-    --header-band-muted: #fff;
-    --header-band-ink: #fff;
-  }
-  :root:not([data-theme="dark"]) header .carbon-band::before,
-  :root:not([data-theme="dark"]) header .carbon-band::after {
-    content: none;
-  }
-  :root:not([data-theme="dark"]) .brand-lockup .brand-lockup-carbon {
-    display: none;
-  }
-  :root:not([data-theme="dark"]) .brand-lockup .brand-lockup-ink {
-    display: block;
-  }
-}
-:root[data-theme="light"] {
-  --header-band: var(--color-accent);
-  --header-band-muted: #fff;
-  --header-band-ink: #fff;
-}
-:root[data-theme="light"] header .carbon-band::before,
-:root[data-theme="light"] header .carbon-band::after {
-  content: none;
-}
-:root[data-theme="light"] .brand-lockup .brand-lockup-carbon {
-  display: none;
-}
-:root[data-theme="light"] .brand-lockup .brand-lockup-ink {
-  display: block;
-}
-:root[data-theme="dark"] .brand-lockup .brand-lockup-ink {
-  display: none;
-}
-:root[data-theme="dark"] .brand-lockup .brand-lockup-carbon {
-  display: block;
 }
 
 @media (prefers-reduced-motion: reduce) {
