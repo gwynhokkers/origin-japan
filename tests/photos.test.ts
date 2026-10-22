@@ -1,5 +1,8 @@
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
-import { photoWidths, resizedPhotoUrl, responsivePhoto } from "../src/public/photos";
+import { brochurePicture, photoWidths, resizedPhotoUrl, responsivePhoto } from "../src/public/photos";
+import { backgroundPhotos, sitePhotos, sitePhotoVariants } from "../src/public/site-photos";
 
 const sizes = "(min-width: 768px) 50vw, 100vw";
 
@@ -43,4 +46,49 @@ test("a photo that is not EmDash media is left as it is, with no srcset", () => 
 
 test("the media route with no file is left as it is", () => {
   expect(responsivePhoto("/_emdash/api/media/file/", sizes)).toEqual({ src: "/_emdash/api/media/file/" });
+});
+
+test("a site photo is offered as AVIF and WebP at each width, with its JPEG as the fallback", () => {
+  expect(brochurePicture("/images/suzuki-carry-sunset-1400.jpg", sizes)).toEqual({
+    src: "/images/suzuki-carry-sunset-1400.jpg",
+    sizes,
+    sources: [
+      {
+        type: "image/avif",
+        srcset:
+          "/images/suzuki-carry-sunset-640.avif 640w, /images/suzuki-carry-sunset-960.avif 960w, /images/suzuki-carry-sunset-1350.avif 1350w",
+      },
+      {
+        type: "image/webp",
+        srcset:
+          "/images/suzuki-carry-sunset-640.webp 640w, /images/suzuki-carry-sunset-960.webp 960w, /images/suzuki-carry-sunset-1350.webp 1350w",
+      },
+    ],
+    width: 1350,
+    height: 900,
+  });
+});
+
+test("an EmDash media photo in a brochure block loads resized WebP variants", () => {
+  expect(brochurePicture("/_emdash/api/media/file/01ABC.jpg", sizes)).toEqual({
+    ...responsivePhoto("/_emdash/api/media/file/01ABC.jpg", sizes),
+    sources: [],
+  });
+});
+
+test("a brochure photo from anywhere else is left as it is", () => {
+  expect(brochurePicture("https://photos.example/import-1.jpg", sizes)).toEqual({
+    src: "https://photos.example/import-1.jpg",
+    sources: [],
+  });
+});
+
+test("every AVIF and WebP file a site photo, banner or texture names is in public", () => {
+  const files = [
+    ...sitePhotos.flatMap((photo) => sitePhotoVariants(photo).map((variant) => variant.path)),
+    ...backgroundPhotos.flatMap((path) => [`${path}.avif`, `${path}.webp`]),
+  ];
+
+  expect(files.length).toBeGreaterThan(0);
+  for (const file of files) expect(existsSync(fileURLToPath(new URL(`../public${file}`, import.meta.url))), file).toBe(true);
 });

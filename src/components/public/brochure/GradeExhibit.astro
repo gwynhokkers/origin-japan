@@ -1,17 +1,23 @@
 ---
-type Props = { caption?: string };
+import { brochurePicture } from "../../../public/photos";
+import Picture from "../Picture.astro";
+
+/** `alone` is the exhibit in its own 40rem frame; otherwise it takes 5 of 12 columns beside the grade sections. */
+type Props = { caption?: string; alone?: boolean };
 const caption =
   Astro.props.caption?.trim() ||
   "An exhibit sheet for a Volvo V70. The grade, 3.5, is in the box at the top right, with the interior grade, C, below it.";
+const sizes = Astro.props.alone
+  ? "(min-width: 640px) 35rem, 92vw"
+  : "(min-width: 1280px) 29.6rem, (min-width: 768px) 36vw, 92vw";
 ---
 
 <figure class="m-0 md:sticky md:top-6">
-  <img
-    src="/images/grade-sheet-v70-1400.jpg"
+  <Picture
+    picture={brochurePicture("/images/grade-sheet-v70-1400.jpg", sizes)}
     alt="A Japanese auction exhibit sheet for a Volvo V70, overall grade 3.5, interior grade C, with damage marked on a plan of the car"
-    width="1155"
-    height="1400"
-    loading="lazy"
+    width={1155}
+    height={1400}
     class="h-auto w-full rounded border border-line bg-paper"
   />
   <figcaption class="mt-3 text-sm text-muted">{caption}</figcaption>

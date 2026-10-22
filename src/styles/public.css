@@ -317,35 +317,78 @@ html.menu-open {
   overflow: hidden;
 }
 
-/* Decorative page banners. Tailwind has no utility for a different image per viewport. */
+/*
+  Decorative page banners. Tailwind has no utility for a different image per viewport.
+  The JPEG candidate is for browsers without AVIF or WebP. Public.astro preloads the
+  AVIF from the same media query, so keep the AVIF first and the files in step with
+  src/public/site-photos.ts.
+*/
 .banner-home {
-  background-image: url("/images/home-dusk-row-2000.jpg");
+  background-image: image-set(url("/images/home-dusk-row-2000.avif") type("image/avif"), url("/images/home-dusk-row-2000.webp") type("image/webp"), url("/images/home-dusk-row-2000.jpg") type("image/jpeg"));
   background-position: 60% 70%;
 }
 .banner-import {
-  background-image: url("/images/import-skylines-fuji-1300.jpg");
+  background-image: image-set(url("/images/import-skylines-fuji-1300.avif") type("image/avif"), url("/images/import-skylines-fuji-1300.webp") type("image/webp"), url("/images/import-skylines-fuji-1300.jpg") type("image/jpeg"));
   background-position: 50% 62%;
 }
 .banner-grades {
-  background-image: url("/images/grade-trueno-2000.jpg");
+  background-image: image-set(url("/images/grade-trueno-2000.avif") type("image/avif"), url("/images/grade-trueno-2000.webp") type("image/webp"), url("/images/grade-trueno-2000.jpg") type("image/jpeg"));
   background-position: 50% 55%;
 }
 .banner-contact {
-  background-image: url("/images/contact-supra-gtr-1600.jpg");
+  background-image: image-set(url("/images/contact-supra-gtr-1600.avif") type("image/avif"), url("/images/contact-supra-gtr-1600.webp") type("image/webp"), url("/images/contact-supra-gtr-1600.jpg") type("image/jpeg"));
   background-position: 60% 60%;
 }
 @media (max-width: 767px) {
   .banner-home {
-    background-image: url("/images/home-dusk-row-1000.jpg");
+    background-image: image-set(url("/images/home-dusk-row-1000.avif") type("image/avif"), url("/images/home-dusk-row-1000.webp") type("image/webp"), url("/images/home-dusk-row-1000.jpg") type("image/jpeg"));
   }
   .banner-import {
-    background-image: url("/images/import-skylines-fuji-1000.jpg");
+    background-image: image-set(url("/images/import-skylines-fuji-1000.avif") type("image/avif"), url("/images/import-skylines-fuji-1000.webp") type("image/webp"), url("/images/import-skylines-fuji-1000.jpg") type("image/jpeg"));
   }
   .banner-grades {
-    background-image: url("/images/grade-trueno-1000.jpg");
+    background-image: image-set(url("/images/grade-trueno-1000.avif") type("image/avif"), url("/images/grade-trueno-1000.webp") type("image/webp"), url("/images/grade-trueno-1000.jpg") type("image/jpeg"));
   }
   .banner-contact {
-    background-image: url("/images/contact-supra-gtr-900.jpg");
+    background-image: image-set(url("/images/contact-supra-gtr-900.avif") type("image/avif"), url("/images/contact-supra-gtr-900.webp") type("image/webp"), url("/images/contact-supra-gtr-900.jpg") type("image/jpeg"));
+  }
+}
+
+/*
+  Chrome 111-112 and Safari 16 are inside Tailwind's targets but drop an image-set()
+  that uses type(). A plain fallback in the same rule is merged away by Lightning CSS,
+  so it lives here instead.
+*/
+@supports not (background-image: image-set(url("/x.avif") type("image/avif"))) {
+  .banner-home {
+    background-image: url("/images/home-dusk-row-2000.jpg");
+  }
+  .banner-import {
+    background-image: url("/images/import-skylines-fuji-1300.jpg");
+  }
+  .banner-grades {
+    background-image: url("/images/grade-trueno-2000.jpg");
+  }
+  .banner-contact {
+    background-image: url("/images/contact-supra-gtr-1600.jpg");
+  }
+  @media (max-width: 767px) {
+    .banner-home {
+      background-image: url("/images/home-dusk-row-1000.jpg");
+    }
+    .banner-import {
+      background-image: url("/images/import-skylines-fuji-1000.jpg");
+    }
+    .banner-grades {
+      background-image: url("/images/grade-trueno-1000.jpg");
+    }
+    .banner-contact {
+      background-image: url("/images/contact-supra-gtr-900.jpg");
+    }
+  }
+  .carbon-band::before,
+  .carbon-mat::before {
+    background-image: url("/images/carbon-fibre-detail.jpg");
   }
 }
 
@@ -474,7 +517,7 @@ html.menu-open {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image: url("/images/carbon-fibre-detail.jpg");
+  background-image: image-set(url("/images/carbon-fibre-detail.avif") type("image/avif"), url("/images/carbon-fibre-detail.webp") type("image/webp"), url("/images/carbon-fibre-detail.jpg") type("image/jpeg"));
   background-position: center 42%;
   background-size: cover;
   filter: contrast(1.7) brightness(0.72);
