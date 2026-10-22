@@ -1,21 +1,14 @@
 ---
-type Props = { class?: string; loading?: "eager" | "lazy"; tone?: "ground" | "carbon" };
-const { class: className = "", loading = "eager", tone = "carbon" } = Astro.props;
-const shared = { width: 960, height: 284, loading, decoding: "async" as const };
+type Props = { class?: string; loading?: "eager" | "lazy" };
+const { class: className = "", loading = "eager" } = Astro.props;
 ---
 
-{
-  tone === "ground" ? (
-    <span class:list={["brand-lockup", className]}>
-      <img {...shared} class="brand-lockup-carbon" src="/images/origin-japan-lockup.png" alt="Origin Japan" />
-      <img {...shared} class="brand-lockup-ink" src="/images/origin-japan-lockup-ink.png" alt="" />
-    </span>
-  ) : (
-    <img
-      {...shared}
-      src="/images/origin-japan-lockup.png"
-      alt="Origin Japan"
-      class:list={["block w-auto", className]}
-    />
-  )
-}
+<img
+  width="640"
+  height="189"
+  loading={loading}
+  decoding="async"
+  src="/images/origin-japan-lockup.webp"
+  alt="Origin Japan"
+  class:list={["block w-auto", className]}
+/>

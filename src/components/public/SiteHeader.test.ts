@@ -13,10 +13,7 @@ test("the public header names Origin Japan and the Newport reach", async () => {
   expect(document.body.textContent).toContain("Origin Japan");
   const marks = [...document.querySelectorAll("header img")];
   expect(marks[0]?.getAttribute("alt")).toBe("Origin Japan");
-  expect(marks.map((img) => img.getAttribute("src"))).toEqual([
-    "/images/origin-japan-lockup.png",
-    "/images/origin-japan-lockup-ink.png",
-  ]);
+  expect(marks.map((img) => img.getAttribute("src"))).toEqual(["/images/origin-japan-lockup.webp"]);
   expect(document.body.textContent).not.toContain("originjapanimports");
   expect(document.body.textContent).toContain("Unit D2, Langland Park West, Newport, NP19 4ED");
   expect(document.body.textContent).toContain("07454621101");
@@ -27,10 +24,8 @@ test("the public header names Origin Japan and the Newport reach", async () => {
   expect(document.body.textContent).toContain("Contact");
   expect(document.body.textContent).toContain("Sold Stock");
   expect(document.body.querySelector("a[aria-current='page']")?.textContent).toBe("Current Stock");
-  const toggle = document.body.querySelector("[data-theme-toggle]");
-  expect(toggle?.getAttribute("aria-label")).toBe("Switch to dark theme");
-  expect(toggle?.querySelector(".icon-sun")).toBeTruthy();
-  expect(toggle?.querySelector(".icon-moon")).toBeTruthy();
+  const buttons = [...document.querySelectorAll("header button")];
+  expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual(["Open menu"]);
 });
 
 test("small screens get a closed menu that holds the pages and contact details", async () => {

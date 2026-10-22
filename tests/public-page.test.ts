@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { expect, test } from "vitest";
 import type { Vehicle } from "../src/catalogue";
 import { inMemoryCatalogue } from "../src/in-memory-catalogue";
@@ -506,18 +506,45 @@ test("the nav uses the current labels and the header and footer show the Newport
   expect(header).toContain('href="/sold"');
   expect(header).toContain(">Sold Stock<");
   expect(header).toContain('alt="Origin Japan"');
-  expect(header).toContain("/images/origin-japan-lockup.png");
   expect(header).not.toContain("originjapanimports");
   expect(header).toContain("Origin Japan Ltd");
   expect(header).toContain("Unit D2, Langland Park West, Newport, NP19 4ED");
   expect(header).toContain("07454621101");
   expect(footer).toContain('alt="Origin Japan"');
-  expect(footer).toContain("/images/origin-japan-lockup.png");
   expect(footer).not.toContain("originjapanimports");
   expect(footer).toContain("Origin Japan Ltd");
   expect(footer).toContain("Unit D2, Langland Park West, Newport, NP19 4ED");
   expect(footer).toContain("07454621101");
   expect(footer).toContain("info@originjapan.co.uk");
+});
+
+test("the site is dark only, with no theme toggle and no stored theme read", async () => {
+  const html = await pageText(inMemoryCatalogue(), "/stock");
+
+  expect(html).toContain('<meta name="color-scheme" content="dark">');
+  expect(html).not.toContain("data-theme");
+  expect(html).not.toContain("localStorage");
+  expect(html).not.toContain("prefers-color-scheme");
+  expect(html).not.toMatch(/switch to (light|dark) theme/i);
+});
+
+test("the stylesheet has one dark theme and no light theme rules", () => {
+  expect(stylesheet).toMatch(/html\s*\{\s*color-scheme: dark;/);
+  expect(stylesheet).toContain("--color-ground: #121417;");
+  expect(stylesheet).not.toContain("--color-ground: #f4f5f6;");
+  expect(stylesheet).not.toContain("prefers-color-scheme");
+  expect(stylesheet).not.toContain("data-theme");
+  expect(stylesheet).not.toContain("theme-toggle");
+});
+
+test("the header and footer share one small WebP lockup", async () => {
+  const html = await pageText(inMemoryCatalogue(), "/stock");
+  const lockups = imageSources(html).filter((src) => src.includes("lockup"));
+
+  expect(lockups).toEqual(["/images/origin-japan-lockup.webp", "/images/origin-japan-lockup.webp"]);
+  expect(imageSources(region(html, "header"), /^Origin Japan$/)).toEqual(["/images/origin-japan-lockup.webp"]);
+  expect(imageSources(region(html, "footer"), /^Origin Japan$/)).toEqual(["/images/origin-japan-lockup.webp"]);
+  expect(statSync(new URL("../public/images/origin-japan-lockup.webp", import.meta.url)).size).toBeLessThan(25_000);
 });
 
 test("a buyer sees a for-sale vehicle on stock and can open its page", async () => {

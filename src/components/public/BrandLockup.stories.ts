@@ -6,6 +6,4 @@ export default {
   parameters: { layout: "centered" },
 };
 
-export const Carbon = { args: { tone: "carbon", class: "h-16" } };
-
-export const Ground = { args: { tone: "ground", class: "h-16" } };
+export const Default = { args: { class: "h-16" } };

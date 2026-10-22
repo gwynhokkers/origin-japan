@@ -17,15 +17,7 @@ const photo = banner && banner !== "home" ? banners[banner] : undefined;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light dark" />
-    <script is:inline>
-      (() => {
-        try {
-          const stored = localStorage.getItem("theme");
-          if (stored === "light" || stored === "dark") document.documentElement.dataset.theme = stored;
-        } catch {}
-      })();
-    </script>
+    <meta name="color-scheme" content="dark" />
     <title>{title}</title>
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
