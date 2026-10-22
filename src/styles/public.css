@@ -5,7 +5,7 @@
 @source "../pages";
 
 /*
-  One accent on a dark ground. The site has no light theme.
+  One accent on a dark ground.
   Stories import this file, and public pages import it too.
 */
 @theme {

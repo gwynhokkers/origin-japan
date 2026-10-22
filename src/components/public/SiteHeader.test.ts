@@ -24,7 +24,8 @@ test("the public header names Origin Japan and the Newport reach", async () => {
   expect(document.body.textContent).toContain("Contact");
   expect(document.body.textContent).toContain("Sold Stock");
   expect(document.body.querySelector("a[aria-current='page']")?.textContent).toBe("Current Stock");
-  expect(document.body.querySelector("header")?.innerHTML).not.toMatch(/theme/i);
+  const buttons = [...document.querySelectorAll("header button")];
+  expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual(["Open menu"]);
 });
 
 test("small screens get a closed menu that holds the pages and contact details", async () => {

@@ -537,7 +537,7 @@ test("the stylesheet has one dark theme and no light theme rules", () => {
   expect(stylesheet).not.toContain("theme-toggle");
 });
 
-test("the header and footer share one light WebP lockup", async () => {
+test("the header and footer share one small WebP lockup", async () => {
   const html = await pageText(inMemoryCatalogue(), "/stock");
   const lockups = imageSources(html).filter((src) => src.includes("lockup"));
 
