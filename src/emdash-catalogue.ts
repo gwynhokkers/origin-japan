@@ -1,6 +1,19 @@
-import { ContentRepository, getEmDashCollection } from "emdash";
+import { ContentRepository, getEmDashCollection, getMenu } from "emdash";
 import { getDb } from "emdash/runtime";
-import type { BlockImage, BrochureBlock, Catalogue, ImportPhoto, Lead, PageCopy, Review, SiteContent, Vehicle, VehicleEnquiryInput } from "./catalogue";
+import type {
+  BlockImage,
+  BrochureBlock,
+  Catalogue,
+  ImportPhoto,
+  Lead,
+  NavLink,
+  PageCopy,
+  Review,
+  SiteContent,
+  SiteNavigation,
+  Vehicle,
+  VehicleEnquiryInput,
+} from "./catalogue";
 import { upsertVehicle } from "./save-vehicle";
 
 export const emdashCatalogue: Catalogue = {
@@ -9,7 +22,31 @@ export const emdashCatalogue: Catalogue = {
   saveVehicle,
   saveVehicleEnquiry,
   siteContent,
+  navigation,
 };
+
+async function navigation(): Promise<SiteNavigation> {
+  const [primary, footer] = await Promise.all([menuLinks("primary"), menuLinks("footer")]);
+  const site: SiteNavigation = {};
+  if (primary) site.primary = primary;
+  if (footer) site.footer = footer;
+  return site;
+}
+
+async function menuLinks(name: string): Promise<readonly NavLink[] | undefined> {
+  try {
+    const menu = await getMenu(name);
+    if (!menu) return undefined;
+    return menu.items.flatMap((item) => {
+      if (!item.label || !item.url) return [];
+      const link: NavLink = { label: item.label, href: item.url };
+      if (item.target) link.target = item.target;
+      return [link];
+    });
+  } catch {
+    return undefined;
+  }
+}
 
 async function listVehicles(): Promise<readonly Vehicle[]> {
   const { entries, error } = await getEmDashCollection("vehicles");

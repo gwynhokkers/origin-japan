@@ -1,7 +1,11 @@
 ---
 import BrandLockup from "./BrandLockup.astro";
+import type { NavLink } from "../../catalogue";
 import { company, email, phone, postalAddress } from "../../public/contact";
+import { footerNav, linkRel } from "../../public/navigation";
 
+type Props = { items?: readonly NavLink[] };
+const { items = footerNav } = Astro.props;
 const frame = "mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]";
 ---
 
@@ -19,8 +23,15 @@ const frame = "mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]";
       <p class="m-0 mb-1"><a class="no-underline hover:underline hover:decoration-accent" href={`mailto:${email}`}>{email}</a></p>
     </div>
     <div>
-      <p class="m-0 mb-1"><a class="nav-link -mx-2 inline-block px-2 py-0.5 [--slab-inset:0]" href="/sold">Sold Stock</a></p>
-      <p class="m-0 mb-1"><a class="nav-link -mx-2 inline-block px-2 py-0.5 [--slab-inset:0]" href="/privacy">Privacy</a></p>
+      {
+        items.map((item) => (
+          <p class="m-0 mb-1">
+            <a class="nav-link -mx-2 inline-block px-2 py-0.5 [--slab-inset:0]" href={item.href} target={item.target} rel={linkRel(item)}>
+              {item.label}
+            </a>
+          </p>
+        ))
+      }
     </div>
   </div>
 </footer>

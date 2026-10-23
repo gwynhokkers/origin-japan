@@ -6,5 +6,5 @@ export default {
 };
 
 export const Stock = {
-  args: { current: "stock" },
+  args: { currentPath: "/showroom" },
 };

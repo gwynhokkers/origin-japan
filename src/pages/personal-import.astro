@@ -8,6 +8,6 @@ const { catalogue } = publicLocals(Astro.locals);
 const page = await brochurePage(catalogue, "personal-import", "Personal Import Service");
 ---
 
-<Public title={page.title} current="personal-import" banner="import">
+<Public title={page.title} banner="import">
   <Brochure page="personal-import" {...page} />
 </Public>

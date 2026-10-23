@@ -73,6 +73,19 @@ export type SiteContent = {
   importPhotos?: readonly ImportPhoto[];
 };
 
+/** A link in a site menu. Editors arrange them under Menus in the admin. */
+export type NavLink = {
+  label: string;
+  href: string;
+  target?: string;
+};
+
+/** The header and footer menus. An omitted menu keeps the public default. */
+export type SiteNavigation = {
+  primary?: readonly NavLink[];
+  footer?: readonly NavLink[];
+};
+
 /** A vehicle enquiry names one vehicle. Adam reads it in the admin. */
 export type Lead = {
   id: string;
@@ -96,4 +109,5 @@ export type Catalogue = {
   saveVehicle(vehicle: Vehicle): Promise<void>;
   saveVehicleEnquiry(input: VehicleEnquiryInput): Promise<Lead>;
   siteContent(): Promise<SiteContent>;
+  navigation(): Promise<SiteNavigation>;
 };
