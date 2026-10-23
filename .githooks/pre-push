@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Blocks pushing straight to main. Released cycles reach main through the
+# chore(release) pull request. See docs/agents/git-conventions.md.
+set -euo pipefail
+
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    echo "pre-push: do not push to main. Open a pull request from the release branch instead." >&2
+    exit 1
+  fi
+done
