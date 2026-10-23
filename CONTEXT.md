@@ -21,7 +21,7 @@ A public vehicle that is in transit to the UK. It is in stock, it has no public 
 _Avoid_: Shipping, in transit (as the status name)
 
 **Stock**:
-The public vehicles that are in prep, on water, or for sale. The stock page shows only these. Vehicles for sale with a price are shown before vehicles that are in prep or on water.
+The public vehicles that are in prep, on water, or for sale. The stock page shows only these. Vehicles for sale with a price are shown before vehicles that are in prep or on water. Buyers see it labelled Showroom.
 _Avoid_: Current stock, inventory, catalogue (when you mean this set)
 
 **Sold stock**:
