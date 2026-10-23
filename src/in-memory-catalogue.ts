@@ -1,4 +1,4 @@
-import type { Catalogue, Lead, SiteContent, SiteNavigation, Vehicle, VehicleEnquiryInput } from "./catalogue";
+import type { Catalogue, Lead, LeadInput, SiteContent, SiteNavigation, Vehicle } from "./catalogue";
 
 export function inMemoryCatalogue(
   records: {
@@ -28,7 +28,7 @@ export function inMemoryCatalogue(
     async leads() {
       return leads;
     },
-    async saveVehicleEnquiry(input: VehicleEnquiryInput) {
+    async saveLead(input: LeadInput) {
       const lead: Lead = { id: `lead-${leads.length + 1}`, ...input };
       leads.push(lead);
       return lead;

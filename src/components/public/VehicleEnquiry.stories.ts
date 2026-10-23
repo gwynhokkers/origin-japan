@@ -15,8 +15,8 @@ export const FieldError = {
   args: {
     slug,
     view: {
-      values: { firstName: "", email: "ada@example.com", message: "Is the Levorg still available?" },
-      errors: { firstName: "Enter your first name." },
+      values: { "first-name": "", email: "ada@example.com", message: "Is the Levorg still available?" },
+      errors: { "first-name": "Enter your first name." },
     },
   },
 };

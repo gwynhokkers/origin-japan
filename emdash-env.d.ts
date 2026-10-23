@@ -20,6 +20,42 @@ export interface ImportPhoto {
   terms?: Record<string, TaxonomyTerm[]>;
 }
 
+export interface ContactLead {
+  id: string;
+  slug: string | null;
+  status: string;
+  first_name: string;
+  surname?: string;
+  email: string;
+  phone?: string;
+  message: string;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  byline?: BylineSummary | null;
+  bylines?: ContentBylineCredit[];
+  terms?: Record<string, TaxonomyTerm[]>;
+}
+
+export interface ImportRequest {
+  id: string;
+  slug: string | null;
+  status: string;
+  first_name: string;
+  email: string;
+  phone?: string;
+  make: string;
+  model: string;
+  year: number;
+  message: string;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  byline?: BylineSummary | null;
+  bylines?: ContentBylineCredit[];
+  terms?: Record<string, TaxonomyTerm[]>;
+}
+
 export interface Lead {
   id: string;
   slug: string | null;
@@ -190,7 +226,9 @@ export interface Vehicle {
 
 declare module "emdash" {
   interface EmDashCollections {
+    contact_leads: ContactLead;
     import_photos: ImportPhoto;
+    import_requests: ImportRequest;
     leads: Lead;
     pages: Page;
     posts: Post;

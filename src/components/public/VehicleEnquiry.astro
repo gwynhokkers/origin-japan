@@ -1,95 +1,25 @@
 ---
-import type { EnquiryView } from "../../public/enquiry";
+import type { LeadView } from "../../public/leads";
+import LeadForm, { type LeadField } from "./LeadForm.astro";
 
-type Props = { slug: string; siteKey?: string; view?: EnquiryView };
+type Props = { slug: string; siteKey?: string; view?: LeadView };
 
 const { slug, siteKey, view } = Astro.props;
-const values = view?.values;
-const errors = view?.errors;
 
-const fields = [
-  {
-    id: "first-name",
-    label: "First name",
-    type: "text" as const,
-    value: values?.firstName ?? "",
-    error: errors?.firstName,
-  },
-  {
-    id: "email",
-    label: "Email",
-    type: "email" as const,
-    value: values?.email ?? "",
-    error: errors?.email,
-  },
-  {
-    id: "message",
-    label: "Message",
-    type: "textarea" as const,
-    value: values?.message ?? "",
-    error: errors?.message,
-  },
+const fields: LeadField[] = [
+  { id: "first-name", label: "First name", type: "text", autocomplete: "given-name" },
+  { id: "email", label: "Email", type: "email", autocomplete: "email" },
+  { id: "message", label: "Message", type: "textarea" },
 ];
 ---
 
-{
-  view?.confirmed ? (
-    <p class="order-6 mt-4 max-w-[65ch] border-l-[3px] border-accent bg-surface p-4 font-semibold lg:order-none" role="status">
-      Your enquiry has been sent.
-    </p>
-  ) : (
-    <form
-      class="order-6 mt-4 grid max-w-[65ch] gap-4 border-t border-line pt-6 lg:order-none"
-      method="post"
-      action={`/listings/${encodeURIComponent(slug)}`}
-      aria-label="Enquire about this car"
-      novalidate
-    >
-      {fields.map((field) => (
-        <div class="grid gap-1.5">
-          <label class="text-sm font-semibold" for={field.id}>{field.label}</label>
-          {field.type === "textarea" ? (
-            <textarea
-              id={field.id}
-              name={field.id}
-              class="min-h-32 w-full rounded border border-field-line bg-field px-3 py-2.5 font-[inherit] text-ink focus-visible:border-ink"
-              aria-invalid={field.error ? "true" : undefined}
-              aria-describedby={field.error ? `${field.id}-error` : undefined}
-            >{field.value}</textarea>
-          ) : (
-            <input
-              id={field.id}
-              name={field.id}
-              type={field.type}
-              value={field.value}
-              class="min-h-11 w-full rounded border border-field-line bg-field px-3 py-2.5 font-[inherit] text-ink focus-visible:border-ink"
-              autocomplete={field.id === "first-name" ? "given-name" : "email"}
-              inputmode={field.id === "email" ? "email" : undefined}
-              aria-invalid={field.error ? "true" : undefined}
-              aria-describedby={field.error ? `${field.id}-error` : undefined}
-            />
-          )}
-          {field.error && (
-            <p id={`${field.id}-error`} class="m-0 text-sm font-semibold before:mr-2 before:inline-block before:h-[0.6rem] before:w-[0.6rem] before:rounded-[1px] before:bg-accent before:content-['']">
-              {field.error}
-            </p>
-          )}
-        </div>
-      ))}
-      {siteKey && (
-        <>
-          <div class="cf-turnstile" data-sitekey={siteKey}></div>
-          <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-        </>
-      )}
-      {view?.spamRejected && (
-        <p class="m-0 text-sm font-semibold before:mr-2 before:inline-block before:h-[0.6rem] before:w-[0.6rem] before:rounded-[1px] before:bg-accent before:content-['']" role="alert">
-          The spam check was not accepted. Submit the form again.
-        </p>
-      )}
-      <button class="btn justify-self-start font-sans text-base" type="submit">
-        Enquire about this car
-      </button>
-    </form>
-  )
-}
+<LeadForm
+  class="order-6 mt-4 lg:order-none"
+  label="Enquire about this car"
+  action={`/listings/${encodeURIComponent(slug)}`}
+  submitLabel="Enquire about this car"
+  confirmation="Your enquiry has been sent."
+  fields={fields}
+  siteKey={siteKey}
+  view={view}
+/>

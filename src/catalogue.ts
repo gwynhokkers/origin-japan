@@ -86,28 +86,48 @@ export type SiteNavigation = {
   footer?: readonly NavLink[];
 };
 
-/** A vehicle enquiry names one vehicle. Adam reads it in the admin. */
-export type Lead = {
-  id: string;
-  vehicle?: string;
-  firstName?: string;
-  email?: string;
-  message?: string;
-};
-
+/** A lead about one vehicle that is in stock. It names that vehicle. */
 export type VehicleEnquiryInput = {
+  kind: "vehicle enquiry";
   vehicle: string;
   firstName: string;
   email: string;
   message: string;
 };
 
+/** A lead from the contact page. It is not tied to one vehicle. */
+export type ContactLeadInput = {
+  kind: "contact lead";
+  firstName: string;
+  surname?: string;
+  email: string;
+  phone?: string;
+  message: string;
+};
+
+/** A lead about a personal import. It names a make, a model, and a year. */
+export type ImportRequestInput = {
+  kind: "import request";
+  firstName: string;
+  email: string;
+  phone?: string;
+  make: string;
+  model: string;
+  year: number;
+  message: string;
+};
+
+export type LeadInput = VehicleEnquiryInput | ContactLeadInput | ImportRequestInput;
+
+/** A message from a buyer, saved for Adam to read in the admin. */
+export type Lead = LeadInput & { id: string };
+
 /** Vehicles and leads a public page can read. Tests stand in for EmDash with memory. */
 export type Catalogue = {
   vehicles(): Promise<readonly Vehicle[]>;
   leads(): Promise<readonly Lead[]>;
   saveVehicle(vehicle: Vehicle): Promise<void>;
-  saveVehicleEnquiry(input: VehicleEnquiryInput): Promise<Lead>;
+  saveLead(input: LeadInput): Promise<Lead>;
   siteContent(): Promise<SiteContent>;
   navigation(): Promise<SiteNavigation>;
 };

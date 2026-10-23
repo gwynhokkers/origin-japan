@@ -2,10 +2,9 @@ import { readFileSync, statSync } from "node:fs";
 import { expect, test } from "vitest";
 import type { Vehicle } from "../src/catalogue";
 import { inMemoryCatalogue } from "../src/in-memory-catalogue";
+import type { LeadMail } from "../src/lead-services";
 import { banners } from "../src/public/site-photos";
 import { requestPublicPage } from "./buyer-page";
-
-type EnquiryMail = { to: string; subject: string; text: string };
 
 test("storybook is not a public page", async () => {
   const response = await requestPublicPage(new Request("http://originjapan.test/storybook"), inMemoryCatalogue());
@@ -166,7 +165,6 @@ test("contact shows the address, phone, and email", async () => {
   expect(html).toContain("Unit D2, Langland Park West, Newport, NP19 4ED");
   expect(html).toContain("07454621101");
   expect(html).toContain("info@originjapan.co.uk");
-  expect(html).not.toContain("<form");
 });
 
 test("a heading Adam adds to the contact copy reads as a heading", async () => {
@@ -1335,7 +1333,7 @@ test("an in-prep vehicle offers Enquire about this car", async () => {
 
 test("a saved vehicle enquiry is confirmed and emailed to info@originjapan.co.uk", async () => {
   const catalogue = inMemoryCatalogue({ vehicles: [forSaleVehicle()] });
-  const sent: EnquiryMail[] = [];
+  const sent: LeadMail[] = [];
 
   const response = await requestPublicPage(
     enquiryRequest({
@@ -1360,6 +1358,7 @@ test("a saved vehicle enquiry is confirmed and emailed to info@originjapan.co.uk
   expect(leads).toEqual([
     {
       id: "lead-1",
+      kind: "vehicle enquiry",
       vehicle: "Subaru Levorg 2.0 GT-S 2016",
       firstName: "Ada",
       email: "ada@example.com",
@@ -1522,6 +1521,7 @@ test("a failed email still confirms the enquiry and keeps the lead", async () =>
   expect(await catalogue.leads()).toEqual([
     {
       id: "lead-1",
+      kind: "vehicle enquiry",
       vehicle: "Subaru Levorg 2.0 GT-S 2016",
       firstName: "Ada",
       email: "ada@example.com",

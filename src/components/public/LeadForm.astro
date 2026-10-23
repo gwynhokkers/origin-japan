@@ -1,0 +1,98 @@
+---
+import type { LeadView } from "../../public/leads";
+
+export type LeadField = {
+  id: string;
+  label: string;
+  type: "text" | "email" | "tel" | "year" | "textarea";
+  autocomplete?: string;
+  optional?: boolean;
+};
+
+type Props = {
+  label: string;
+  action: string;
+  submitLabel: string;
+  confirmation: string;
+  fields: readonly LeadField[];
+  siteKey?: string;
+  view?: LeadView;
+  /** Placement on the page. The form keeps its own spacing and rules. */
+  class?: string;
+};
+
+const { label, action, submitLabel, confirmation, fields, siteKey, view, class: placement } = Astro.props;
+const values = view?.values ?? {};
+const errors = view?.errors ?? {};
+const inputModes: Partial<Record<LeadField["type"], "email" | "tel" | "numeric">> = { email: "email", tel: "tel", year: "numeric" };
+const control = "w-full rounded border border-field-line bg-field px-3 py-2.5 font-[inherit] text-ink focus-visible:border-ink";
+const alert = "m-0 text-sm font-semibold before:mr-2 before:inline-block before:h-[0.6rem] before:w-[0.6rem] before:rounded-[1px] before:bg-accent before:content-['']";
+---
+
+{
+  view?.confirmed ? (
+    <p class:list={[placement, "max-w-[65ch] border-l-[3px] border-accent bg-surface p-4 font-semibold"]} role="status">
+      {confirmation}
+    </p>
+  ) : (
+    <form
+      class:list={[placement, "grid max-w-[65ch] gap-4 border-t border-line pt-6"]}
+      method="post"
+      action={action}
+      aria-label={label}
+      novalidate
+    >
+      {fields.map((field) => {
+        const error = errors[field.id];
+        const described = error ? `${field.id}-error` : undefined;
+        return (
+          <div class="grid gap-1.5">
+            <label class="text-sm font-semibold" for={field.id}>
+              {field.label}
+              {field.optional && <span class="font-normal text-muted"> (optional)</span>}
+            </label>
+            {field.type === "textarea" ? (
+              <textarea
+                id={field.id}
+                name={field.id}
+                class:list={[control, "min-h-32"]}
+                aria-invalid={error ? "true" : undefined}
+                aria-describedby={described}
+              >{values[field.id] ?? ""}</textarea>
+            ) : (
+              <input
+                id={field.id}
+                name={field.id}
+                type={field.type === "year" ? "text" : field.type}
+                value={values[field.id] ?? ""}
+                class:list={[control, "min-h-11", field.type === "year" && "max-w-[8rem]"]}
+                autocomplete={field.autocomplete}
+                inputmode={inputModes[field.type]}
+                maxlength={field.type === "year" ? 4 : undefined}
+                aria-invalid={error ? "true" : undefined}
+                aria-describedby={described}
+              />
+            )}
+            {error && <p id={`${field.id}-error`} class={alert}>{error}</p>}
+          </div>
+        );
+      })}
+      {siteKey && (
+        <>
+          <div class="cf-turnstile" data-sitekey={siteKey}></div>
+          <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+        </>
+      )}
+      {view?.spamRejected && (
+        <p class={alert} role="alert">The spam check was not accepted. Submit the form again.</p>
+      )}
+      {view?.saveFailed && (
+        <p class={alert} role="alert">Your message could not be sent. Please try again.</p>
+      )}
+      <p class="m-0 text-sm text-muted">
+        We save your message and email it to Origin Japan. The <a class="text-ink underline decoration-accent underline-offset-4" href="/privacy">privacy page</a> says how we use your details.
+      </p>
+      <button class="btn justify-self-start font-sans text-base" type="submit">{submitLabel}</button>
+    </form>
+  )
+}
