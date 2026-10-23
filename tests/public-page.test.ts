@@ -196,7 +196,7 @@ test("brochure pages follow the section order Adam saved", async () => {
           blocks: [
             { kind: "reviews" },
             { kind: "section", heading: "Trusted partners", body: "Two agents in Japan." },
-            { kind: "opening", body: "Cars already in the UK.", linkLabel: "Current Stock", linkHref: "/stock" },
+            { kind: "opening", body: "Cars already in the UK.", linkLabel: "Showroom", linkHref: "/stock" },
             { kind: "stock" },
           ],
         },
@@ -320,7 +320,7 @@ test("clearing a block's picture removes it from the page", async () => {
   expect(imageSources(sectionContaining(html, "We inspect these vehicles before purchase."))).toEqual([]);
 });
 
-test("home offers current stock, parts, partners, and named reviews", async () => {
+test("home offers the showroom, parts, partners, and named reviews", async () => {
   const response = await requestPublicPage(new Request("http://originjapan.test/"), inMemoryCatalogue());
   const html = await response.text();
 
@@ -328,7 +328,8 @@ test("home offers current stock, parts, partners, and named reviews", async () =
   expect(html).toContain("So, you're looking for a car from Japan?");
   expect(html).toContain('src="/images/home-dusk-row-2000.jpg"');
   expect(html).toContain('href="/stock"');
-  expect(html).toContain(">Current Stock<");
+  expect(html).toContain(">Showroom<");
+  expect(html).not.toContain("Current Stock");
   expect(html).toContain("Yahoo Japan");
   expect(html).toContain("Up Garage");
   expect(html).toContain("two trusted agents in Japan");
@@ -480,6 +481,7 @@ test("home shows the first three vehicles in stock with their own photos, and no
   expect(html).not.toContain("honda-beat-1993");
   expect(html).not.toContain("mazda-mx-5-on-water");
   expect(html).toContain('href="/stock"');
+  expect(html).toContain(">In the showroom<");
 
   const empty = await pageText(inMemoryCatalogue(), "/");
   expect(empty).not.toContain("/listings/");
@@ -496,7 +498,11 @@ test("the nav uses the current labels and the header and footer show the Newport
   const footer = region(html, "footer");
 
   expect(response.status).toBe(200);
-  expect(header).toContain(">Current Stock<");
+  expect(header).toContain('href="/stock"');
+  expect(header).toContain(">Showroom<");
+  expect(header).not.toContain("Current Stock");
+  expect(html).toContain("<title>Showroom");
+  expect(html).toMatch(/<h1[^>]*>Showroom<\/h1>/);
   expect(header).toContain('href="/personal-import"');
   expect(header).toContain(">Personal Import Service<");
   expect(header).toContain('href="/grade-sheets"');
@@ -1173,7 +1179,7 @@ test("a buyer sees the vehicle, its price, and photos in Adam's order", async ()
   expect(page.status).toBe(200);
   const crumb = html.match(/<nav[^>]*aria-label="Breadcrumb"[\s\S]*?<\/nav>/)?.[0] ?? "";
   expect(crumb).toContain('href="/stock"');
-  expect(crumb).toContain(">Current Stock<");
+  expect(crumb).toContain(">Showroom<");
   expect(crumb).toContain("Subaru Levorg 2.0 GT-S 2016");
   expect(crumb).toContain('aria-current="page"');
   expect(html).toContain("Subaru Levorg 2.0 GT-S 2016");

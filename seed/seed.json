@@ -309,14 +309,14 @@
               "_version": 1,
               "_key": "home-opening",
               "body": "Here at Origin, we have a large selection of imported vehicles in stock, already in the UK.",
-              "link_label": "Current Stock",
+              "link_label": "Showroom",
               "link_url": "/stock"
             },
             {
               "_type": "stock",
               "_version": 1,
               "_key": "home-stock",
-              "heading": "In stock"
+              "heading": "In the showroom"
             },
             {
               "_type": "feature",
@@ -621,8 +621,8 @@
     },
     {
       "slug": "stock",
-      "label": "In stock",
-      "description": "The first cars in stock",
+      "label": "In the showroom",
+      "description": "The first cars in the showroom",
       "category": "Brochure",
       "currentVersion": 1,
       "versions": [
