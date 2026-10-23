@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Rejects a commit header that is not a Conventional Commit. See docs/agents/git-conventions.md.
+set -euo pipefail
+
+header=$(grep -v '^#' "$1" | head -n 1)
+
+case "$header" in
+  "Merge "* | "Revert \""* | "fixup! "* | "squash! "* | "amend! "*) exit 0 ;;
+esac
+
+types='feat|fix|perf|refactor|style|test|docs|build|ci|chore|revert'
+pattern="^($types)(\([a-z0-9-]+\))?!?: [a-z0-9].*[^.]$"
+
+fail() {
+  echo "commit-msg: $1" >&2
+  echo "  got: $header" >&2
+  echo "  want: <type>(<scope>): <subject>, for example: feat(public): label the stock section showroom" >&2
+  echo "  see docs/agents/git-conventions.md" >&2
+  exit 1
+}
+
+if ! printf '%s' "$header" | grep -Eq "$pattern"; then
+  fail "the header is not a Conventional Commit (type: $types; lowercase subject; no trailing full stop)"
+fi
+
+if [ "${#header}" -gt 72 ]; then
+  fail "the header is ${#header} characters; keep it to 72 or fewer"
+fi

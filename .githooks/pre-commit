@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Blocks commits on main and release branches, and warns about branch names
+# outside the convention. See docs/agents/git-conventions.md.
+set -euo pipefail
+
+branch=$(git symbolic-ref --quiet --short HEAD || true)
+[ -z "$branch" ] && exit 0
+
+case "$branch" in
+  main | release/cycle-*)
+    echo "pre-commit: do not commit on $branch." >&2
+    echo "  Create an issue branch from the current release branch, for example:" >&2
+    echo "  git checkout -b feat/ink-123-short-description release/cycle-<n>" >&2
+    echo "  see docs/agents/git-conventions.md" >&2
+    exit 1
+    ;;
+esac
+
+types='feat|fix|perf|refactor|style|test|docs|build|ci|chore|revert'
+if ! printf '%s' "$branch" | grep -Eq "^($types)/[a-z0-9]+(-[a-z0-9]+)*$"; then
+  echo "pre-commit: warning: branch '$branch' does not match <type>/ink-<id>-<short-description>." >&2
+fi
