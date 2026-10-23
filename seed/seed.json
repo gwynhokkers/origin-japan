@@ -310,7 +310,7 @@
               "_key": "home-opening",
               "body": "Here at Origin, we have a large selection of imported vehicles in stock, already in the UK.",
               "link_label": "Showroom",
-              "link_url": "/stock"
+              "link_url": "/showroom"
             },
             {
               "_type": "stock",

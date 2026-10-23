@@ -21,7 +21,7 @@ const blocks: BrochureBlock[] = [
     kind: "opening",
     body: "Cars already in the UK, and personal imports from Japan.",
     linkLabel: "Current stock",
-    linkHref: "/stock",
+    linkHref: "/showroom",
   },
   {
     kind: "section",

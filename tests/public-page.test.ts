@@ -25,8 +25,10 @@ test("a buyer receives a response from the public site", async () => {
 
 test("old addresses open the current pages", async () => {
   const cases = [
-    ["/stocklist/", "/stock"],
-    ["/stock/", "/stock"],
+    ["/stocklist/", "/showroom"],
+    ["/stock", "/showroom"],
+    ["/stock/", "/showroom"],
+    ["/stock?sort=price&page=2", "/showroom?sort=price&page=2"],
     ["/stocklist/sold-stock/", "/sold"],
     ["/personal-import-service/", "/personal-import"],
     ["/personal-import-gallery/", "/personal-import"],
@@ -46,14 +48,14 @@ test("old addresses open the current pages", async () => {
 });
 
 test("on a small screen the sort sits in a panel the buyer opens", async () => {
-  const html = await pageText(inMemoryCatalogue({ vehicles: [forSaleVehicle()] }), "/stock");
+  const html = await pageText(inMemoryCatalogue({ vehicles: [forSaleVehicle()] }), "/showroom");
   const panel = html.slice(html.indexOf("<details"), html.indexOf("</details>"));
 
   expect(panel).toContain("<summary>Sort</summary>");
-  expect(panel).toContain('href="/stock?sort=price"');
-  expect(panel).toContain('href="/stock?sort=model-year"');
-  expect(panel).toContain('href="/stock?sort=mileage"');
-  expect(panel).toContain('href="/stock?sort=newest"');
+  expect(panel).toContain('href="/showroom?sort=price"');
+  expect(panel).toContain('href="/showroom?sort=model-year"');
+  expect(panel).toContain('href="/showroom?sort=mileage"');
+  expect(panel).toContain('href="/showroom?sort=newest"');
   expect(html).toContain("prefers-reduced-motion: reduce");
   expect(panel).not.toContain('tabindex="-1"');
 });
@@ -172,7 +174,7 @@ test("Adam's edited copy is what a buyer reads", async () => {
   expect(home).toContain("Pat Example");
   expect(home).toContain("An edited review from the catalogue.");
   expect(home).toContain('href="https://share.google/edited-reviews"');
-  expect(home).toContain('href="/stock"');
+  expect(home).toContain('href="/showroom"');
   expect(home).not.toContain("Yahoo Japan");
   expect(home).not.toContain("Badeshi");
 
@@ -196,7 +198,7 @@ test("brochure pages follow the section order Adam saved", async () => {
           blocks: [
             { kind: "reviews" },
             { kind: "section", heading: "Trusted partners", body: "Two agents in Japan." },
-            { kind: "opening", body: "Cars already in the UK.", linkLabel: "Showroom", linkHref: "/stock" },
+            { kind: "opening", body: "Cars already in the UK.", linkLabel: "Showroom", linkHref: "/showroom" },
             { kind: "stock" },
           ],
         },
@@ -327,7 +329,7 @@ test("home offers the showroom, parts, partners, and named reviews", async () =>
   expect(response.status).toBe(200);
   expect(html).toContain("So, you're looking for a car from Japan?");
   expect(html).toContain('src="/images/home-dusk-row-2000.jpg"');
-  expect(html).toContain('href="/stock"');
+  expect(html).toContain('href="/showroom"');
   expect(html).toContain(">Showroom<");
   expect(html).not.toContain("Current Stock");
   expect(html).toContain("Yahoo Japan");
@@ -480,17 +482,17 @@ test("home shows the first three vehicles in stock with their own photos, and no
   expect(html).not.toContain("subaru-legacy-2011");
   expect(html).not.toContain("honda-beat-1993");
   expect(html).not.toContain("mazda-mx-5-on-water");
-  expect(html).toContain('href="/stock"');
+  expect(html).toContain('href="/showroom"');
   expect(html).toContain(">In the showroom<");
 
   const empty = await pageText(inMemoryCatalogue(), "/");
   expect(empty).not.toContain("/listings/");
-  expect(empty).toContain('href="/stock"');
+  expect(empty).toContain('href="/showroom"');
 });
 
 test("the nav uses the current labels and the header and footer show the Newport address and phone", async () => {
   const response = await requestPublicPage(
-    new Request("http://originjapan.test/stock"),
+    new Request("http://originjapan.test/showroom"),
     inMemoryCatalogue(),
   );
   const html = await response.text();
@@ -498,7 +500,7 @@ test("the nav uses the current labels and the header and footer show the Newport
   const footer = region(html, "footer");
 
   expect(response.status).toBe(200);
-  expect(header).toContain('href="/stock"');
+  expect(header).toContain('href="/showroom"');
   expect(header).toContain(">Showroom<");
   expect(header).not.toContain("Current Stock");
   expect(html).toContain("<title>Showroom");
@@ -525,7 +527,7 @@ test("the nav uses the current labels and the header and footer show the Newport
 });
 
 test("the site is dark only, with no theme toggle and no stored theme read", async () => {
-  const html = await pageText(inMemoryCatalogue(), "/stock");
+  const html = await pageText(inMemoryCatalogue(), "/showroom");
 
   expect(html).toContain('<meta name="color-scheme" content="dark">');
   expect(html).not.toContain("data-theme");
@@ -544,7 +546,7 @@ test("the stylesheet has one dark theme and no light theme rules", () => {
 });
 
 test("the header and footer share one small WebP lockup", async () => {
-  const html = await pageText(inMemoryCatalogue(), "/stock");
+  const html = await pageText(inMemoryCatalogue(), "/showroom");
   const lockups = imageSources(html).filter((src) => src.includes("lockup"));
 
   expect(lockups).toEqual(["/images/origin-japan-lockup.webp", "/images/origin-japan-lockup.webp"]);
@@ -577,7 +579,7 @@ test("a buyer sees a for-sale vehicle on stock and can open its page", async () 
   });
 
   const response = await requestPublicPage(
-    new Request("http://originjapan.test/stock"),
+    new Request("http://originjapan.test/showroom"),
     catalogue,
   );
   const html = await response.text();
@@ -599,7 +601,7 @@ test("an in-prep vehicle is on stock with an In prep badge and no price", async 
     vehicles: [{ ...forSaleVehicle(), pricePounds: undefined, availability: "in prep" }],
   });
 
-  const response = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+  const response = await requestPublicPage(new Request("http://originjapan.test/showroom"), catalogue);
   const html = await response.text();
 
   expect(response.status).toBe(200);
@@ -614,7 +616,7 @@ test("an on-water vehicle is on stock with an On water badge and no price", asyn
     vehicles: [{ ...forSaleVehicle(), pricePounds: undefined, availability: "on water" }],
   });
 
-  const response = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+  const response = await requestPublicPage(new Request("http://originjapan.test/showroom"), catalogue);
   const html = await response.text();
 
   expect(response.status).toBe(200);
@@ -648,7 +650,7 @@ test("a sold vehicle is only on sold stock, and its page shows Sold with no pric
     ],
   });
 
-  const stock = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+  const stock = await requestPublicPage(new Request("http://originjapan.test/showroom"), catalogue);
   const soldStock = await requestPublicPage(new Request("http://originjapan.test/sold"), catalogue);
   const page = await requestPublicPage(
     new Request("http://originjapan.test/listings/subaru-legacy-2011"),
@@ -714,7 +716,7 @@ test("a draft is absent from stock, sold stock, and its page", async () => {
     ],
   });
 
-  const stock = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+  const stock = await requestPublicPage(new Request("http://originjapan.test/showroom"), catalogue);
   const soldStock = await requestPublicPage(new Request("http://originjapan.test/sold"), catalogue);
   const page = await requestPublicPage(
     new Request("http://originjapan.test/listings/honda-beat-1993"),
@@ -770,7 +772,7 @@ test("priced for-sale vehicles appear before in-prep and on-water vehicles", asy
     ],
   });
 
-  const response = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+  const response = await requestPublicPage(new Request("http://originjapan.test/showroom"), catalogue);
   const slugs = stockSlugs(await response.text());
 
   expect(response.status).toBe(200);
@@ -826,7 +828,7 @@ test("a group with no order from Adam is newest published first, not newest mode
     ],
   });
 
-  const response = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+  const response = await requestPublicPage(new Request("http://originjapan.test/showroom"), catalogue);
 
   expect(response.status).toBe(200);
   expect(stockSlugs(await response.text())).toEqual([
@@ -889,7 +891,7 @@ test("Adam's order is kept inside the priced group and inside in-prep and on-wat
     ],
   });
 
-  const response = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+  const response = await requestPublicPage(new Request("http://originjapan.test/showroom"), catalogue);
 
   expect(response.status).toBe(200);
   expect(stockSlugs(await response.text())).toEqual([
@@ -973,28 +975,28 @@ test("a buyer sort reorders inside each stock group and stays in the page addres
   });
 
   const orders = {
-    "/stock?sort=price": [
+    "/showroom?sort=price": [
       "toyota-gr-yaris",
       "subaru-levorg-2-0-gt-s",
       "volvo-v40",
       "honda-s2000-in-prep",
       "mazda-mx-5-on-water",
     ],
-    "/stock?sort=model-year": [
+    "/showroom?sort=model-year": [
       "volvo-v40",
       "toyota-gr-yaris",
       "subaru-levorg-2-0-gt-s",
       "mazda-mx-5-on-water",
       "honda-s2000-in-prep",
     ],
-    "/stock?sort=mileage": [
+    "/showroom?sort=mileage": [
       "subaru-levorg-2-0-gt-s",
       "volvo-v40",
       "toyota-gr-yaris",
       "mazda-mx-5-on-water",
       "honda-s2000-in-prep",
     ],
-    "/stock?sort=newest": [
+    "/showroom?sort=newest": [
       "toyota-gr-yaris",
       "volvo-v40",
       "subaru-levorg-2-0-gt-s",
@@ -1026,22 +1028,22 @@ test("stock longer than one page shows the next page, and the page keeps the buy
     })),
   });
 
-  const first = await pageText(catalogue, "/stock");
-  const second = await pageText(catalogue, "/stock?page=2");
-  const priced = await pageText(catalogue, "/stock?sort=price&page=2");
-  const short = await pageText(inMemoryCatalogue({ vehicles: [forSaleVehicle()] }), "/stock");
+  const first = await pageText(catalogue, "/showroom");
+  const second = await pageText(catalogue, "/showroom?page=2");
+  const priced = await pageText(catalogue, "/showroom?sort=price&page=2");
+  const short = await pageText(inMemoryCatalogue({ vehicles: [forSaleVehicle()] }), "/showroom");
 
   expect(stockSlugs(first)).toEqual(Array.from({ length: 12 }, (_, index) => `car-${String(index).padStart(2, "0")}`));
-  expect(first).toContain('href="/stock?page=2"');
+  expect(first).toContain('href="/showroom?page=2"');
   expect(first).toContain('aria-label="Pagination"');
   expect(first).not.toContain("car-12");
 
   expect(stockSlugs(second)).toEqual(["car-12"]);
-  expect(second).toContain('href="/stock?page=2" aria-current="page"');
-  expect(second).toContain('href="/stock"');
+  expect(second).toContain('href="/showroom?page=2" aria-current="page"');
+  expect(second).toContain('href="/showroom"');
 
   expect(stockSlugs(priced)).toEqual(["car-00"]);
-  expect(priced).toContain('href="/stock?sort=price&amp;page=2" aria-current="page"');
+  expect(priced).toContain('href="/showroom?sort=price&amp;page=2" aria-current="page"');
 
   expect(short).not.toContain('aria-label="Pagination"');
 });
@@ -1115,7 +1117,7 @@ test("a public price on an in-prep or on-water vehicle makes it for sale", async
     ],
   });
 
-  const stock = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+  const stock = await requestPublicPage(new Request("http://originjapan.test/showroom"), catalogue);
   const prep = await requestPublicPage(
     new Request("http://originjapan.test/listings/volvo-v40-in-prep"),
     catalogue,
@@ -1166,7 +1168,7 @@ test("a buyer sees the vehicle, its price, and photos in Adam's order", async ()
     ],
   });
 
-  const stock = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+  const stock = await requestPublicPage(new Request("http://originjapan.test/showroom"), catalogue);
   const page = await requestPublicPage(
     new Request("http://originjapan.test/listings/subaru-levorg-2-0-gt-s"),
     catalogue,
@@ -1178,7 +1180,7 @@ test("a buyer sees the vehicle, its price, and photos in Adam's order", async ()
 
   expect(page.status).toBe(200);
   const crumb = html.match(/<nav[^>]*aria-label="Breadcrumb"[\s\S]*?<\/nav>/)?.[0] ?? "";
-  expect(crumb).toContain('href="/stock"');
+  expect(crumb).toContain('href="/showroom"');
   expect(crumb).toContain(">Showroom<");
   expect(crumb).toContain("Subaru Levorg 2.0 GT-S 2016");
   expect(crumb).toContain('aria-current="page"');
@@ -1204,7 +1206,7 @@ test("a vehicle missing a required field is absent, and the VIN stays off the pa
   const catalogue = inMemoryCatalogue({
     vehicles: [{ ...forSaleVehicle(), vin }],
   });
-  const stock = await requestPublicPage(new Request("http://originjapan.test/stock"), catalogue);
+  const stock = await requestPublicPage(new Request("http://originjapan.test/showroom"), catalogue);
   const page = await requestPublicPage(
     new Request("http://originjapan.test/listings/subaru-levorg-2-0-gt-s"),
     catalogue,
@@ -1245,7 +1247,7 @@ test("a vehicle missing a required field is absent, and the VIN stays off the pa
     }
 
     const hidden = inMemoryCatalogue({ vehicles: [incomplete] });
-    const hiddenStock = await requestPublicPage(new Request("http://originjapan.test/stock"), hidden);
+    const hiddenStock = await requestPublicPage(new Request("http://originjapan.test/showroom"), hidden);
     const hiddenPage = await requestPublicPage(
       new Request(`http://originjapan.test/listings/${slug}`),
       hidden,

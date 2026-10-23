@@ -106,7 +106,7 @@ export function pageBlocks(
   switch (slug) {
     case "home":
       return [
-        { kind: "opening", body: opening.body, linkLabel: "Showroom", linkHref: "/stock" },
+        { kind: "opening", body: opening.body, linkLabel: "Showroom", linkHref: "/showroom" },
         { kind: "stock", heading: "In the showroom" },
         ...(page?.body?.trim() ? sectionBlocks : defaultHomeBlocks(sections)),
         { kind: "reviews", heading: "Brilliant reviews" },

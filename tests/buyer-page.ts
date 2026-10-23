@@ -8,7 +8,7 @@ import Listing from "../src/pages/listings/[slug].astro";
 import PersonalImport from "../src/pages/personal-import.astro";
 import Privacy from "../src/pages/privacy.astro";
 import Sold from "../src/pages/sold.astro";
-import Stock from "../src/pages/stock.astro";
+import Showroom from "../src/pages/showroom.astro";
 import { legacyDestination, listingSlug } from "../src/public/redirects";
 
 const closedEnquiry: EnquiryServices = {
@@ -22,7 +22,7 @@ const closedEnquiry: EnquiryServices = {
 
 const pages = {
   "/": Index,
-  "/stock": Stock,
+  "/showroom": Showroom,
   "/sold": Sold,
   "/personal-import": PersonalImport,
   "/grade-sheets": GradeSheets,
@@ -45,7 +45,7 @@ export async function requestPublicPage(
   services: EnquiryServices = closedEnquiry,
 ): Promise<Response> {
   const url = new URL(request.url);
-  const destination = legacyDestination(url.pathname);
+  const destination = legacyDestination(url);
   if (destination) {
     return new Response(null, { status: 301, headers: { location: destination } });
   }
