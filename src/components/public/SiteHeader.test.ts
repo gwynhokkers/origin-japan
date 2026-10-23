@@ -32,14 +32,14 @@ test("the public header names Origin Japan and the Newport reach", async () => {
 test("the logo sits in the nav row below the contact band, not across it", async () => {
   await renderPublicStory(stories.default.component, Stock);
 
-  const home = document.body.querySelector("header a[aria-label='Origin Japan']");
+  const logo = document.body.querySelector("header a[aria-label='Origin Japan']");
   const band = document.body.querySelector("header .carbon-band");
-  const row = home?.parentElement;
+  const row = logo?.parentElement;
   expect(band).not.toBeNull();
-  expect(home?.classList.contains("absolute")).toBe(false);
+  expect(logo?.className).not.toMatch(/absolute|fixed/);
   expect(row?.querySelector("nav[aria-label='Pages']")).not.toBeNull();
   expect(band?.nextElementSibling).toBe(row);
-  expect(band?.firstElementChild?.firstElementChild?.textContent).toContain("Unit D2, Langland Park West");
+  expect(band?.querySelector("[aria-hidden='true']")).toBeNull();
 });
 
 test("small screens get a closed menu that holds the pages and contact details", async () => {
