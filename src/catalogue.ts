@@ -12,6 +12,8 @@ export type Vehicle = {
   transmission?: string;
   mileageMiles?: number;
   pricePounds?: number;
+  /** Auction grade, such as 4.5 or R. A vehicle can be public without one. */
+  grade?: string;
   photos?: readonly string[];
   sellersNotes?: string;
   vin?: string;

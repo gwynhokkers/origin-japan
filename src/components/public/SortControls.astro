@@ -1,8 +1,9 @@
 ---
-import { stockHref, stockSortLabels, stockSorts, type StockSort } from "../../public/vehicles";
+import { stockHref, type StockBase, type StockFilters } from "../../public/stock-filters";
+import { stockSortLabels, stockSorts, type StockSort } from "../../public/vehicles";
 
-type Props = { base: "/showroom" | "/sold"; current?: StockSort; sorts?: readonly StockSort[] };
-const { base, current, sorts = stockSorts } = Astro.props;
+type Props = { base: StockBase; current?: StockSort; sorts?: readonly StockSort[]; filters?: StockFilters };
+const { base, current, sorts = stockSorts, filters } = Astro.props;
 ---
 
 <details class="stock-controls">
@@ -11,7 +12,7 @@ const { base, current, sorts = stockSorts } = Astro.props;
     {
       sorts.map((sort) => (
         <a
-          href={stockHref(base, { sort })}
+          href={stockHref(base, { sort, filters })}
           aria-current={current === sort ? "true" : undefined}
           class="inline-flex min-h-11 items-center underline decoration-transparent decoration-2 underline-offset-[0.25em] hover:decoration-accent aria-[current=true]:font-semibold aria-[current=true]:decoration-accent"
         >

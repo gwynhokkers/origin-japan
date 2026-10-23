@@ -2,33 +2,46 @@
 import Pagination from "../components/public/Pagination.astro";
 import SortControls from "../components/public/SortControls.astro";
 import StockCard from "../components/public/StockCard.astro";
+import StockFilters from "../components/public/StockFilters.astro";
 import Public from "../layouts/Public.astro";
 import { publicLocals } from "../public/locals";
+import { filterStock, readStockFilters, stockFilterChoices, stockHref } from "../public/stock-filters";
 import { isOnStock, listStock, pageOf, readStockPage, readStockSort } from "../public/vehicles";
 
 const { catalogue } = publicLocals(Astro.locals);
 const sort = readStockSort(Astro.url);
-const listed = listStock((await catalogue.vehicles()).filter(isOnStock), sort).filter((vehicle) => vehicle.slug);
+const allStock = (await catalogue.vehicles()).filter((vehicle) => isOnStock(vehicle) && vehicle.slug);
+const filters = readStockFilters(Astro.url, "/showroom", allStock);
+const listed = listStock(filterStock(allStock, filters), sort);
 const { items: stock, page, pages } = pageOf(listed, readStockPage(Astro.url));
 const grid = "m-0 grid list-none grid-cols-1 gap-x-6 gap-y-11 py-8 md:grid-cols-2 lg:grid-cols-3";
+const empty = "m-0 max-w-[65ch] py-8 pb-[clamp(2.5rem,6vw,4.5rem)] text-muted";
 ---
 
 <Public title="Showroom">
   <div class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]">
     <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b border-line pt-8 pb-5">
       <h1 class="m-0 font-display text-[clamp(1.4rem,2.4vw,2rem)] leading-tight font-bold tracking-[0.04em] uppercase">Showroom</h1>
-      <SortControls base="/showroom" current={sort} />
+      <SortControls base="/showroom" current={sort} filters={filters} />
     </div>
+    {allStock.length > 0 && <StockFilters base="/showroom" filters={filters} choices={stockFilterChoices(allStock, filters)} sort={sort} />}
     {
       stock.length > 0 ? (
         <>
           <ul class:list={[grid, pages === 1 && "pb-[clamp(2.5rem,6vw,4.5rem)]"]}>
             {stock.map((vehicle, index) => <StockCard vehicle={vehicle} eager={index < 3} />)}
           </ul>
-          <Pagination base="/showroom" page={page} pages={pages} sort={sort} />
+          <Pagination base="/showroom" page={page} pages={pages} sort={sort} filters={filters} />
         </>
+      ) : allStock.length > 0 ? (
+        <p class={empty}>
+          No vehicles match these filters.{" "}
+          <a class="text-ink underline decoration-2 underline-offset-[0.25em] hover:decoration-accent" href={stockHref("/showroom", { sort })}>
+            Clear filters
+          </a>
+        </p>
       ) : (
-        <p class="m-0 max-w-[65ch] py-8 pb-[clamp(2.5rem,6vw,4.5rem)] text-muted">No vehicles in stock.</p>
+        <p class={empty}>No vehicles in stock.</p>
       )
     }
   </div>

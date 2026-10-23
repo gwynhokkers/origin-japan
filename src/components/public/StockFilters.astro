@@ -1,0 +1,115 @@
+---
+import {
+  countStockFilters,
+  stockFilterParams,
+  stockFiltersFor,
+  stockHref,
+  type StockBase,
+  type StockFilter,
+  type StockFilterChoices,
+  type StockFilters,
+} from "../../public/stock-filters";
+import type { StockSort } from "../../public/vehicles";
+
+type Props = { base: StockBase; filters: StockFilters; choices: StockFilterChoices; sort?: StockSort };
+const { base, filters, choices, sort } = Astro.props;
+const offered = stockFiltersFor(base);
+const active = countStockFilters(filters);
+
+type Select = { filter: StockFilter; label: string; any: string; options: string[]; hint?: string };
+const selects = (
+  [
+    { filter: "make", label: "Make", any: "Any make", options: choices.makes },
+    {
+      filter: "model",
+      label: "Model",
+      any: "Any model",
+      options: choices.models,
+      hint: filters.make ? undefined : "Choose a make and apply to pick a model.",
+    },
+    { filter: "body", label: "Body", any: "Any body", options: choices.bodies },
+    { filter: "year", label: "Model year", any: "Any year", options: choices.years.map(String) },
+    { filter: "transmission", label: "Transmission", any: "Any transmission", options: choices.transmissions },
+    { filter: "grade", label: "Grade", any: "Any grade", options: choices.grades },
+  ] satisfies Select[]
+)
+  .filter((select) => offered.includes(select.filter))
+  .map((select) => ({ ...select, id: stockFilterParams[select.filter], value: filters[select.filter]?.toString() }));
+
+type Range = { label: string; unit: string; min: StockFilter; max: StockFilter };
+const ranges = (
+  [
+    { label: "Mileage", unit: "miles", min: "mileageMin", max: "mileageMax" },
+    { label: "Price", unit: "pounds", min: "priceMin", max: "priceMax" },
+  ] satisfies Range[]
+)
+  .filter((range) => offered.includes(range.min))
+  .map((range) => ({
+    ...range,
+    min: { id: stockFilterParams[range.min], value: filters[range.min] },
+    max: { id: stockFilterParams[range.max], value: filters[range.max] },
+  }));
+
+const field = "min-h-11 w-full rounded border border-field-line bg-field px-3 py-2.5 font-[inherit] text-ink focus-visible:border-ink";
+---
+
+<details class="stock-controls stock-filters">
+  <summary>{active > 0 ? `Filters (${active})` : "Filters"}</summary>
+  <form class="grid gap-4 border-b border-line py-5 sm:grid-cols-2 lg:grid-cols-4" method="get" action={base} aria-label="Filter stock">
+    {sort && <input type="hidden" name="sort" value={sort} />}
+    {
+      selects.map((select) => (
+        <div class="grid content-start gap-1.5">
+          <label class="text-sm font-semibold" for={select.id}>
+            {select.label}
+          </label>
+          <select id={select.id} name={select.id} class={field} aria-describedby={select.hint ? `${select.id}-hint` : undefined}>
+            <option value="">{select.any}</option>
+            {select.options.map((option) => (
+              <option value={option} selected={option === select.value}>
+                {option}
+              </option>
+            ))}
+          </select>
+          {select.hint && (
+            <p id={`${select.id}-hint`} class="m-0 text-sm text-muted">
+              {select.hint}
+            </p>
+          )}
+        </div>
+      ))
+    }
+    {
+      ranges.map((range) => (
+        <fieldset class="m-0 grid content-start gap-1.5 border-0 p-0">
+          <legend class="mb-1.5 p-0 text-sm font-semibold">
+            {range.label} ({range.unit})
+          </legend>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="sr-only" for={range.min.id}>
+              Minimum {range.label.toLowerCase()}
+            </label>
+            <input id={range.min.id} name={range.min.id} type="number" min="0" step="1" inputmode="numeric" placeholder="Min" value={range.min.value} class={field} />
+            <label class="sr-only" for={range.max.id}>
+              Maximum {range.label.toLowerCase()}
+            </label>
+            <input id={range.max.id} name={range.max.id} type="number" min="0" step="1" inputmode="numeric" placeholder="Max" value={range.max.value} class={field} />
+          </div>
+        </fieldset>
+      ))
+    }
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 self-end sm:col-span-2 lg:col-span-4">
+      <button class="btn font-sans text-base" type="submit">Apply filters</button>
+      {
+        active > 0 && (
+          <a
+            href={stockHref(base, { sort })}
+            class="inline-flex min-h-11 items-center text-sm underline decoration-2 underline-offset-[0.25em] hover:decoration-accent"
+          >
+            Clear filters
+          </a>
+        )
+      }
+    </div>
+  </form>
+</details>

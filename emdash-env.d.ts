@@ -175,6 +175,7 @@ export interface Vehicle {
   transmission?: "Manual" | "Automatic" | "DSG";
   mileage?: number;
   price?: number;
+  grade?: "S" | "6" | "5" | "4.5" | "4" | "3.5" | "3" | "2" | "1" | "RA" | "R";
   photos?: { "photo": { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } } }[];
   sellers_notes?: string;
   vin?: string;

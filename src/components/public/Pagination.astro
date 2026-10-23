@@ -1,19 +1,21 @@
 ---
-import { stockHref, type StockSort } from "../../public/vehicles";
+import { stockHref, type StockBase, type StockFilters } from "../../public/stock-filters";
+import type { StockSort } from "../../public/vehicles";
 
 type Props = {
-  base: "/showroom" | "/sold";
+  base: StockBase;
   page: number;
   pages: number;
   sort?: StockSort;
+  filters?: StockFilters;
 };
 
-const { base, page, pages, sort } = Astro.props;
+const { base, page, pages, sort, filters } = Astro.props;
 const link =
   "inline-flex min-h-11 min-w-11 items-center justify-center underline decoration-transparent decoration-2 underline-offset-[0.25em] hover:decoration-accent aria-[current=page]:font-semibold aria-[current=page]:decoration-accent";
 
 function href(number: number): string {
-  return stockHref(base, { sort, page: number });
+  return stockHref(base, { sort, filters, page: number });
 }
 
 const numbers = pageNumbers(page, pages);
