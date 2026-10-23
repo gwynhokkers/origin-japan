@@ -39,6 +39,7 @@ const specs = [
   ["Year", vehicle.year === undefined ? "" : String(vehicle.year)],
   ["Transmission", vehicle.transmission],
   ["Mileage", formatMiles(vehicle.mileageMiles)],
+  ["Grade", vehicle.grade],
 ].flatMap(([label, value]) => {
   const text = value?.trim() ?? "";
   return text ? [{ label, text }] : [];

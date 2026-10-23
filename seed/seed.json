@@ -102,6 +102,27 @@
           }
         },
         {
+          "slug": "grade",
+          "label": "Grade",
+          "type": "select",
+          "translatable": false,
+          "validation": {
+            "options": [
+              "S",
+              "6",
+              "5",
+              "4.5",
+              "4",
+              "3.5",
+              "3",
+              "2",
+              "1",
+              "RA",
+              "R"
+            ]
+          }
+        },
+        {
           "slug": "photos",
           "label": "Photos",
           "type": "repeater",

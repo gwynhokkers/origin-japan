@@ -247,6 +247,7 @@ function vehicleFromEntry(entry: { id: string; status?: string; data: object }):
     transmission: stringValue(data.transmission),
     mileageMiles: integerValue(data.mileage),
     pricePounds: integerValue(data.price),
+    grade: stringValue(data.grade),
     photos: photoSources(data.photos),
     sellersNotes: stringValue(data.sellers_notes),
     vin: stringValue(data.vin),

@@ -38,6 +38,7 @@ function vehicleRecord(vehicle: Vehicle): Record<string, unknown> {
     availability: storedAvailability(vehicle.availability),
   };
   if (vehicle.vin !== undefined) data.vin = vehicle.vin;
+  if (vehicle.grade !== undefined) data.grade = vehicle.grade;
   if (vehicle.order !== undefined) data.order = vehicle.order;
   return data;
 }

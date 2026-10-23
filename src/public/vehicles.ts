@@ -1,7 +1,9 @@
 import type { Vehicle } from "../catalogue";
 
-const bodies = new Set(["Convertible", "Pickup", "Coupe", "MPV", "Hatchback", "Estate"]);
-const transmissions = new Set(["Manual", "Automatic", "DSG"]);
+/** The EmDash select options, in the order buyers see them. */
+export const vehicleBodies: readonly string[] = ["Convertible", "Pickup", "Coupe", "MPV", "Hatchback", "Estate"];
+export const vehicleTransmissions: readonly string[] = ["Manual", "Automatic", "DSG"];
+export const vehicleGrades: readonly string[] = ["S", "6", "5", "4.5", "4", "3.5", "3", "2", "1", "RA", "R"];
 
 export type StockSort = "price" | "model-year" | "mileage" | "newest";
 
@@ -65,9 +67,9 @@ export function fieldsMissingToShow(vehicle: Vehicle): string[] {
   if (!present(vehicle.title)) missing.push("title");
   if (!present(vehicle.make)) missing.push("make");
   if (!present(vehicle.model)) missing.push("model");
-  if (!bodies.has(present(vehicle.body) ?? "")) missing.push("body");
+  if (!vehicleBodies.includes(present(vehicle.body) ?? "")) missing.push("body");
   if (typeof year !== "number" || !Number.isInteger(year) || year < 1900 || year > 2100) missing.push("year");
-  if (!transmissions.has(present(vehicle.transmission) ?? "")) missing.push("transmission");
+  if (!vehicleTransmissions.includes(present(vehicle.transmission) ?? "")) missing.push("transmission");
   if (typeof mileage !== "number" || !Number.isInteger(mileage) || mileage < 0) missing.push("mileage");
   if (photosOf(vehicle).length === 0) missing.push("photos");
   if (!present(vehicle.sellersNotes)) missing.push("seller's notes");
@@ -99,14 +101,6 @@ export function pageOf<T>(items: readonly T[], page: number, size = stockPageSiz
   const current = Math.min(Math.max(1, page), pages);
   const start = (current - 1) * size;
   return { items: items.slice(start, start + size), page: current, pages };
-}
-
-export function stockHref(base: "/showroom" | "/sold", options?: { sort?: StockSort; page?: number }): string {
-  const params = new URLSearchParams();
-  if (options?.sort) params.set("sort", options.sort);
-  if (options?.page && options.page > 1) params.set("page", String(options.page));
-  const query = params.toString();
-  return query ? `${base}?${query}` : base;
 }
 
 /** Priced for-sale vehicles, then in-prep and on-water. A buyer sort stays inside each group. */

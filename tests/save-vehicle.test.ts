@@ -52,3 +52,21 @@ test("saving an existing vehicle keeps the WordPress date", async () => {
   expect(updated[0]?.status).toBe("published");
   expect(updated[0]?.publishedAt).toBe("2025-09-17T10:00:00.000Z");
 });
+
+test("a grade is saved when Adam recorded one, and left out when he did not", async () => {
+  const created: CreateContentInput[] = [];
+  const repo = {
+    async findBySlug() {
+      return undefined;
+    },
+    async create(input: CreateContentInput) {
+      created.push(input);
+    },
+  };
+
+  await upsertVehicle(repo as unknown as ContentRepository, { id: "graded", slug: "graded", grade: "4.5" });
+  await upsertVehicle(repo as unknown as ContentRepository, { id: "ungraded", slug: "ungraded" });
+
+  expect(created[0]?.data.grade).toBe("4.5");
+  expect(created[1]?.data).not.toHaveProperty("grade");
+});
