@@ -1,10 +1,11 @@
 ---
 import BrandLockup from "./BrandLockup.astro";
 import { company, email, phone, postalAddress } from "../../public/contact";
-import { navItems, type NavPage } from "../../public/navigation";
+import type { NavLink } from "../../catalogue";
+import { isCurrent, linkRel, primaryNav } from "../../public/navigation";
 
-type Props = { current?: NavPage };
-const { current } = Astro.props;
+type Props = { items?: readonly NavLink[]; currentPath?: string };
+const { items = primaryNav, currentPath } = Astro.props;
 const frame = "mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)]";
 const markLink =
   "brand-mark absolute inset-y-0 left-0 z-10 flex items-center no-underline focus-visible:outline-ink max-lg:px-[clamp(1rem,4vw,2.5rem)] lg:w-[17.5rem] lg:px-4";
@@ -34,10 +35,12 @@ const contactRow =
     <div class="flex min-w-0 flex-1 items-center justify-end max-lg:-mr-2.5 lg:pl-4">
       <nav class="page-nav flex min-w-0 flex-1 justify-end gap-x-1 max-lg:hidden" aria-label="Pages">
         {
-          navItems.map((item) => (
+          items.map((item) => (
             <a
               href={item.href}
-              aria-current={current === item.page ? "page" : undefined}
+              target={item.target}
+              rel={linkRel(item)}
+              aria-current={isCurrent(item, currentPath) ? "page" : undefined}
               class="nav-link inline-flex min-h-11 snap-start items-center px-3 font-display text-[0.66rem] tracking-[0.06em] whitespace-nowrap uppercase aria-[current=page]:font-bold"
             >
               {item.label}
@@ -65,11 +68,13 @@ const contactRow =
           <nav aria-label="Pages">
             <ul class="m-0 flex list-none flex-col gap-1 p-0">
               {
-                navItems.map((item) => (
+                items.map((item) => (
                   <li class="site-menu-item">
                     <a
                       href={item.href}
-                      aria-current={current === item.page ? "page" : undefined}
+                      target={item.target}
+                      rel={linkRel(item)}
+                      aria-current={isCurrent(item, currentPath) ? "page" : undefined}
                       class="nav-link -mx-3 flex min-h-12 items-center px-3 font-display text-[0.8rem] tracking-[0.08em] uppercase [--slab-inset:0.55rem] aria-[current=page]:font-bold"
                     >
                       {item.label}

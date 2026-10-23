@@ -47,6 +47,39 @@ test("old addresses open the current pages", async () => {
   expect(await contact.text()).toContain("info@originjapan.co.uk");
 });
 
+test("the header and footer menus come from the menus editors arrange in the admin", async () => {
+  const html = await pageText(
+    inMemoryCatalogue({
+      navigation: {
+        primary: [
+          { label: "Cars", href: "/showroom" },
+          { label: "Auctions", href: "https://auctions.example/", target: "_blank" },
+        ],
+        footer: [{ label: "Terms", href: "/privacy" }],
+      },
+    }),
+    "/showroom",
+  );
+  const header = html.slice(html.indexOf("<header"), html.indexOf("</header>"));
+  const footer = html.slice(html.indexOf("<footer"), html.indexOf("</footer>"));
+
+  expect(header).toMatch(/href="\/showroom"[^>]*aria-current="page"[^>]*>\s*Cars\s*</);
+  expect(header).toMatch(/href="https:\/\/auctions\.example\/" target="_blank" rel="noopener noreferrer"/);
+  expect(header).not.toContain("Personal Import Service");
+  expect(footer).toContain(">Terms<");
+  expect(footer).not.toContain("Sold Stock");
+});
+
+test("without admin menus the header and footer keep the public pages", async () => {
+  const html = await pageText(inMemoryCatalogue(), "/contact");
+  const header = html.slice(html.indexOf("<header"), html.indexOf("</header>"));
+  const footer = html.slice(html.indexOf("<footer"), html.indexOf("</footer>"));
+
+  expect(header).toContain("Personal Import Service");
+  expect(header).toMatch(/href="\/contact"[^>]*aria-current="page"/);
+  expect(footer).toContain(">Privacy<");
+});
+
 test("on a small screen the sort sits in a panel the buyer opens", async () => {
   const html = await pageText(inMemoryCatalogue({ vehicles: [forSaleVehicle()] }), "/showroom");
   const panel = html.slice(html.indexOf("<details"), html.indexOf("</details>"));

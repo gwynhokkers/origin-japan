@@ -1,15 +1,18 @@
 ---
 import "../styles/public.css";
 import { homeHero } from "../public/hero";
-import type { NavPage } from "../public/navigation";
+import { siteNavigation } from "../public/navigation";
+import { publicLocals } from "../public/locals";
 import { banners, type BannerName } from "../public/site-photos";
 import SiteFooter from "../components/public/SiteFooter.astro";
 import SiteHeader from "../components/public/SiteHeader.astro";
 
-type Props = { title: string; current?: NavPage; banner?: BannerName };
+type Props = { title: string; banner?: BannerName };
 
-const { title, current, banner } = Astro.props;
+const { title, banner } = Astro.props;
 const photo = banner && banner !== "home" ? banners[banner] : undefined;
+const { catalogue } = publicLocals(Astro.locals);
+const nav = siteNavigation(await catalogue.navigation());
 ---
 
 <!doctype html>
@@ -57,10 +60,10 @@ const photo = banner && banner !== "home" ? banners[banner] : undefined;
     </style>
   </head>
   <body class="m-0 bg-ground font-sans text-base leading-relaxed text-ink">
-    <SiteHeader current={current} />
+    <SiteHeader items={nav.primary} currentPath={Astro.url.pathname} />
     <main>
       <slot />
     </main>
-    <SiteFooter />
+    <SiteFooter items={nav.footer} />
   </body>
 </html>

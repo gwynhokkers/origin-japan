@@ -1,15 +1,17 @@
-import type { Catalogue, Lead, SiteContent, Vehicle, VehicleEnquiryInput } from "./catalogue";
+import type { Catalogue, Lead, SiteContent, SiteNavigation, Vehicle, VehicleEnquiryInput } from "./catalogue";
 
 export function inMemoryCatalogue(
   records: {
     vehicles?: readonly Vehicle[];
     leads?: readonly Lead[];
     site?: SiteContent;
+    navigation?: SiteNavigation;
   } = {},
 ): Catalogue {
   const vehicles = [...(records.vehicles ?? [])];
   const leads = [...(records.leads ?? [])];
   const site = records.site ?? {};
+  const navigation = records.navigation ?? {};
 
   return {
     async vehicles() {
@@ -33,6 +35,9 @@ export function inMemoryCatalogue(
     },
     async siteContent() {
       return site;
+    },
+    async navigation() {
+      return navigation;
     },
   };
 }

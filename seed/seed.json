@@ -708,5 +708,54 @@
         }
       ]
     }
+  ],
+  "menus": [
+    {
+      "name": "primary",
+      "label": "Header",
+      "items": [
+        {
+          "type": "custom",
+          "label": "Showroom",
+          "url": "/showroom"
+        },
+        {
+          "type": "custom",
+          "label": "Personal Import Service",
+          "url": "/personal-import"
+        },
+        {
+          "type": "custom",
+          "label": "Grade Sheets",
+          "url": "/grade-sheets"
+        },
+        {
+          "type": "custom",
+          "label": "Contact",
+          "url": "/contact"
+        },
+        {
+          "type": "custom",
+          "label": "Sold Stock",
+          "url": "/sold"
+        }
+      ]
+    },
+    {
+      "name": "footer",
+      "label": "Footer",
+      "items": [
+        {
+          "type": "custom",
+          "label": "Sold Stock",
+          "url": "/sold"
+        },
+        {
+          "type": "custom",
+          "label": "Privacy",
+          "url": "/privacy"
+        }
+      ]
+    }
   ]
 }
