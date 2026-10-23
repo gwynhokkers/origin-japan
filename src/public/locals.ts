@@ -1,7 +1,7 @@
 import type { Catalogue } from "../catalogue";
-import type { EnquiryServices } from "../enquiry-services";
+import type { LeadServices } from "../lead-services";
 
-export function publicLocals(locals: App.Locals): { catalogue: Catalogue; enquiry: EnquiryServices } {
-  if (!locals.catalogue || !locals.enquiry) throw new Error("Public pages need a catalogue");
-  return { catalogue: locals.catalogue, enquiry: locals.enquiry };
+export function publicLocals(locals: App.Locals): { catalogue: Catalogue; leadServices: LeadServices } {
+  if (!locals.catalogue || !locals.leadServices) throw new Error("Public pages need a catalogue");
+  return { catalogue: locals.catalogue, leadServices: locals.leadServices };
 }

@@ -3,11 +3,11 @@ import Badge from "../../components/public/Badge.astro";
 import VehicleEnquiry from "../../components/public/VehicleEnquiry.astro";
 import VehicleGallery from "../../components/public/VehicleGallery.astro";
 import Public from "../../layouts/Public.astro";
-import { receiveVehicleEnquiry, type EnquiryView } from "../../public/enquiry";
+import { receiveVehicleEnquiry, type LeadView } from "../../public/leads";
 import { publicLocals } from "../../public/locals";
 import { availabilityLabel, formatMiles, formatPounds, isForSale, isOnStock, isPublic, isSold, photosOf } from "../../public/vehicles";
 
-const { catalogue, enquiry } = publicLocals(Astro.locals);
+const { catalogue, leadServices } = publicLocals(Astro.locals);
 const slug = Astro.params.slug ?? "";
 const vehicle = (await catalogue.vehicles()).find((item) => item.slug === slug && isPublic(item));
 if (!vehicle) {
@@ -17,9 +17,9 @@ if (!vehicle) {
   });
 }
 
-let view: EnquiryView | undefined;
+let view: LeadView | undefined;
 if (Astro.request.method === "POST") {
-  const result = await receiveVehicleEnquiry(Astro.request, vehicle, catalogue, enquiry);
+  const result = await receiveVehicleEnquiry(Astro.request, vehicle, catalogue, leadServices);
   Astro.response.status = result.status;
   view = result.view;
 }
@@ -90,7 +90,7 @@ const specs = [
             </section>
           )
         }
-        {isOnStock(vehicle) && <VehicleEnquiry slug={vehicle.slug ?? ""} siteKey={enquiry.siteKey} view={view} />}
+        {isOnStock(vehicle) && <VehicleEnquiry slug={vehicle.slug ?? ""} siteKey={leadServices.siteKey} view={view} />}
       </div>
     </article>
   </div>

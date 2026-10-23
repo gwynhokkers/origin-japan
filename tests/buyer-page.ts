@@ -1,6 +1,6 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import type { Catalogue } from "../src/catalogue";
-import type { EnquiryServices } from "../src/enquiry-services";
+import type { LeadServices } from "../src/lead-services";
 import Contact from "../src/pages/contact.astro";
 import GradeSheets from "../src/pages/grade-sheets.astro";
 import Index from "../src/pages/index.astro";
@@ -11,7 +11,7 @@ import Sold from "../src/pages/sold.astro";
 import Showroom from "../src/pages/showroom.astro";
 import { legacyDestination, listingSlug } from "../src/public/redirects";
 
-const closedEnquiry: EnquiryServices = {
+const closedLeads: LeadServices = {
   async checkSpam() {
     return false;
   },
@@ -42,7 +42,7 @@ function pageContainer() {
 export async function requestPublicPage(
   request: Request,
   catalogue: Catalogue,
-  services: EnquiryServices = closedEnquiry,
+  services: LeadServices = closedLeads,
 ): Promise<Response> {
   const url = new URL(request.url);
   const destination = legacyDestination(url);
@@ -62,7 +62,7 @@ export async function requestPublicPage(
   return (await pageContainer()).renderToResponse(page, {
     request,
     params: slug === undefined ? undefined : { slug },
-    locals: { catalogue, enquiry: services } as App.Locals,
+    locals: { catalogue, leadServices: services } as App.Locals,
     partial: false,
   });
 }

@@ -86,7 +86,7 @@ The inspector also marks damage on a small plan of the car, bonnet at the top of
 
 export const defaultContact = "Please feel free to ask any questions about a stock car or importing a vehicle. We will get back to you as soon as possible.";
 
-export const defaultPrivacy = "Origin Japan Ltd keeps the details you send when you ask about a vehicle or a personal import. We use your name, email, and message to reply to you. We do not sell those details. To ask for a copy, or to ask us to delete them, email info@originjapan.co.uk.";
+export const defaultPrivacy = "Origin Japan Ltd keeps the details you send when you ask about a vehicle, a personal import, or anything else. Your name, email, phone, and message are saved, and emailed to info@originjapan.co.uk. We use them to reply to you. We do not sell those details. To ask for a copy, or to ask us to delete them, email info@originjapan.co.uk.";
 
 export function pageCopy(content: SiteContent, slug: string) {
   return content.pages?.find((page) => page.slug === slug);

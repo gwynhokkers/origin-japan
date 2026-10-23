@@ -6,13 +6,13 @@ import type {
   Catalogue,
   ImportPhoto,
   Lead,
+  LeadInput,
   NavLink,
   PageCopy,
   Review,
   SiteContent,
   SiteNavigation,
   Vehicle,
-  VehicleEnquiryInput,
 } from "./catalogue";
 import { upsertVehicle } from "./save-vehicle";
 
@@ -20,7 +20,7 @@ export const emdashCatalogue: Catalogue = {
   vehicles: listVehicles,
   leads: listLeads,
   saveVehicle,
-  saveVehicleEnquiry,
+  saveLead,
   siteContent,
   navigation,
 };
@@ -54,16 +54,64 @@ async function listVehicles(): Promise<readonly Vehicle[]> {
   return entries.map(vehicleFromEntry);
 }
 
-async function listLeads(): Promise<readonly Lead[]> {
-  const { entries, error } = await getEmDashCollection("leads");
+/** Each kind of lead is its own collection, so Adam reads them apart in the admin. */
+const leadCollections = {
+  "vehicle enquiry": "leads",
+  "contact lead": "contact_leads",
+  "import request": "import_requests",
+} as const satisfies Record<LeadInput["kind"], string>;
+
+async function leadEntries(kind: LeadInput["kind"]): Promise<readonly SiteEntry[]> {
+  const { entries, error } = await getEmDashCollection(leadCollections[kind]);
   if (error) throw error;
-  return entries.map((entry) => ({
-    id: entry.id,
-    vehicle: stringValue(entry.data.vehicle),
-    firstName: stringValue(entry.data.first_name),
-    email: stringValue(entry.data.email),
-    message: stringValue(entry.data.message),
-  }));
+  return entries as unknown as readonly SiteEntry[];
+}
+
+async function listLeads(): Promise<readonly Lead[]> {
+  const [enquiries, contacts, imports] = await Promise.all([
+    leadEntries("vehicle enquiry"),
+    leadEntries("contact lead"),
+    leadEntries("import request"),
+  ]);
+  return [
+    ...enquiries.map((entry): Lead => {
+      const data = recordData(entry);
+      return {
+        id: entry.id,
+        kind: "vehicle enquiry",
+        vehicle: stringValue(data.vehicle) ?? "",
+        firstName: stringValue(data.first_name) ?? "",
+        email: stringValue(data.email) ?? "",
+        message: stringValue(data.message) ?? "",
+      };
+    }),
+    ...contacts.map((entry): Lead => {
+      const data = recordData(entry);
+      return {
+        id: entry.id,
+        kind: "contact lead",
+        firstName: stringValue(data.first_name) ?? "",
+        surname: stringValue(data.surname) || undefined,
+        email: stringValue(data.email) ?? "",
+        phone: stringValue(data.phone) || undefined,
+        message: stringValue(data.message) ?? "",
+      };
+    }),
+    ...imports.map((entry): Lead => {
+      const data = recordData(entry);
+      return {
+        id: entry.id,
+        kind: "import request",
+        firstName: stringValue(data.first_name) ?? "",
+        email: stringValue(data.email) ?? "",
+        phone: stringValue(data.phone) || undefined,
+        make: stringValue(data.make) ?? "",
+        model: stringValue(data.model) ?? "",
+        year: integerValue(data.year) ?? 0,
+        message: stringValue(data.message) ?? "",
+      };
+    }),
+  ];
 }
 
 async function siteContent(): Promise<SiteContent> {
@@ -218,20 +266,40 @@ async function saveVehicle(vehicle: Vehicle): Promise<void> {
   await upsertVehicle(new ContentRepository(await getDb()), vehicle);
 }
 
-async function saveVehicleEnquiry(input: VehicleEnquiryInput): Promise<Lead> {
+async function saveLead(input: LeadInput): Promise<Lead> {
   const repo = new ContentRepository(await getDb());
   const item = await repo.create({
-    type: "leads",
+    type: leadCollections[input.kind],
     status: "published",
     publishedAt: new Date().toISOString(),
-    data: {
-      vehicle: input.vehicle,
-      first_name: input.firstName,
-      email: input.email,
-      message: input.message,
-    },
+    data: leadData(input),
   });
   return { id: item.id, ...input };
+}
+
+function leadData(input: LeadInput): Record<string, unknown> {
+  switch (input.kind) {
+    case "vehicle enquiry":
+      return { vehicle: input.vehicle, first_name: input.firstName, email: input.email, message: input.message };
+    case "contact lead":
+      return {
+        first_name: input.firstName,
+        surname: input.surname ?? "",
+        email: input.email,
+        phone: input.phone ?? "",
+        message: input.message,
+      };
+    case "import request":
+      return {
+        first_name: input.firstName,
+        email: input.email,
+        phone: input.phone ?? "",
+        make: input.make,
+        model: input.model,
+        year: input.year,
+        message: input.message,
+      };
+  }
 }
 
 function vehicleFromEntry(entry: { id: string; status?: string; data: object }): Vehicle {

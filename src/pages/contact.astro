@@ -1,13 +1,43 @@
 ---
+import LeadForm, { type LeadField } from "../components/public/LeadForm.astro";
 import Brochure from "../components/public/brochure/Brochure.astro";
 import Public from "../layouts/Public.astro";
 import { brochurePage } from "../public/brochure";
+import { receiveContactLead, type LeadView } from "../public/leads";
 import { publicLocals } from "../public/locals";
 
-const { catalogue } = publicLocals(Astro.locals);
+const { catalogue, leadServices } = publicLocals(Astro.locals);
+
+let view: LeadView | undefined;
+if (Astro.request.method === "POST") {
+  const result = await receiveContactLead(Astro.request, catalogue, leadServices);
+  Astro.response.status = result.status;
+  view = result.view;
+}
+
 const page = await brochurePage(catalogue, "contact", "Contact");
+const fields: LeadField[] = [
+  { id: "first-name", label: "First name", type: "text", autocomplete: "given-name" },
+  { id: "surname", label: "Surname", type: "text", autocomplete: "family-name", optional: true },
+  { id: "email", label: "Email", type: "email", autocomplete: "email" },
+  { id: "phone", label: "Phone", type: "tel", autocomplete: "tel", optional: true },
+  { id: "message", label: "Message", type: "textarea" },
+];
 ---
 
 <Public title={page.title} banner="contact">
   <Brochure page="contact" {...page} />
+  <section id="send-a-message" class="mx-auto w-full max-w-[80rem] px-[clamp(1rem,4vw,2.5rem)] pb-[clamp(2.5rem,6vw,4.5rem)]" aria-labelledby="send-a-message-title">
+    <h2 id="send-a-message-title" class="m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase">Send a message</h2>
+    <LeadForm
+      class="mt-4"
+      label="Send a message"
+      action="/contact#send-a-message"
+      submitLabel="Send message"
+      confirmation="Your message has been sent. We will get back to you as soon as possible."
+      fields={fields}
+      siteKey={leadServices.siteKey}
+      view={view}
+    />
+  </section>
 </Public>
