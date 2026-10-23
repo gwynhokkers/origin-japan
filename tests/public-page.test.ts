@@ -167,6 +167,50 @@ test("contact shows the address, phone, and email", async () => {
   expect(html).toContain("info@originjapan.co.uk");
 });
 
+const address = "Unit D2, Langland Park West, Newport, NP19 4ED";
+const mapsSearch =
+  "https://www.google.com/maps/search/?api=1&amp;query=Unit%20D2%2C%20Langland%20Park%20West%2C%20Newport%2C%20NP19%204ED";
+
+test("the address in the header band, mobile menu, and footer opens Google Maps in a new tab", async () => {
+  const html = await pageText(inMemoryCatalogue(), "/showroom");
+  const header = region(html, "header");
+  const menuAt = at(header, 'id="site-menu"');
+  const band = header.slice(0, menuAt);
+  const menu = header.slice(menuAt);
+  const footer = region(html, "footer");
+
+  for (const place of [band, menu, footer]) {
+    const links = mapsLinks(place);
+    expect(links).toHaveLength(1);
+    expect(links[0].href).toBe(mapsSearch);
+    expect(links[0].tag).toContain('target="_blank"');
+    expect(links[0].tag).toContain('rel="noopener noreferrer"');
+    expect(links[0].name).toBe(`${address} (opens in Google Maps)`);
+  }
+  expect(html).not.toContain("<iframe");
+});
+
+test("the contact page links the address and directions to Google Maps, with no embedded map", async () => {
+  const html = await pageText(inMemoryCatalogue(), "/contact");
+  const details = region(html, "address");
+  const links = mapsLinks(details);
+
+  expect(links.map((link) => link.name)).toEqual([
+    `${address} (opens in Google Maps)`,
+    "Get directions (opens in Google Maps)",
+  ]);
+  expect(links[0].href).toBe(mapsSearch);
+  expect(links[1].href).toBe(
+    "https://www.google.com/maps/dir/?api=1&amp;destination=Unit%20D2%2C%20Langland%20Park%20West%2C%20Newport%2C%20NP19%204ED",
+  );
+  for (const link of links) {
+    expect(link.tag).toContain('target="_blank"');
+    expect(link.tag).toContain('rel="noopener noreferrer"');
+  }
+  expect(html).not.toContain("<iframe");
+  expect(html).not.toMatch(/<script[^>]*src="[^"]*(maps\.googleapis|google\.com\/maps)/);
+});
+
 test("a heading Adam adds to the contact copy reads as a heading", async () => {
   const catalogue = inMemoryCatalogue({
     site: {
@@ -1588,6 +1632,12 @@ function region(html: string, tag: string): string {
   const start = html.indexOf(`<${tag}`);
   const end = html.indexOf(`</${tag}>`);
   return start === -1 || end === -1 ? "" : html.slice(start, end);
+}
+
+function mapsLinks(html: string): { tag: string; href: string; name: string }[] {
+  return [...html.matchAll(/(<a\b[^>]*href="(https:\/\/www\.google\.com\/maps\/[^"]*)"[^>]*>)([\s\S]*?)<\/a>/g)].map(
+    ([, tag, href, inner]) => ({ tag, href, name: inner.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim() }),
+  );
 }
 
 function sectionContaining(html: string, needle: string): string {
