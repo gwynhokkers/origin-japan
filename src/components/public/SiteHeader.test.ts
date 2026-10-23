@@ -29,6 +29,19 @@ test("the public header names Origin Japan and the Newport reach", async () => {
   expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual(["Open menu"]);
 });
 
+test("the logo sits in the nav row below the contact band, not across it", async () => {
+  await renderPublicStory(stories.default.component, Stock);
+
+  const home = document.body.querySelector("header a[aria-label='Origin Japan']");
+  const band = document.body.querySelector("header .carbon-band");
+  const row = home?.parentElement;
+  expect(band).not.toBeNull();
+  expect(home?.classList.contains("absolute")).toBe(false);
+  expect(row?.querySelector("nav[aria-label='Pages']")).not.toBeNull();
+  expect(band?.nextElementSibling).toBe(row);
+  expect(band?.firstElementChild?.firstElementChild?.textContent).toContain("Unit D2, Langland Park West");
+});
+
 test("small screens get a closed menu that holds the pages and contact details", async () => {
   await renderPublicStory(stories.default.component, Stock);
 

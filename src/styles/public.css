@@ -505,11 +505,6 @@ html.menu-open {
 .carbon-mat::before {
   filter: contrast(1.85) brightness(0.9);
 }
-@media (min-width: 1024px) {
-  .brand-mark {
-    left: max(0px, calc((100% - 80rem) / 2));
-  }
-}
 .carbon-band::after {
   content: "";
   position: absolute;
