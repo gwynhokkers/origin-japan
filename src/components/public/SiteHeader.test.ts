@@ -18,12 +18,13 @@ test("the public header names Origin Japan and the Newport reach", async () => {
   expect(document.body.textContent).toContain("Unit D2, Langland Park West, Newport, NP19 4ED");
   expect(document.body.textContent).toContain("07454621101");
   expect(document.body.textContent).toContain("info@originjapan.co.uk");
-  expect(document.body.textContent).toContain("Current Stock");
+  expect(document.body.textContent).toContain("Showroom");
+  expect(document.body.textContent).not.toContain("Current Stock");
   expect(document.body.textContent).toContain("Personal Import Service");
   expect(document.body.textContent).toContain("Grade Sheets");
   expect(document.body.textContent).toContain("Contact");
   expect(document.body.textContent).toContain("Sold Stock");
-  expect(document.body.querySelector("a[aria-current='page']")?.textContent).toBe("Current Stock");
+  expect(document.body.querySelector("a[aria-current='page']")?.textContent).toBe("Showroom");
   const buttons = [...document.querySelectorAll("header button")];
   expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual(["Open menu"]);
 });
@@ -40,7 +41,7 @@ test("small screens get a closed menu that holds the pages and contact details",
   expect(menu?.textContent).toContain("07454621101");
   expect(menu?.textContent).toContain("info@originjapan.co.uk");
   expect(menu?.textContent).toContain("Unit D2, Langland Park West, Newport, NP19 4ED");
-  expect(menu?.querySelector("a[aria-current='page']")?.textContent?.trim()).toBe("Current Stock");
+  expect(menu?.querySelector("a[aria-current='page']")?.textContent?.trim()).toBe("Showroom");
 });
 
 test("stories load the public theme, with #F29559 as the accent", () => {

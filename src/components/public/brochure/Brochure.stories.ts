@@ -21,7 +21,7 @@ const blocks: BrochureBlock[] = [
     kind: "opening",
     body: "Cars already in the UK, and personal imports from Japan.",
     linkLabel: "Current stock",
-    linkHref: "/stock",
+    linkHref: "/showroom",
   },
   {
     kind: "section",
@@ -36,7 +36,7 @@ const blocks: BrochureBlock[] = [
     linkLabel: "Personal Import Service",
     linkHref: "/personal-import",
   },
-  { kind: "stock", heading: "In stock" },
+  { kind: "stock", heading: "In the showroom" },
   { kind: "reviews", heading: "Brilliant reviews" },
 ];
 

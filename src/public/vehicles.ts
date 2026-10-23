@@ -101,7 +101,7 @@ export function pageOf<T>(items: readonly T[], page: number, size = stockPageSiz
   return { items: items.slice(start, start + size), page: current, pages };
 }
 
-export function stockHref(base: "/stock" | "/sold", options?: { sort?: StockSort; page?: number }): string {
+export function stockHref(base: "/showroom" | "/sold", options?: { sort?: StockSort; page?: number }): string {
   const params = new URLSearchParams();
   if (options?.sort) params.set("sort", options.sort);
   if (options?.page && options.page > 1) params.set("page", String(options.page));

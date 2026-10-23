@@ -4,7 +4,7 @@ import StockCard from "../StockCard.astro";
 
 type Props = { heading?: string; stock: readonly Vehicle[] };
 const { stock } = Astro.props;
-const heading = Astro.props.heading?.trim() || "In stock";
+const heading = Astro.props.heading?.trim() || "In the showroom";
 
 const fullSizes = "(min-width: 1280px) 75rem, (min-width: 1024px) calc(100vw - 5rem), 92vw";
 const wideSizes =

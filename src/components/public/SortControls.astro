@@ -1,7 +1,7 @@
 ---
 import { stockHref, stockSortLabels, stockSorts, type StockSort } from "../../public/vehicles";
 
-type Props = { base: "/stock" | "/sold"; current?: StockSort; sorts?: readonly StockSort[] };
+type Props = { base: "/showroom" | "/sold"; current?: StockSort; sorts?: readonly StockSort[] };
 const { base, current, sorts = stockSorts } = Astro.props;
 ---
 

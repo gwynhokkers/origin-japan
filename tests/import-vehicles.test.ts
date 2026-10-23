@@ -10,7 +10,7 @@ test("a buyer sees an imported for-sale vehicle on stock and on its page", async
   const catalogue = inMemoryCatalogue();
   await importVehicles(vehiclesFile, catalogue);
 
-  const stock = await pageText(catalogue, "/stock");
+  const stock = await pageText(catalogue, "/showroom");
   const listing = await pageText(catalogue, "/listings/subaru-levorg-2-0-gt-s");
 
   expect(stock).toContain("Subaru Levorg 2.0 GT-S 2016");
@@ -37,7 +37,7 @@ test("imported in-prep and on-water vehicles are on stock with no public price",
   const catalogue = inMemoryCatalogue();
   await importVehicles(vehiclesFile, catalogue);
 
-  const stock = await pageText(catalogue, "/stock");
+  const stock = await pageText(catalogue, "/showroom");
   const inPrep = await pageText(catalogue, "/listings/honda-stepwgn-spada-2014");
   const onWater = await pageText(catalogue, "/listings/toyota-alphard-2018");
 
@@ -70,7 +70,7 @@ test("an imported sold vehicle keeps its photos and stays off stock without a pu
   const catalogue = inMemoryCatalogue();
   await importVehicles(vehiclesFile, catalogue);
 
-  const stock = await pageText(catalogue, "/stock");
+  const stock = await pageText(catalogue, "/showroom");
   const sold = await pageText(catalogue, "/sold");
   const listing = await pageText(catalogue, "/listings/subaru-legacy-2011");
 
@@ -101,7 +101,7 @@ test("a second import updates the same vehicle page and does not add a duplicate
   await importVehicles(vehiclesFile, catalogue);
   await importVehicles(updatedVehiclesFile, catalogue);
 
-  const stock = await pageText(catalogue, "/stock");
+  const stock = await pageText(catalogue, "/showroom");
   const sold = await pageText(catalogue, "/sold");
   const listing = await pageText(catalogue, "/listings/subaru-levorg-2-0-gt-s");
   const soldListing = await pageText(catalogue, "/listings/subaru-legacy-2011");

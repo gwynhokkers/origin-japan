@@ -22,5 +22,5 @@ export default {
 };
 
 export const InStock = {
-  args: { heading: "In stock", stock: [levorg] },
+  args: { heading: "In the showroom", stock: [levorg] },
 };

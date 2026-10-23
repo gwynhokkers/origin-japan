@@ -1,7 +1,8 @@
 const legacyDestinations: Record<string, string> = {
-  "/stocklist": "/stock",
-  "/stocklist/": "/stock",
-  "/stock/": "/stock",
+  "/stocklist": "/showroom",
+  "/stocklist/": "/showroom",
+  "/stock": "/showroom",
+  "/stock/": "/showroom",
   "/stocklist/sold-stock": "/sold",
   "/stocklist/sold-stock/": "/sold",
   "/personal-import-service": "/personal-import",
@@ -12,8 +13,10 @@ const legacyDestinations: Record<string, string> = {
   "/gradesheets/": "/grade-sheets",
 };
 
-export function legacyDestination(pathname: string): string | undefined {
-  return legacyDestinations[pathname];
+/** Where an old address now lives. The query is kept so a shared sort or page still applies. */
+export function legacyDestination(url: URL): string | undefined {
+  const destination = legacyDestinations[url.pathname];
+  return destination && `${destination}${url.search}`;
 }
 
 export function listingSlug(pathname: string): string | undefined {

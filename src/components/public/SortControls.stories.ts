@@ -6,6 +6,6 @@ export default {
   parameters: { layout: "centered" },
 };
 
-export const Unsorted = { args: { base: "/stock" } };
+export const Unsorted = { args: { base: "/showroom" } };
 
-export const SortSelected = { args: { base: "/stock", current: "price" } };
+export const SortSelected = { args: { base: "/showroom", current: "price" } };

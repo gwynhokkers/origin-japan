@@ -22,6 +22,6 @@ export const WithLink = {
     title,
     body,
     linkLabel: "Current stock",
-    linkHref: "/stock",
+    linkHref: "/showroom",
   },
 };
