@@ -1552,6 +1552,45 @@ test("seller's notes with a blank line are separate paragraphs", async () => {
   expect(html).toContain('<p class="mt-2">Full service history.</p>');
 });
 
+test("section headings are the accent colour on every public page, and page titles and car titles are not", async () => {
+  const vehicle = forSaleVehicle();
+  const catalogue = inMemoryCatalogue({
+    vehicles: [vehicle],
+    site: {
+      importPhotos: [{ src: "https://photos.example/dock.jpg", alt: "A car at the Japanese agent" }],
+      pages: [{ slug: "contact", title: "Contact", body: "Ask us anything.\n\nOpening hours\n\nWe are at the unit most weekdays." }],
+    },
+  });
+  const paths = ["/", "/personal-import", "/grade-sheets", "/contact", "/privacy", "/showroom", "/sold", `/listings/${vehicle.slug}`];
+  const sectionHeadings: string[] = [];
+
+  for (const path of paths) {
+    const html = await pageText(catalogue, path);
+    for (const heading of headingTags(html, "h1")) expect(heading.classes, `${path} ${heading.text}`).not.toContain("text-accent");
+    for (const heading of [...headingTags(html, "h2"), ...headingTags(html, "h3")]) {
+      if (heading.text === vehicle.title) {
+        expect(heading.classes, `${path} car title`).not.toContain("text-accent");
+        continue;
+      }
+      expect(heading.classes, `${path} ${heading.text}`).toContain("text-accent");
+      sectionHeadings.push(heading.text);
+    }
+  }
+
+  expect(sectionHeadings).toEqual(
+    expect.arrayContaining(["In the showroom", "Request a personal import", "Previous personal imports", "Send a message", "Opening hours", "Seller's notes"]),
+  );
+  const home = await pageText(catalogue, "/");
+  expect(headingTags(sectionContaining(home, 'aria-labelledby="reviews"'), "h2")[0]?.classes).toContain("text-accent");
+});
+
+function headingTags(html: string, tag: "h1" | "h2" | "h3"): { text: string; classes: string[] }[] {
+  return [...html.matchAll(new RegExp(`<${tag}\\b([^>]*)>([\\s\\S]*?)</${tag}>`, "g"))].map((match) => ({
+    text: (match[2] ?? "").replace(/<[^>]*>/g, "").replace(/&#39;/g, "'").trim(),
+    classes: (match[1]?.match(/\bclass="([^"]*)"/)?.[1] ?? "").split(/\s+/),
+  }));
+}
+
 function enquiryRequest(fields: Record<string, string>): Request {
   return new Request("http://originjapan.test/listings/subaru-levorg-2-0-gt-s", {
     method: "POST",

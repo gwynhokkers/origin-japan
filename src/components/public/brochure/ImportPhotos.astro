@@ -1,11 +1,11 @@
 ---
 import { brochurePicture } from "../../../public/photos";
 import Picture from "../Picture.astro";
+import { sectionHeading as title } from "../section-heading";
 
 type Props = { heading?: string; photos: readonly { src: string; alt: string }[] };
 const { photos } = Astro.props;
 const heading = Astro.props.heading?.trim() || "Previous personal imports";
-const title = "m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase";
 
 /** Columns are at least 17rem in an 80rem frame. From the medium breakpoint the first photo spans two, and a lone photo spans all. */
 const sizesFor = (index: number) => {
