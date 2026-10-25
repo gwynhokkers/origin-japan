@@ -1,10 +1,10 @@
 ---
 import type { CopySection, BrochurePage } from "../../../public/copy";
 import CopyBlocks from "../CopyBlocks.astro";
+import { sectionHeading as heading } from "../section-heading";
 
 type Props = { page: BrochurePage; sections: readonly CopySection[]; nested?: boolean };
 const { page, sections, nested = false } = Astro.props;
-const heading = "m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snug font-bold tracking-[0.05em] uppercase";
 ---
 
 {
@@ -29,7 +29,7 @@ const heading = "m-0 font-display text-[clamp(0.95rem,1.3vw,1.1rem)] leading-snu
     <div class:list={[
       !nested && "mx-auto w-full px-[clamp(1rem,4vw,2.5rem)]",
       !nested && page !== "contact" && "max-w-[80rem]",
-      page === "contact" && "max-w-[48ch] text-[1.1rem] text-muted [&_h2]:text-ink [&_p]:mt-4",
+      page === "contact" && "max-w-[48ch] text-[1.1rem] text-muted [&_p]:mt-4",
       page === "privacy" && "max-w-[65ch] py-5 [&_p]:mb-4",
       (page === "grade-sheets" || page === "contact" || page === "privacy") && "[&>section+section]:mt-11 [&_h2]:mt-8 [&_h2]:mb-3",
       page === "grade-sheets" && "[&_p]:mt-3 [&_p]:max-w-[65ch]",
