@@ -1,11 +1,18 @@
 ---
-import { company, email, phone, postalAddress, what3Words } from "../../../public/contact";
+import { addressMapUrl, company, directionsUrl, email, opensInMaps, phone, postalAddress, what3Words } from "../../../public/contact";
 ---
 
 <address class="mt-9 grid gap-6 border-t border-line pt-7 font-normal not-italic">
   <p class="m-0 text-base text-ink">
     <span class="mb-1 block text-sm text-muted">Address</span>
-    {company}<br />{postalAddress}<br />What3Words {what3Words}
+    {company}<br /><a href={addressMapUrl} target="_blank" rel="noopener noreferrer"
+      >{postalAddress}<span class="sr-only">{opensInMaps}</span></a
+    ><br />What3Words {what3Words}<br /><a
+      class="inline-flex min-h-11 items-center font-semibold"
+      href={directionsUrl}
+      target="_blank"
+      rel="noopener noreferrer">Get directions<span class="sr-only">{opensInMaps}</span></a
+    >
   </p>
   <p class="m-0 text-ink">
     <span class="mb-1 block text-sm text-muted">Phone</span>
