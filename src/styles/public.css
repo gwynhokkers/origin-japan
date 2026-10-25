@@ -306,7 +306,7 @@ html.menu-open {
 }
 .banner-import {
   background-image: image-set(url("/images/import-skylines-fuji-1300.avif") type("image/avif"), url("/images/import-skylines-fuji-1300.webp") type("image/webp"), url("/images/import-skylines-fuji-1300.jpg") type("image/jpeg"));
-  background-position: 50% 62%;
+  background-position: 50% 100%;
 }
 .banner-grades {
   background-image: image-set(url("/images/grade-trueno-2000.avif") type("image/avif"), url("/images/grade-trueno-2000.webp") type("image/webp"), url("/images/grade-trueno-2000.jpg") type("image/jpeg"));
